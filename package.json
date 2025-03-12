@@ -1,0 +1,39 @@
+{
+  "name": "smart-lock-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "build:android": "turbo run build:android",
+    "build:ios": "turbo run build:ios",
+    "prebuild": "turbo run prebuild",
+    "dev": "turbo run dev",
+    "dev:client": "pnpm --filter @smart-lock/client dev",
+    "dev:server": "pnpm --filter @smart-lock/server dev",
+    "api": "turbo run start",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "clean": "turbo run clean",
+    "test": "turbo run test",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^18.6.1",
+    "@commitlint/config-conventional": "^18.6.1",
+    "eslint": "^8.56.0",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.2",
+    "prettier": "^3.2.5",
+    "turbo": "^1.12.4",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "packageManager": "pnpm@8.15.4"
+}
