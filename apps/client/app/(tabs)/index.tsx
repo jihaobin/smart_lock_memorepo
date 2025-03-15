@@ -1,21 +1,15 @@
-import { DoorCard } from "@/components/door-card";
-import { Link } from "expo-router";
-import {
-  Bell,
-  Key,
-  User,
-  Settings,
-  Shield,
-  ChevronRight,
-} from "lucide-react-native";
-import { VStack } from "@/components/ui/vstack";
-import { HStack } from "@/components/ui/hstack";
-import { Text } from "@/components/ui/text";
-import { Box } from "@/components/ui/box";
-import { Pressable } from "@/components/ui/pressable";
-import { Icon } from "@/components/ui/icon";
-import { ScrollView, StyleSheet, View } from "react-native";
-import { useAuth } from "@/contexts/AuthContext";
+import { Link } from 'expo-router';
+import { Bell, Key, User, Settings, Shield, ChevronRight } from 'lucide-react-native';
+import { ScrollView, StyleSheet } from 'react-native';
+
+import { DoorCard } from '@/components/door-card';
+import { Box } from '@/components/ui/box';
+import { HStack } from '@/components/ui/hstack';
+import { Icon } from '@/components/ui/icon';
+import { Pressable } from '@/components/ui/pressable';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Home() {
   const { user } = useAuth();
@@ -23,31 +17,29 @@ export default function Home() {
   const devices = [
     {
       id: 1,
-      name: "前门",
-      status: "locked",
+      name: '前门',
+      status: 'locked',
       batteryLevel: 85,
       isOnline: true,
-      lastActivity: "今天 08:32",
+      lastActivity: '今天 08:32',
     },
     {
       id: 2,
-      name: "后门",
-      status: "unlocked",
+      name: '后门',
+      status: 'unlocked',
       batteryLevel: 72,
       isOnline: true,
-      lastActivity: "今天 10:15",
+      lastActivity: '今天 10:15',
     },
   ];
 
   return (
-    <View style={styles.container}>
+    <Box className="flex-1 bg-white">
       <ScrollView style={styles.scrollView}>
         <VStack className="p-4 flex-1">
           <HStack className="justify-between mb-6">
             <VStack>
-              <Text className="text-2xl font-bold">
-                您好，{user?.name ?? "用户"}
-              </Text>
+              <Text className="text-2xl font-bold">您好，{user?.name ?? '用户'}</Text>
               <Text className="text-gray-500">欢迎使用智能门锁</Text>
             </VStack>
             <Link href="/user-management" asChild>
@@ -69,11 +61,11 @@ export default function Home() {
                 </Pressable>
               </Link>
             </HStack>
-            {devices.map((device) => (
+            {devices.map(device => (
               <Box key={device.id} className="mb-3">
                 <DoorCard
                   name={device.name}
-                  status={device.status as "locked" | "unlocked"}
+                  status={device.status as 'locked' | 'unlocked'}
                   batteryLevel={device.batteryLevel}
                   isOnline={device.isOnline}
                   lastActivity={device.lastActivity}
@@ -129,9 +121,7 @@ export default function Home() {
                     <Icon className="text-blue-500" as={User} />
                   </Box>
                   <VStack>
-                    <Text className="text-sm font-medium">
-                      用户张三已进入（前门）
-                    </Text>
+                    <Text className="text-sm font-medium">用户张三已进入（前门）</Text>
                     <Text className="text-xs text-gray-500">今天 12:45</Text>
                   </VStack>
                 </HStack>
@@ -142,9 +132,7 @@ export default function Home() {
                     <Icon className="text-green-500" as={Key} />
                   </Box>
                   <VStack>
-                    <Text className="text-sm font-medium">
-                      临时密码已使用（后门）
-                    </Text>
+                    <Text className="text-sm font-medium">临时密码已使用（后门）</Text>
                     <Text className="text-xs text-gray-500">今天 10:30</Text>
                   </VStack>
                 </HStack>
@@ -164,15 +152,11 @@ export default function Home() {
           </VStack>
         </VStack>
       </ScrollView>
-    </View>
+    </Box>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
   scrollView: {
     flex: 1,
   },

@@ -14,26 +14,50 @@
     "dev": "turbo run dev",
     "dev:client": "pnpm --filter @smart-lock/client dev",
     "dev:server": "pnpm --filter @smart-lock/server dev",
+    "db:studio": "pnpm --filter @smart-lock/shared studio",
+    "db:migrate": "pnpm --filter @smart-lock/shared migrate",
+    "db:generate": "pnpm --filter @smart-lock/shared generate",
+    "db:generate:migrate": "pnpm --filter @smart-lock/shared generate && pnpm --filter @smart-lock/shared migrate",
     "api": "turbo run start",
-    "lint": "turbo run lint",
-    "lint:fix": "turbo run lint:fix",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "clean": "turbo run clean",
+    "lint": "eslint --config eslint.config.mjs",
+    "lint:fix": "eslint --config eslint.config.mjs --fix",
+    "lint:api": "eslint --config eslint.config.mjs \"apps/api/**/*.{ts,js}\"",
+    "lint:client": "eslint --config eslint.config.mjs \"apps/client/**/*.{ts,tsx,js,jsx}\"",
+    "lint:api:fix": "eslint --config eslint.config.mjs --fix \"apps/api/**/*.{ts,js}\"",
+    "lint:client:fix": "eslint --config eslint.config.mjs --fix \"apps/client/**/*.{ts,tsx,js,jsx}\"",
     "test": "turbo run test",
     "prepare": "husky install"
   },
   "devDependencies": {
     "@commitlint/cli": "^18.6.1",
     "@commitlint/config-conventional": "^18.6.1",
-    "eslint": "^8.56.0",
+    "@darraghor/eslint-plugin-nestjs-typed": "^6.4.1",
+    "@eslint/js": "^9.22.0",
+    "@stylistic/eslint-plugin": "^4.2.0",
+    "@typescript-eslint/eslint-plugin": "^8.26.1",
+    "@typescript-eslint/parser": "^8.26.1",
+    "eslint": "^9.22.0",
+    "eslint-config-prettier": "^10.1.1",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-nestjs": "^1.2.3",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-native": "^5.0.0",
     "husky": "^9.0.11",
-    "lint-staged": "^15.2.2",
+    "lint-staged": "^15.5.0",
     "prettier": "^3.2.5",
     "turbo": "^1.12.4",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "typescript-eslint": "^8.26.1"
   },
   "engines": {
     "node": ">=18.0.0"
   },
-  "packageManager": "pnpm@8.15.4"
+  "packageManager": "pnpm@8.15.4",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "zod": "^3.24.2"
+  }
 }

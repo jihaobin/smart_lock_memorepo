@@ -1,0 +1,10 @@
+{
+  "eslint.format.enable": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "eslint.workingDirectories": [{ "mode": "location" }],
+  "eslint.options": {
+    "overrideConfigFile": "eslint.config.mjs"
+  }
+}

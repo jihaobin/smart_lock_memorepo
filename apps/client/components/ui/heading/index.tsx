@@ -1,8 +1,9 @@
-import React, { forwardRef, memo } from 'react';
 import { H1, H2, H3, H4, H5, H6 } from '@expo/html-elements';
-import { headingStyle } from './styles';
 import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 import { cssInterop } from 'nativewind';
+import React, { forwardRef, memo } from 'react';
+
+import { headingStyle } from './styles';
 
 type IHeadingProps = VariantProps<typeof headingStyle> &
   React.ComponentPropsWithoutRef<typeof H1> & {
@@ -51,6 +52,7 @@ const MappedHeading = memo(
                 class: className,
               })}
               {...props}
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-expect-error
               ref={ref}
             />
@@ -70,6 +72,7 @@ const MappedHeading = memo(
                 class: className,
               })}
               {...props}
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-expect-error
               ref={ref}
             />
@@ -89,6 +92,7 @@ const MappedHeading = memo(
                 class: className,
               })}
               {...props}
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-expect-error
               ref={ref}
             />
@@ -108,6 +112,7 @@ const MappedHeading = memo(
                 class: className,
               })}
               {...props}
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-expect-error
               ref={ref}
             />
@@ -127,6 +132,7 @@ const MappedHeading = memo(
                 class: className,
               })}
               {...props}
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-expect-error
               ref={ref}
             />
@@ -166,6 +172,7 @@ const MappedHeading = memo(
                 class: className,
               })}
               {...props}
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-expect-error
               ref={ref}
             />
@@ -178,15 +185,7 @@ const MappedHeading = memo(
 const Heading = memo(
   forwardRef<React.ElementRef<typeof H1>, IHeadingProps>(
     ({ className, size = 'lg', as: AsComp, ...props }, ref) => {
-      const {
-        isTruncated,
-        bold,
-        underline,
-        strikeThrough,
-        sub,
-        italic,
-        highlight,
-      } = props;
+      const { isTruncated, bold, underline, strikeThrough, sub, italic, highlight } = props;
 
       if (AsComp) {
         return (
@@ -207,9 +206,7 @@ const Heading = memo(
         );
       }
 
-      return (
-        <MappedHeading className={className} size={size} ref={ref} {...props} />
-      );
+      return <MappedHeading className={className} size={size} ref={ref} {...props} />;
     }
   )
 );

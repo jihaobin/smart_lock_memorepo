@@ -1,19 +1,12 @@
 'use client';
+import type { VariantProps } from '@gluestack-ui/nativewind-utils';
+import { tva } from '@gluestack-ui/nativewind-utils/tva';
+import { withStyleContext, useStyleContext } from '@gluestack-ui/nativewind-utils/withStyleContext';
+import { createPopover } from '@gluestack-ui/popover';
+import { Motion, createMotionAnimatedComponent, AnimatePresence } from '@legendapp/motion';
+import { cssInterop } from 'nativewind';
 import React from 'react';
 import { View, Pressable, ScrollView } from 'react-native';
-import {
-  Motion,
-  createMotionAnimatedComponent,
-  AnimatePresence,
-} from '@legendapp/motion';
-import { createPopover } from '@gluestack-ui/popover';
-import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import {
-  withStyleContext,
-  useStyleContext,
-} from '@gluestack-ui/nativewind-utils/withStyleContext';
-import { cssInterop } from 'nativewind';
-import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 
 const AnimatedPressable = createMotionAnimatedComponent(Pressable);
 const SCOPE = 'POPOVER';
@@ -52,23 +45,21 @@ const popoverArrowStyle = tva({
     placement: {
       'top left':
         'data-[flip=false]:border-t-0 data-[flip=false]:border-l-0 data-[flip=true]:border-b-0 data-[flip=true]:border-r-0',
-      'top':
-        'data-[flip=false]:border-t-0 data-[flip=false]:border-l-0 data-[flip=true]:border-b-0 data-[flip=true]:border-r-0',
+      top: 'data-[flip=false]:border-t-0 data-[flip=false]:border-l-0 data-[flip=true]:border-b-0 data-[flip=true]:border-r-0',
       'top right':
         'data-[flip=false]:border-t-0 data-[flip=false]:border-l-0 data-[flip=true]:border-b-0 data-[flip=true]:border-r-0',
-      'bottom':
+      bottom:
         'data-[flip=false]:border-b-0 data-[flip=false]:border-r-0 data-[flip=true]:border-t-0 data-[flip=true]:border-l-0',
       'bottom left':
         'data-[flip=false]:border-b-0 data-[flip=false]:border-r-0 data-[flip=true]:border-t-0 data-[flip=true]:border-l-0',
       'bottom right':
         'data-[flip=false]:border-b-0 data-[flip=false]:border-r-0 data-[flip=true]:border-t-0 data-[flip=true]:border-l-0',
-      'left':
-        'data-[flip=false]:border-l-0 data-[flip=false]:border-b-0 data-[flip=true]:border-r-0 data-[flip=true]:border-t-0',
+      left: 'data-[flip=false]:border-l-0 data-[flip=false]:border-b-0 data-[flip=true]:border-r-0 data-[flip=true]:border-t-0',
       'left top':
         'data-[flip=false]:border-l-0 data-[flip=false]:border-b-0 data-[flip=true]:border-r-0 data-[flip=true]:border-t-0',
       'left bottom':
         'data-[flip=false]:border-l-0 data-[flip=false]:border-b-0 data-[flip=true]:border-r-0 data-[flip=true]:border-t-0',
-      'right':
+      right:
         'data-[flip=false]:border-r-0 data-[flip=false]:border-t-0 data-[flip=true]:border-l-0 data-[flip=true]:border-b-0',
       'right top':
         'data-[flip=false]:border-r-0 data-[flip=false]:border-t-0 data-[flip=true]:border-l-0 data-[flip=true]:border-b-0',
@@ -132,26 +123,23 @@ type IPopoverBodyProps = React.ComponentProps<typeof UIPopover.Body> &
 type IPopoverBackdropProps = React.ComponentProps<typeof UIPopover.Backdrop> &
   VariantProps<typeof popoverBackdropStyle> & { className?: string };
 
-type IPopoverCloseButtonProps = React.ComponentProps<
-  typeof UIPopover.CloseButton
-> &
+type IPopoverCloseButtonProps = React.ComponentProps<typeof UIPopover.CloseButton> &
   VariantProps<typeof popoverCloseButtonStyle> & { className?: string };
 
-const Popover = React.forwardRef<
-  React.ElementRef<typeof UIPopover>,
-  IPopoverProps
->(({ className, size = 'md', placement = 'bottom', ...props }, ref) => {
-  return (
-    <UIPopover
-      ref={ref}
-      placement={placement}
-      {...props}
-      className={popoverStyle({ size, class: className })}
-      context={{ size, placement }}
-      pointerEvents="box-none"
-    />
-  );
-});
+const Popover = React.forwardRef<React.ElementRef<typeof UIPopover>, IPopoverProps>(
+  ({ className, size = 'md', placement = 'bottom', ...props }, ref) => {
+    return (
+      <UIPopover
+        ref={ref}
+        placement={placement}
+        {...props}
+        className={popoverStyle({ size, class: className })}
+        context={{ size, placement }}
+        pointerEvents="box-none"
+      />
+    );
+  }
+);
 
 const PopoverContent = React.forwardRef<
   React.ElementRef<typeof UIPopover.Content>,
@@ -186,33 +174,32 @@ const PopoverContent = React.forwardRef<
   );
 });
 
-const PopoverArrow = React.forwardRef<
-  React.ElementRef<typeof UIPopover.Arrow>,
-  IPopoverArrowProps
->(({ className, ...props }, ref) => {
-  const { placement } = useStyleContext(SCOPE);
-  return (
-    <UIPopover.Arrow
-      ref={ref}
-      transition={{
-        type: 'spring',
-        damping: 18,
-        stiffness: 250,
-        mass: 0.9,
-        opacity: {
-          type: 'timing',
-          duration: 50,
-          delay: 50,
-        },
-      }}
-      {...props}
-      className={popoverArrowStyle({
-        class: className,
-        placement,
-      })}
-    />
-  );
-});
+const PopoverArrow = React.forwardRef<React.ElementRef<typeof UIPopover.Arrow>, IPopoverArrowProps>(
+  ({ className, ...props }, ref) => {
+    const { placement } = useStyleContext(SCOPE);
+    return (
+      <UIPopover.Arrow
+        ref={ref}
+        transition={{
+          type: 'spring',
+          damping: 18,
+          stiffness: 250,
+          mass: 0.9,
+          opacity: {
+            type: 'timing',
+            duration: 50,
+            delay: 50,
+          },
+        }}
+        {...props}
+        className={popoverArrowStyle({
+          class: className,
+          placement,
+        })}
+      />
+    );
+  }
+);
 
 const PopoverBackdrop = React.forwardRef<
   React.ElementRef<typeof UIPopover.Backdrop>,
@@ -249,20 +236,19 @@ const PopoverBackdrop = React.forwardRef<
   );
 });
 
-const PopoverBody = React.forwardRef<
-  React.ElementRef<typeof UIPopover.Body>,
-  IPopoverBodyProps
->(({ className, ...props }, ref) => {
-  return (
-    <UIPopover.Body
-      ref={ref}
-      {...props}
-      className={popoverBodyStyle({
-        class: className,
-      })}
-    />
-  );
-});
+const PopoverBody = React.forwardRef<React.ElementRef<typeof UIPopover.Body>, IPopoverBodyProps>(
+  ({ className, ...props }, ref) => {
+    return (
+      <UIPopover.Body
+        ref={ref}
+        {...props}
+        className={popoverBodyStyle({
+          class: className,
+        })}
+      />
+    );
+  }
+);
 
 const PopoverCloseButton = React.forwardRef<
   React.ElementRef<typeof UIPopover.CloseButton>,

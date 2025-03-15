@@ -1,7 +1,9 @@
-import React, { forwardRef } from 'react';
 import type { VariantProps } from '@gluestack-ui/nativewind-utils';
+import React, { forwardRef } from 'react';
 import { Animated, Easing, Platform, View } from 'react-native';
+
 import { skeletonStyle, skeletonTextStyle } from './styles';
+import { Box } from '../box';
 
 type ISkeletonProps = React.ComponentProps<typeof View> &
   VariantProps<typeof skeletonStyle> & {
@@ -16,10 +18,7 @@ type ISkeletonTextProps = React.ComponentProps<typeof View> &
     startColor?: string;
   };
 
-const Skeleton = forwardRef<
-  React.ElementRef<typeof Animated.View>,
-  ISkeletonProps
->(
+const Skeleton = forwardRef<React.ElementRef<typeof Animated.View>, ISkeletonProps>(
   (
     {
       className,
@@ -79,14 +78,11 @@ const Skeleton = forwardRef<
   }
 );
 
-const SkeletonText = forwardRef<
-  React.ElementRef<typeof View>,
-  ISkeletonTextProps
->(
+const SkeletonText = forwardRef<React.ElementRef<typeof View>, ISkeletonTextProps>(
   (
     {
       className,
-      _lines,
+      _lines = 0,
       isLoaded = false,
       startColor = 'bg-background-200',
       gap = 2,
@@ -98,22 +94,22 @@ const SkeletonText = forwardRef<
     if (!isLoaded) {
       if (_lines) {
         return (
-          <View
+          <Box
             className={`${skeletonTextStyle({
               gap,
             })}`}
             ref={ref}
           >
-            {Array.from({ length: _lines }).map((_, index) => (
+            {Array.from({ length: _lines }).map(value => (
               <Skeleton
-                key={index}
+                key={value as number}
                 className={`${startColor} ${skeletonTextStyle({
                   class: className,
                 })}`}
                 {...props}
               />
             ))}
-          </View>
+          </Box>
         );
       } else {
         return (

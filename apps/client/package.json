@@ -55,6 +55,7 @@
     "@react-navigation/native": "^7.0.14",
     "@smart-lock/shared": "workspace:*",
     "babel-plugin-module-resolver": "^5.0.2",
+    "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
     "expo": "~52.0.37",
     "expo-blur": "~14.0.3",
@@ -87,6 +88,7 @@
     "react-native-ui-datepicker": "^3.0.7",
     "react-native-web": "~0.19.13",
     "react-native-webview": "13.12.5",
+    "tailwind-merge": "^3.0.2",
     "tailwindcss": "3.4.17",
     "zod": "^3.24.2"
   },

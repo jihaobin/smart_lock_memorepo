@@ -1,8 +1,8 @@
-import React from "react";
-import { ChevronLeft, X } from "lucide-react-native";
-import { Text } from "@/components/ui/text";
-import { Button, ButtonText } from "@/components/ui/button";
-import { Icon } from "@/components/ui/icon";
+import { X } from 'lucide-react-native';
+import React from 'react';
+
+import { Button, ButtonText } from '@/components/ui/button';
+import { Icon } from '@/components/ui/icon';
 import {
   Modal,
   ModalBackdrop,
@@ -11,8 +11,9 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-} from "@/components/ui/modal";
-import type { Group } from "@/types/user-management";
+} from '@/components/ui/modal';
+import { Text } from '@/components/ui/text';
+import type { Group } from '@/types/user-management';
 
 interface DeleteGroupModalProps {
   showDeleteGroupDialog: boolean;

@@ -1,6 +1,5 @@
-import React from "react";
-import { Text } from "@/components/ui/text";
-import { Button, ButtonText } from "@/components/ui/button";
+import React from 'react';
+
 import {
   AlertDialog,
   AlertDialogBackdrop,
@@ -8,8 +7,10 @@ import {
   AlertDialogHeader,
   AlertDialogBody,
   AlertDialogFooter,
-} from "@/components/ui/alert-dialog";
-import type { DeviceGroup } from "@/types/device-management";
+} from '@/components/ui/alert-dialog';
+import { Button, ButtonText } from '@/components/ui/button';
+import { Text } from '@/components/ui/text';
+import type { DeviceGroup } from '@/types/device-management';
 
 interface DeleteGroupModalProps {
   showDeleteGroupDialog: boolean;
@@ -33,7 +34,8 @@ export function DeleteGroupModal({
         </AlertDialogHeader>
         <AlertDialogBody>
           <Text className="text-gray-700">
-            您确定要删除分组 "{groupToDelete?.name}" 吗？此操作将删除该分组下的所有设备，且无法撤销。
+            您确定要删除分组 "{groupToDelete?.name}"
+            吗？此操作将删除该分组下的所有设备，且无法撤销。
           </Text>
         </AlertDialogBody>
         <AlertDialogFooter>
@@ -44,11 +46,7 @@ export function DeleteGroupModal({
           >
             <ButtonText>取消</ButtonText>
           </Button>
-          <Button
-            variant="solid"
-            action="negative"
-            onPress={confirmDeleteGroup}
-          >
+          <Button variant="solid" action="negative" onPress={confirmDeleteGroup}>
             <ButtonText>确认删除</ButtonText>
           </Button>
         </AlertDialogFooter>

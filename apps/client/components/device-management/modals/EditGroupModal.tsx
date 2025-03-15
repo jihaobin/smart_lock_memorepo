@@ -1,10 +1,9 @@
-import React from "react";
-import { ChevronLeft } from "lucide-react-native";
-import { Input, InputField } from "@/components/ui/input";
-import { Text } from "@/components/ui/text";
-import { Button, ButtonText } from "@/components/ui/button";
-import { VStack } from "@/components/ui/vstack";
-import { Icon } from "@/components/ui/icon";
+import { ChevronLeft } from 'lucide-react-native';
+import React from 'react';
+
+import { Button, ButtonText } from '@/components/ui/button';
+import { Icon } from '@/components/ui/icon';
+import { Input, InputField } from '@/components/ui/input';
 import {
   Modal,
   ModalBackdrop,
@@ -13,8 +12,10 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-} from "@/components/ui/modal";
-import type { DeviceGroup } from "@/types/device-management";
+} from '@/components/ui/modal';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
+import type { DeviceGroup } from '@/types/device-management';
 
 interface EditGroupModalProps {
   showEditGroupDialog: boolean;
@@ -47,9 +48,9 @@ export function EditGroupModal({
               <Text className="text-gray-700">分组名称</Text>
               <Input>
                 <InputField
-                  value={editingGroup?.name || ""}
-                  onChangeText={(text) =>
-                    setEditingGroup((prev) => (prev ? { ...prev, name: text } : null))
+                  value={editingGroup?.name || ''}
+                  onChangeText={text =>
+                    setEditingGroup(prev => (prev ? { ...prev, name: text } : null))
                   }
                 />
               </Input>
@@ -57,11 +58,7 @@ export function EditGroupModal({
           </VStack>
         </ModalBody>
         <ModalFooter>
-          <Button
-            variant="outline"
-            className="mr-2"
-            onPress={() => setShowEditGroupDialog(false)}
-          >
+          <Button variant="outline" className="mr-2" onPress={() => setShowEditGroupDialog(false)}>
             <ButtonText>取消</ButtonText>
           </Button>
           <Button onPress={handleSaveEditedGroup}>

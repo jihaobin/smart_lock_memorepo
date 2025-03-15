@@ -1,7 +1,8 @@
-import { useState, useRef } from "react";
-import { ScrollView } from "react-native";
-import { useToast } from "@/hooks/use-toast";
-import type { AuthorizedUser, Group } from "@/types/user-management";
+import { useState, useRef } from 'react';
+import { ScrollView } from 'react-native';
+
+import { useToast } from '@/hooks/use-toast';
+import type { AuthorizedUser, Group } from '@/types/user-management';
 
 export function useUserManagement() {
   const { toast } = useToast();
@@ -10,49 +11,47 @@ export function useUserManagement() {
   // Tab相关状态
   const [activeTab, setActiveTab] = useState(0);
   const tabs = [
-    { key: "authorized", title: "授权用户" },
-    { key: "profile", title: "个人信息" },
+    { key: 'authorized', title: '授权用户' },
+    { key: 'profile', title: '个人信息' },
   ];
 
   // 状态变量
-  const [searchText, setSearchText] = useState("");
+  const [searchText, setSearchText] = useState('');
   const [showQRCode, setShowQRCode] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
   const [groups, setGroups] = useState<Group[]>([
-    { id: "1", name: "家人", type: "user" },
-    { id: "2", name: "朋友", type: "user" },
-    { id: "3", name: "同事", type: "user" },
+    { id: '1', name: '家人', type: 'user' },
+    { id: '2', name: '朋友', type: 'user' },
+    { id: '3', name: '同事', type: 'user' },
   ]);
   const [authorizedUsers, setAuthorizedUsers] = useState<AuthorizedUser[]>([
     {
-      id: "1",
-      name: "张三",
-      email: "zhangsan@example.com",
-      phone: "13800138001",
-      group: "1",
-      permissions: [{ doorId: "1", type: "permanent" }],
-      lastAccess: "今天 14:30",
+      id: '1',
+      name: '张三',
+      email: 'zhangsan@example.com',
+      phone: '13800138001',
+      group: '1',
+      permissions: [{ doorId: '1', type: 'permanent' }],
+      lastAccess: '今天 14:30',
     },
     {
-      id: "2",
-      name: "李四",
-      email: "lisi@example.com",
-      phone: "13800138002",
-      group: "2",
-      permissions: [
-        { doorId: "1", type: "temporary", validUntil: "2024-12-31" },
-      ],
-      lastAccess: "昨天 16:45",
+      id: '2',
+      name: '李四',
+      email: 'lisi@example.com',
+      phone: '13800138002',
+      group: '2',
+      permissions: [{ doorId: '1', type: 'temporary', validUntil: '2024-12-31' }],
+      lastAccess: '昨天 16:45',
     },
   ]);
 
   const [editedUser, setEditedUser] = useState<AuthorizedUser | null>({
-    id: "0",
-    name: "当前用户",
-    group: "1",
-    permissions: [{ doorId: "1", type: "permanent" }],
-    lastAccess: "刚刚"
+    id: '0',
+    name: '当前用户',
+    group: '1',
+    permissions: [{ doorId: '1', type: 'permanent' }],
+    lastAccess: '刚刚',
   });
 
   // 模态框状态
@@ -77,21 +76,20 @@ export function useUserManagement() {
 
   // 过滤用户
   const filteredUsers = authorizedUsers
-    .filter(user => 
-      searchText === "" || 
-      user.name.includes(searchText) || 
-      user.email?.includes(searchText) || 
-      user.phone?.includes(searchText)
+    .filter(
+      user =>
+        searchText === '' ||
+        user.name.includes(searchText) ||
+        user.email?.includes(searchText) ||
+        user.phone?.includes(searchText)
     )
-    .filter(user => 
-      selectedGroup === null || user.group === selectedGroup
-    );
+    .filter(user => selectedGroup === null || user.group === selectedGroup);
 
-  const handleScroll = (direction: "left" | "right") => {
+  const handleScroll = (direction: 'left' | 'right') => {
     if (scrollViewRef.current) {
       const scrollAmount = 100;
       scrollViewRef.current.scrollTo({
-        x: direction === "left" ? -scrollAmount : scrollAmount,
+        x: direction === 'left' ? -scrollAmount : scrollAmount,
         animated: true,
       });
     }
@@ -118,21 +116,19 @@ export function useUserManagement() {
   const confirmDeleteUser = () => {
     if (userToDelete) {
       try {
-        setAuthorizedUsers(
-          authorizedUsers.filter((u) => u.id !== userToDelete.id)
-        );
+        setAuthorizedUsers(authorizedUsers.filter(u => u.id !== userToDelete.id));
         setShowDeleteUserDialog(false);
         setUserToDelete(null);
         toast({
-          title: "用户已删除",
+          title: '用户已删除',
           description: `用户 "${userToDelete.name}" 已成功删除。`,
         });
       } catch (error) {
-        console.error("Error deleting user:", error);
+        console.error('Error deleting user:', error);
         toast({
-          title: "删除用户失败",
-          description: "删除用户时发生错误，请稍后重试。",
-          variant: "destructive",
+          title: '删除用户失败',
+          description: '删除用户时发生错误，请稍后重试。',
+          variant: 'destructive',
         });
       }
     }
@@ -146,28 +142,26 @@ export function useUserManagement() {
         id,
         permissions: [
           {
-            doorId: "1",
-            type: "temporary",
-            validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-              .toISOString()
-              .split("T")[0],
+            doorId: '1',
+            type: 'temporary',
+            validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
           },
         ],
-        lastAccess: "刚刚"
+        lastAccess: '刚刚',
       };
       setAuthorizedUsers([...authorizedUsers, user]);
       setShowAddUserDialog(false);
       setNewUser({});
       toast({
-        title: "用户已添加",
-        description: "新用户已成功添加到系统。",
+        title: '用户已添加',
+        description: '新用户已成功添加到系统。',
       });
     } catch (error) {
-      console.error("Error adding user:", error);
+      console.error('Error adding user:', error);
       toast({
-        title: "添加用户失败",
-        description: "添加用户时发生错误，请稍后重试。",
-        variant: "destructive",
+        title: '添加用户失败',
+        description: '添加用户时发生错误，请稍后重试。',
+        variant: 'destructive',
       });
     }
   };
@@ -176,22 +170,20 @@ export function useUserManagement() {
     if (editingUser) {
       try {
         setAuthorizedUsers(
-          authorizedUsers.map((user) =>
-            user.id === editingUser.id ? editingUser : user
-          )
+          authorizedUsers.map(user => (user.id === editingUser.id ? editingUser : user))
         );
         setShowEditUserDialog(false);
         setEditingUser(null);
         toast({
-          title: "用户已更新",
-          description: "用户信息已成功更新。",
+          title: '用户已更新',
+          description: '用户信息已成功更新。',
         });
       } catch (error) {
-        console.error("Error editing user:", error);
+        console.error('Error editing user:', error);
         toast({
-          title: "编辑用户失败",
-          description: "编辑用户时发生错误，请稍后重试。",
-          variant: "destructive",
+          title: '编辑用户失败',
+          description: '编辑用户时发生错误，请稍后重试。',
+          variant: 'destructive',
         });
       }
     }
@@ -219,31 +211,29 @@ export function useUserManagement() {
     if (groupToDelete) {
       try {
         // 检查是否有用户属于该分组
-        const usersInGroup = authorizedUsers.filter(
-          (user) => user.group === groupToDelete.id
-        );
+        const usersInGroup = authorizedUsers.filter(user => user.group === groupToDelete.id);
         if (usersInGroup.length > 0) {
           toast({
-            title: "无法删除分组",
+            title: '无法删除分组',
             description: `该分组中仍有 ${usersInGroup.length} 个用户，请先移除这些用户或将其分配到其他分组。`,
-            variant: "destructive",
+            variant: 'destructive',
           });
           return;
         }
 
-        setGroups(groups.filter((g) => g.id !== groupToDelete.id));
+        setGroups(groups.filter(g => g.id !== groupToDelete.id));
         setShowDeleteGroupDialog(false);
         setGroupToDelete(null);
         toast({
-          title: "分组已删除",
+          title: '分组已删除',
           description: `分组 "${groupToDelete.name}" 已成功删除。`,
         });
       } catch (error) {
-        console.error("Error deleting group:", error);
+        console.error('Error deleting group:', error);
         toast({
-          title: "删除分组失败",
-          description: "删除分组时发生错误，请稍后重试。",
-          variant: "destructive",
+          title: '删除分组失败',
+          description: '删除分组时发生错误，请稍后重试。',
+          variant: 'destructive',
         });
       }
     }
@@ -252,9 +242,9 @@ export function useUserManagement() {
   const handleAddGroup = () => {
     if (!newGroup.name) {
       toast({
-        title: "错误",
-        description: "请填写分组名称。",
-        variant: "destructive",
+        title: '错误',
+        description: '请填写分组名称。',
+        variant: 'destructive',
       });
       return;
     }
@@ -263,21 +253,21 @@ export function useUserManagement() {
       const group: Group = {
         ...(newGroup as Group),
         id,
-        type: "user",
+        type: 'user',
       };
       setGroups([...groups, group]);
       setShowAddGroupDialog(false);
       setNewGroup({});
       toast({
-        title: "分组已添加",
-        description: "新分组已成功添加到系统。",
+        title: '分组已添加',
+        description: '新分组已成功添加到系统。',
       });
     } catch (error) {
-      console.error("Error adding group:", error);
+      console.error('Error adding group:', error);
       toast({
-        title: "添加分组失败",
-        description: "添加分组时发生错误，请稍后重试。",
-        variant: "destructive",
+        title: '添加分组失败',
+        description: '添加分组时发生错误，请稍后重试。',
+        variant: 'destructive',
       });
     }
   };
@@ -285,23 +275,19 @@ export function useUserManagement() {
   const handleSaveEditedGroup = () => {
     if (editingGroup) {
       try {
-        setGroups(
-          groups.map((group) =>
-            group.id === editingGroup.id ? editingGroup : group
-          )
-        );
+        setGroups(groups.map(group => (group.id === editingGroup.id ? editingGroup : group)));
         setShowEditGroupDialog(false);
         setEditingGroup(null);
         toast({
-          title: "分组已更新",
-          description: "分组信息已成功更新。",
+          title: '分组已更新',
+          description: '分组信息已成功更新。',
         });
       } catch (error) {
-        console.error("Error editing group:", error);
+        console.error('Error editing group:', error);
         toast({
-          title: "编辑分组失败",
-          description: "编辑分组时发生错误，请稍后重试。",
-          variant: "destructive",
+          title: '编辑分组失败',
+          description: '编辑分组时发生错误，请稍后重试。',
+          variant: 'destructive',
         });
       }
     }
@@ -311,8 +297,8 @@ export function useUserManagement() {
   const handleSaveProfile = () => {
     setIsEditing(false);
     toast({
-      title: "个人信息已更新",
-      description: "您的个人信息已成功更新。",
+      title: '个人信息已更新',
+      description: '您的个人信息已成功更新。',
     });
   };
 

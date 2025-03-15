@@ -1,10 +1,9 @@
-import React from "react";
-import { ChevronLeft } from "lucide-react-native";
-import { Input, InputField } from "@/components/ui/input";
-import { Text } from "@/components/ui/text";
-import { Button, ButtonText } from "@/components/ui/button";
-import { VStack } from "@/components/ui/vstack";
-import { Icon } from "@/components/ui/icon";
+import { ChevronLeft } from 'lucide-react-native';
+import React from 'react';
+
+import { Button, ButtonText } from '@/components/ui/button';
+import { Icon } from '@/components/ui/icon';
+import { Input, InputField } from '@/components/ui/input';
 import {
   Modal,
   ModalBackdrop,
@@ -13,7 +12,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-} from "@/components/ui/modal";
+} from '@/components/ui/modal';
 import {
   Select,
   SelectTrigger,
@@ -22,8 +21,10 @@ import {
   SelectPortal,
   SelectContent,
   SelectItem,
-} from "@/components/ui/select";
-import type { DeviceGroup } from "@/types/device-management";
+} from '@/components/ui/select';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
+import type { DeviceGroup } from '@/types/device-management';
 
 interface AddDeviceModalProps {
   showAddDeviceDialog: boolean;
@@ -58,32 +59,22 @@ export function AddDeviceModal({
               <Text className="text-gray-700">设备名称</Text>
               <Input>
                 <InputField
-                  value={newDevice.name || ""}
-                  onChangeText={(text) =>
-                    setNewDevice({ ...newDevice, name: text })
-                  }
+                  value={newDevice.name || ''}
+                  onChangeText={text => setNewDevice({ ...newDevice, name: text })}
                 />
               </Input>
             </VStack>
             <VStack className="">
               <Text className="text-gray-700">设备分组</Text>
-              <Select
-                onValueChange={(value) =>
-                  setNewDevice({ ...newDevice, groupId: value })
-                }
-              >
+              <Select onValueChange={value => setNewDevice({ ...newDevice, groupId: value })}>
                 <SelectTrigger>
                   <SelectInput placeholder="选择分组" />
                   <SelectIcon />
                 </SelectTrigger>
                 <SelectPortal>
                   <SelectContent>
-                    {deviceGroups.map((group) => (
-                      <SelectItem
-                        key={group.id}
-                        label={group.name}
-                        value={group.id}
-                      />
+                    {deviceGroups.map(group => (
+                      <SelectItem key={group.id} label={group.name} value={group.id} />
                     ))}
                   </SelectContent>
                 </SelectPortal>
@@ -92,11 +83,7 @@ export function AddDeviceModal({
           </VStack>
         </ModalBody>
         <ModalFooter>
-          <Button
-            variant="outline"
-            className="mr-2"
-            onPress={() => setShowAddDeviceDialog(false)}
-          >
+          <Button variant="outline" className="mr-2" onPress={() => setShowAddDeviceDialog(false)}>
             <ButtonText>取消</ButtonText>
           </Button>
           <Button onPress={handleAddDevice}>

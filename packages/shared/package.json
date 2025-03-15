@@ -16,7 +16,18 @@
     "lint": "eslint \"src/**/*.ts*\"",
     "lint:fix": "eslint \"src/**/*.ts*\" --fix",
     "test": "jest --passWithNoTests",
-    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
+    "studio": "drizzle-kit studio",
+    "generate": "drizzle-kit generate",
+    "migrate": "drizzle-kit migrate"
+  },
+  "dependencies": {
+    "@paralleldrive/cuid2": "^2.2.2",
+    "@types/pg": "^8.11.11",
+    "drizzle-kit": "^0.30.5",
+    "drizzle-orm": "^0.40.0",
+    "pg": "^8.14.0",
+    "tsx": "^4.19.3"
   },
   "devDependencies": {
     "@types/node": "^20.11.19",

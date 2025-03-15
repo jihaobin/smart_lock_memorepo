@@ -1,41 +1,42 @@
-import React, { useEffect } from "react";
-import { View, StyleSheet, Animated } from "react-native";
-import { useToast } from "@/hooks/use-toast";
-import { Toast, ToastTitle, ToastDescription } from "@/components/ui/toast";
-import { VStack } from "@/components/ui/vstack";
-import { HStack } from "@/components/ui/hstack";
-import { Box } from "@/components/ui/box";
-import { Icon } from "@/components/ui/icon";
-import { Pressable } from "@/components/ui/pressable";
-import { AlertTriangle, Check, Info, X } from "lucide-react-native";
+import { AlertTriangle, Check, Info, X } from 'lucide-react-native';
+import React, { useEffect } from 'react';
+import { StyleSheet, Animated } from 'react-native';
+
+import { Box } from '@/components/ui/box';
+import { HStack } from '@/components/ui/hstack';
+import { Icon } from '@/components/ui/icon';
+import { Pressable } from '@/components/ui/pressable';
+import { Toast, ToastTitle, ToastDescription } from '@/components/ui/toast';
+import { VStack } from '@/components/ui/vstack';
+import { useToast } from '@/hooks/use-toast';
 
 export function ToastProvider() {
   const { toasts, dismiss } = useToast();
 
   return (
-    <View style={styles.container}>
-      {toasts.map(({ id, title, description, variant = "default", open, duration = 3000 }) => {
+    <Box style={styles.container}>
+      {toasts.map(({ id, title, description, variant = 'default', open, duration = 3000 }) => {
         if (!open) return null;
 
         let actionIcon;
-        let actionType: "error" | "warning" | "success" | "info" | "muted";
+        let actionType: 'error' | 'warning' | 'success' | 'info' | 'muted';
 
         switch (variant) {
-          case "destructive":
+          case 'destructive':
             actionIcon = <AlertTriangle size={18} color="#ef4444" />;
-            actionType = "error";
+            actionType = 'error';
             break;
-          case "warning":
+          case 'warning':
             actionIcon = <AlertTriangle size={18} color="#f59e0b" />;
-            actionType = "warning";
+            actionType = 'warning';
             break;
-          case "success":
+          case 'success':
             actionIcon = <Check size={18} color="#22c55e" />;
-            actionType = "success";
+            actionType = 'success';
             break;
           default:
             actionIcon = <Info size={18} color="#3b82f6" />;
-            actionType = "info";
+            actionType = 'info';
         }
 
         return (
@@ -51,7 +52,7 @@ export function ToastProvider() {
           />
         );
       })}
-    </View>
+    </Box>
   );
 }
 
@@ -60,7 +61,7 @@ interface ToastWithAnimationProps {
   title?: React.ReactNode;
   description?: React.ReactNode;
   actionIcon: React.ReactNode;
-  actionType: "error" | "warning" | "success" | "info" | "muted";
+  actionType: 'error' | 'warning' | 'success' | 'info' | 'muted';
   dismiss: (id: string) => void;
   duration: number;
 }
@@ -125,12 +126,7 @@ function ToastWithAnimation({
         },
       ]}
     >
-      <Toast
-        nativeID={`toast-${id}`}
-        action={actionType}
-        variant="outline"
-        style={styles.toast}
-      >
+      <Toast nativeID={`toast-${id}`} action={actionType} variant="outline" style={styles.toast}>
         <VStack space="xs">
           <HStack space="sm">
             <HStack space="sm">
@@ -141,9 +137,7 @@ function ToastWithAnimation({
               <Icon as={X} size="sm" />
             </Pressable>
           </HStack>
-          {description && (
-            <ToastDescription>{description}</ToastDescription>
-          )}
+          {description && <ToastDescription>{description}</ToastDescription>}
         </VStack>
       </Toast>
     </Animated.View>
@@ -152,7 +146,7 @@ function ToastWithAnimation({
 
 const styles = StyleSheet.create({
   container: {
-    position: "absolute",
+    position: 'absolute',
     top: 50,
     left: 16,
     right: 16,

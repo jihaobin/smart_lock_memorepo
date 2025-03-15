@@ -1,9 +1,10 @@
 'use client';
-import React, { useEffect, useLayoutEffect } from 'react';
-import { config } from './config';
+import { setFlushStyles } from '@gluestack-ui/nativewind-utils/flush';
 import { OverlayProvider } from '@gluestack-ui/overlay';
 import { ToastProvider } from '@gluestack-ui/toast';
-import { setFlushStyles } from '@gluestack-ui/nativewind-utils/flush';
+import React, { useEffect, useLayoutEffect } from 'react';
+
+import { config } from './config';
 import { script } from './script';
 import { ModeType } from './types';
 
@@ -15,8 +16,7 @@ const createStyle = (styleTagId: string) => {
   return style;
 };
 
-export const useSafeLayoutEffect =
-  typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+export const useSafeLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 export function GluestackUIProvider({
   mode = 'light',
@@ -26,15 +26,15 @@ export function GluestackUIProvider({
   children?: React.ReactNode;
 }) {
   let cssVariablesWithMode = ``;
-  Object.keys(config).forEach((configKey) => {
-    cssVariablesWithMode +=
-      configKey === 'dark' ? `\n .dark {\n ` : `\n:root {\n`;
-    const cssVariables = Object.keys(
-      config[configKey as keyof typeof config]
-    ).reduce((acc: string, curr: string) => {
-      acc += `${curr}:${config[configKey as keyof typeof config][curr]}; `;
-      return acc;
-    }, '');
+  Object.keys(config).forEach(configKey => {
+    cssVariablesWithMode += configKey === 'dark' ? `\n .dark {\n ` : `\n:root {\n`;
+    const cssVariables = Object.keys(config[configKey as keyof typeof config]).reduce(
+      (acc: string, curr: string) => {
+        acc += `${curr}:${config[configKey as keyof typeof config][curr]}; `;
+        return acc;
+      },
+      ''
+    );
     cssVariablesWithMode += `${cssVariables} \n}`;
   });
 

@@ -1,7 +1,7 @@
-import React from 'react';
-import { skeletonStyle, skeletonTextStyle } from './styles';
-
 import type { VariantProps } from '@gluestack-ui/nativewind-utils';
+import React from 'react';
+
+import { skeletonStyle, skeletonTextStyle } from './styles';
 
 type ISkeletonProps = React.ComponentPropsWithoutRef<'div'> &
   VariantProps<typeof skeletonStyle> & {
@@ -69,9 +69,9 @@ const SkeletonText = React.forwardRef<HTMLDivElement, ISkeletonTextProps>(
               gap,
             })}`}
           >
-            {Array.from({ length: _lines }).map((_, index) => (
+            {Array.from({ length: _lines }).map(value => (
               <div
-                key={index}
+                key={value as number}
                 className={`animate-pulse ${startColor} ${skeletonTextStyle({
                   class: className,
                 })}`}

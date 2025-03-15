@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { ScrollView, ActivityIndicator } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { zodResolver } from '@hookform/resolvers/zod';
+import Slider from '@react-native-community/slider';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
-  ChevronLeft,
   Bell,
   Lock,
   AlertTriangle,
@@ -15,33 +14,14 @@ import {
   Bluetooth,
   Camera,
   Fingerprint,
-  CheckCheck,
-  Circle,
   ChevronDown,
   Check,
-} from "lucide-react-native";
-import { z } from "zod";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import Slider from "@react-native-community/slider";
+} from 'lucide-react-native';
+import React, { useState, useEffect } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { ScrollView, ActivityIndicator } from 'react-native';
+import { z } from 'zod';
 
-import { Button, ButtonText } from "@/components/ui/button";
-import { Input, InputField } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Progress, ProgressFilledTrack } from "@/components/ui/progress";
-import {
-  Radio,
-  RadioGroup,
-  RadioIcon,
-  RadioIndicator,
-  RadioLabel,
-} from "@/components/ui/radio";
-import { VStack } from "@/components/ui/vstack";
-import { HStack } from "@/components/ui/hstack";
-import { Box } from "@/components/ui/box";
-import { Pressable } from "@/components/ui/pressable";
-import { Text } from "@/components/ui/text";
-import { CircleIcon, Icon } from "@/components/ui/icon";
 import {
   Accordion,
   AccordionContent,
@@ -49,33 +29,41 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Divider } from "@/components/ui/divider";
-import { useToast } from "@/hooks/use-toast";
+} from '@/components/ui/accordion';
+import { Box } from '@/components/ui/box';
+import { Button, ButtonText } from '@/components/ui/button';
+import { HStack } from '@/components/ui/hstack';
+import { CircleIcon, Icon } from '@/components/ui/icon';
+import { Input, InputField } from '@/components/ui/input';
+import { Radio, RadioGroup, RadioIcon, RadioIndicator, RadioLabel } from '@/components/ui/radio';
+import { Switch } from '@/components/ui/switch';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
+import { useToast } from '@/hooks/use-toast';
 
 // 设置项颜色配置
 const COLORS = {
-  general: "#3b82f6", // 蓝色
-  lock: "#6b7280", // 灰色
-  connection: "#10b981", // 绿色
-  tamperAlert: "#ef4444", // 红色
-  wrongPasswordAlert: "#f59e0b", // 橙色
-  lowBatteryAlert: "#f97316", // 橙红色
-  doorOpenAlert: "#8b5cf6", // 紫色
-  capturePhoto: "#ec4899", // 粉色
-  fingerprintAuth: "#0ea5e9", // 天蓝色
-  switchActive: "#ef4444", // 绿色，与connection一致
-  notification: "#3b82f6", // 蓝色
+  general: '#3b82f6', // 蓝色
+  lock: '#6b7280', // 灰色
+  connection: '#10b981', // 绿色
+  tamperAlert: '#ef4444', // 红色
+  wrongPasswordAlert: '#f59e0b', // 橙色
+  lowBatteryAlert: '#f97316', // 橙红色
+  doorOpenAlert: '#8b5cf6', // 紫色
+  capturePhoto: '#ec4899', // 粉色
+  fingerprintAuth: '#0ea5e9', // 天蓝色
+  switchActive: '#ef4444', // 绿色，与connection一致
+  notification: '#3b82f6', // 蓝色
 };
 
 // 定义设备设置的Schema
 const settingsSchema = z.object({
-  name: z.string().min(3, { message: "设备名称至少需要3个字符" }),
+  name: z.string().min(3, { message: '设备名称至少需要3个字符' }),
   volume: z.number().min(0).max(100),
   notifications: z.boolean(),
   autoLock: z.boolean(),
   autoLockDelay: z.number().min(5).max(60),
-  connectionMode: z.enum(["wifi", "bluetooth"]),
+  connectionMode: z.enum(['wifi', 'bluetooth']),
   tamperAlert: z.boolean(),
   wrongPasswordAlert: z.boolean(),
   lowBatteryAlert: z.boolean(),
@@ -130,21 +118,15 @@ export default function DeviceSettings() {
   const [delayDisplay, setDelayDisplay] = useState(30);
 
   // 使用react-hook-form初始化表单
-  const {
-    control,
-    handleSubmit,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm<SettingsFormData>({
+  const { control, handleSubmit, setValue, watch } = useForm<SettingsFormData>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
-      name: "",
+      name: '',
       volume: 70,
       notifications: true,
       autoLock: true,
       autoLockDelay: 30,
-      connectionMode: "wifi",
+      connectionMode: 'wifi',
       tamperAlert: true,
       wrongPasswordAlert: true,
       lowBatteryAlert: true,
@@ -155,9 +137,9 @@ export default function DeviceSettings() {
   });
 
   // 监听autoLock的值
-  const autoLock = watch("autoLock");
-  const volume = watch("volume");
-  const autoLockDelay = watch("autoLockDelay");
+  const autoLock = watch('autoLock');
+  const volume = watch('volume');
+  const autoLockDelay = watch('autoLockDelay');
 
   // 当表单值变化时同步显示值
   useEffect(() => {
@@ -172,21 +154,21 @@ export default function DeviceSettings() {
     const fetchSettings = async () => {
       setIsLoading(true);
       // 模拟API调用
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       // 设置表单初始值
-      setValue("name", `Smart Lock ${id}`);
-      setValue("volume", 70);
-      setValue("notifications", true);
-      setValue("autoLock", true);
-      setValue("autoLockDelay", 30);
-      setValue("connectionMode", "wifi");
-      setValue("tamperAlert", true);
-      setValue("wrongPasswordAlert", true);
-      setValue("lowBatteryAlert", true);
-      setValue("doorOpenAlert", true);
-      setValue("capturePhoto", true);
-      setValue("fingerprintVerification", true);
+      setValue('name', `Smart Lock ${id}`);
+      setValue('volume', 70);
+      setValue('notifications', true);
+      setValue('autoLock', true);
+      setValue('autoLockDelay', 30);
+      setValue('connectionMode', 'wifi');
+      setValue('tamperAlert', true);
+      setValue('wrongPasswordAlert', true);
+      setValue('lowBatteryAlert', true);
+      setValue('doorOpenAlert', true);
+      setValue('capturePhoto', true);
+      setValue('fingerprintVerification', true);
 
       setIsLoading(false);
     };
@@ -194,17 +176,16 @@ export default function DeviceSettings() {
     fetchSettings();
   }, [id, setValue]);
 
-  const onSubmit = async (data: SettingsFormData) => {
+  const onSubmit = async () => {
     setIsSaving(true);
     // 模拟API调用
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    console.log("保存的设置:", data);
+    await new Promise(resolve => setTimeout(resolve, 1500));
     setIsSaving(false);
 
     toast({
-      title: "设置已保存",
-      description: "您的设备设置已成功更新。",
-      variant: "success",
+      title: '设置已保存',
+      description: '您的设备设置已成功更新。',
+      variant: 'success',
       duration: 3000,
     });
   };
@@ -230,7 +211,7 @@ export default function DeviceSettings() {
     <Box className="flex-1 bg-gray-50">
       <ScrollView className="flex-1">
         <Box className="mt-4 mx-4 mb-8">
-          <Accordion type="multiple" defaultValue={["通用设置"]}>
+          <Accordion type="multiple" defaultValue={['通用设置']}>
             {/* 通用设置 */}
             <AccordionItem value="通用设置" className="mb-1">
               <AccordionHeader className="bg-white border-b border-gray-200">
@@ -272,11 +253,7 @@ export default function DeviceSettings() {
                           style={{ backgroundColor: `${COLORS.tamperAlert}20` }}
                           className="w-8 h-8 rounded-full items-center justify-center"
                         >
-                          <Icon
-                            as={Volume2}
-                            size="sm"
-                            color={COLORS.tamperAlert}
-                          />
+                          <Icon as={Volume2} size="sm" color={COLORS.tamperAlert} />
                         </Box>
                         <Box className="flex-1">
                           <Controller
@@ -284,7 +261,7 @@ export default function DeviceSettings() {
                             name="volume"
                             render={({ field: { value, onChange } }) => (
                               <Slider
-                                style={{ width: "100%", height: 40 }}
+                                className="w-full h-40"
                                 value={value}
                                 minimumValue={0}
                                 maximumValue={100}
@@ -293,9 +270,7 @@ export default function DeviceSettings() {
                                 maximumTrackTintColor="#eab308"
                                 thumbTintColor="white"
                                 // 拖动时更新显示值
-                                onValueChange={(val) =>
-                                  setVolumeDisplay(Math.round(val))
-                                }
+                                onValueChange={val => setVolumeDisplay(Math.round(val))}
                                 // 拖动完成时更新表单值
                                 onSlidingComplete={onChange}
                               />
@@ -319,17 +294,11 @@ export default function DeviceSettings() {
                           }}
                           className="w-8 h-8 rounded-full items-center justify-center"
                         >
-                          <Icon
-                            as={Bell}
-                            size="sm"
-                            color={COLORS.notification}
-                          />
+                          <Icon as={Bell} size="sm" color={COLORS.notification} />
                         </Box>
                         <VStack>
                           <Text className="font-medium">通知</Text>
-                          <Text className="text-xs text-gray-500">
-                            接收设备状态和警报通知
-                          </Text>
+                          <Text className="text-xs text-gray-500">接收设备状态和警报通知</Text>
                         </VStack>
                       </HStack>
                       <Controller
@@ -338,10 +307,10 @@ export default function DeviceSettings() {
                         render={({ field: { onChange, value } }) => (
                           <Switch
                             trackColor={{
-                              false: "#d1d5db",
+                              false: '#d1d5db',
                               true: COLORS.switchActive,
                             }}
-                            thumbColor={value ? "#ffffff" : "#f3f4f6"}
+                            thumbColor={value ? '#ffffff' : '#f3f4f6'}
                             value={value}
                             onValueChange={onChange}
                           />
@@ -377,9 +346,7 @@ export default function DeviceSettings() {
                         </Box>
                         <VStack>
                           <Text className="font-medium">自动锁定</Text>
-                          <Text className="text-xs text-gray-500">
-                            开门后自动锁定门锁
-                          </Text>
+                          <Text className="text-xs text-gray-500">开门后自动锁定门锁</Text>
                         </VStack>
                       </HStack>
                       <Controller
@@ -388,10 +355,10 @@ export default function DeviceSettings() {
                         render={({ field: { onChange, value } }) => (
                           <Switch
                             trackColor={{
-                              false: "#d1d5db",
+                              false: '#d1d5db',
                               true: COLORS.switchActive,
                             }}
-                            thumbColor={value ? "#ffffff" : "#f3f4f6"}
+                            thumbColor={value ? '#ffffff' : '#f3f4f6'}
                             value={value}
                             onValueChange={onChange}
                           />
@@ -418,7 +385,7 @@ export default function DeviceSettings() {
                               name="autoLockDelay"
                               render={({ field: { value, onChange } }) => (
                                 <Slider
-                                  style={{ width: "100%", height: 40 }}
+                                  className="w-full h-40"
                                   value={value}
                                   minimumValue={5}
                                   maximumValue={60}
@@ -427,9 +394,7 @@ export default function DeviceSettings() {
                                   maximumTrackTintColor="#eab308"
                                   thumbTintColor="white"
                                   // 拖动时更新显示值
-                                  onValueChange={(val) =>
-                                    setDelayDisplay(Math.round(val))
-                                  }
+                                  onValueChange={val => setDelayDisplay(Math.round(val))}
                                   // 拖动完成时更新表单值
                                   onSlidingComplete={onChange}
                                 />
@@ -481,11 +446,7 @@ export default function DeviceSettings() {
                                       }}
                                       className="w-8 h-8 rounded-full items-center justify-center"
                                     >
-                                      <Icon
-                                        as={Wifi}
-                                        size="sm"
-                                        color={COLORS.connection}
-                                      />
+                                      <Icon as={Wifi} size="sm" color={COLORS.connection} />
                                     </Box>
                                     <Text>WiFi</Text>
                                   </HStack>
@@ -505,11 +466,7 @@ export default function DeviceSettings() {
                                       }}
                                       className="w-8 h-8 rounded-full items-center justify-center"
                                     >
-                                      <Icon
-                                        as={Bluetooth}
-                                        size="sm"
-                                        color={COLORS.connection}
-                                      />
+                                      <Icon as={Bluetooth} size="sm" color={COLORS.connection} />
                                     </Box>
                                     <Text>蓝牙</Text>
                                   </HStack>
@@ -545,11 +502,7 @@ export default function DeviceSettings() {
                           style={{ backgroundColor: `${COLORS.tamperAlert}20` }}
                           className="w-8 h-8 rounded-full items-center justify-center"
                         >
-                          <Icon
-                            as={AlertTriangle}
-                            size="sm"
-                            color={COLORS.tamperAlert}
-                          />
+                          <Icon as={AlertTriangle} size="sm" color={COLORS.tamperAlert} />
                         </Box>
                         <VStack>
                           <Text className="font-medium">防拆警报</Text>
@@ -564,10 +517,10 @@ export default function DeviceSettings() {
                         render={({ field: { onChange, value } }) => (
                           <Switch
                             trackColor={{
-                              false: "#d1d5db",
+                              false: '#d1d5db',
                               true: COLORS.switchActive,
                             }}
-                            thumbColor={value ? "#ffffff" : "#f3f4f6"}
+                            thumbColor={value ? '#ffffff' : '#f3f4f6'}
                             value={value}
                             onValueChange={onChange}
                           />
@@ -586,17 +539,11 @@ export default function DeviceSettings() {
                           }}
                           className="w-8 h-8 rounded-full items-center justify-center"
                         >
-                          <Icon
-                            as={Key}
-                            size="sm"
-                            color={COLORS.wrongPasswordAlert}
-                          />
+                          <Icon as={Key} size="sm" color={COLORS.wrongPasswordAlert} />
                         </Box>
                         <VStack>
                           <Text className="font-medium">密码错误警报</Text>
-                          <Text className="text-xs text-gray-500">
-                            连续输入错误密码时发出警报
-                          </Text>
+                          <Text className="text-xs text-gray-500">连续输入错误密码时发出警报</Text>
                         </VStack>
                       </HStack>
                       <Controller
@@ -605,10 +552,10 @@ export default function DeviceSettings() {
                         render={({ field: { onChange, value } }) => (
                           <Switch
                             trackColor={{
-                              false: "#d1d5db",
+                              false: '#d1d5db',
                               true: COLORS.switchActive,
                             }}
-                            thumbColor={value ? "#ffffff" : "#f3f4f6"}
+                            thumbColor={value ? '#ffffff' : '#f3f4f6'}
                             value={value}
                             onValueChange={onChange}
                           />
@@ -627,17 +574,11 @@ export default function DeviceSettings() {
                           }}
                           className="w-8 h-8 rounded-full items-center justify-center"
                         >
-                          <Icon
-                            as={BatteryLow}
-                            size="sm"
-                            color={COLORS.lowBatteryAlert}
-                          />
+                          <Icon as={BatteryLow} size="sm" color={COLORS.lowBatteryAlert} />
                         </Box>
                         <VStack>
                           <Text className="font-medium">电量低警报</Text>
-                          <Text className="text-xs text-gray-500">
-                            当电池电量低于20%时通知
-                          </Text>
+                          <Text className="text-xs text-gray-500">当电池电量低于20%时通知</Text>
                         </VStack>
                       </HStack>
                       <Controller
@@ -646,10 +587,10 @@ export default function DeviceSettings() {
                         render={({ field: { onChange, value } }) => (
                           <Switch
                             trackColor={{
-                              false: "#d1d5db",
+                              false: '#d1d5db',
                               true: COLORS.switchActive,
                             }}
-                            thumbColor={value ? "#ffffff" : "#f3f4f6"}
+                            thumbColor={value ? '#ffffff' : '#f3f4f6'}
                             value={value}
                             onValueChange={onChange}
                           />
@@ -668,17 +609,11 @@ export default function DeviceSettings() {
                           }}
                           className="w-8 h-8 rounded-full items-center justify-center"
                         >
-                          <Icon
-                            as={DoorOpen}
-                            size="sm"
-                            color={COLORS.doorOpenAlert}
-                          />
+                          <Icon as={DoorOpen} size="sm" color={COLORS.doorOpenAlert} />
                         </Box>
                         <VStack>
                           <Text className="font-medium">门开启通知</Text>
-                          <Text className="text-xs text-gray-500">
-                            当门被打开时发送通知
-                          </Text>
+                          <Text className="text-xs text-gray-500">当门被打开时发送通知</Text>
                         </VStack>
                       </HStack>
                       <Controller
@@ -687,10 +622,10 @@ export default function DeviceSettings() {
                         render={({ field: { onChange, value } }) => (
                           <Switch
                             trackColor={{
-                              false: "#d1d5db",
+                              false: '#d1d5db',
                               true: COLORS.switchActive,
                             }}
-                            thumbColor={value ? "#ffffff" : "#f3f4f6"}
+                            thumbColor={value ? '#ffffff' : '#f3f4f6'}
                             value={value}
                             onValueChange={onChange}
                           />
@@ -709,11 +644,7 @@ export default function DeviceSettings() {
                           }}
                           className="w-8 h-8 rounded-full items-center justify-center"
                         >
-                          <Icon
-                            as={Camera}
-                            size="sm"
-                            color={COLORS.capturePhoto}
-                          />
+                          <Icon as={Camera} size="sm" color={COLORS.capturePhoto} />
                         </Box>
                         <VStack>
                           <Text className="font-medium">拍摄访客照片</Text>
@@ -728,10 +659,10 @@ export default function DeviceSettings() {
                         render={({ field: { onChange, value } }) => (
                           <Switch
                             trackColor={{
-                              false: "#d1d5db",
+                              false: '#d1d5db',
                               true: COLORS.switchActive,
                             }}
-                            thumbColor={value ? "#ffffff" : "#f3f4f6"}
+                            thumbColor={value ? '#ffffff' : '#f3f4f6'}
                             value={value}
                             onValueChange={onChange}
                           />
@@ -750,17 +681,11 @@ export default function DeviceSettings() {
                           }}
                           className="w-8 h-8 rounded-full items-center justify-center"
                         >
-                          <Icon
-                            as={Fingerprint}
-                            size="sm"
-                            color={COLORS.fingerprintAuth}
-                          />
+                          <Icon as={Fingerprint} size="sm" color={COLORS.fingerprintAuth} />
                         </Box>
                         <VStack>
                           <Text className="font-medium">指纹验证</Text>
-                          <Text className="text-xs text-gray-500">
-                            使用指纹进行身份验证
-                          </Text>
+                          <Text className="text-xs text-gray-500">使用指纹进行身份验证</Text>
                         </VStack>
                       </HStack>
                       <Controller
@@ -769,10 +694,10 @@ export default function DeviceSettings() {
                         render={({ field: { onChange, value } }) => (
                           <Switch
                             trackColor={{
-                              false: "#d1d5db",
+                              false: '#d1d5db',
                               true: COLORS.switchActive,
                             }}
-                            thumbColor={value ? "#ffffff" : "#f3f4f6"}
+                            thumbColor={value ? '#ffffff' : '#f3f4f6'}
                             value={value}
                             onValueChange={onChange}
                           />
@@ -807,7 +732,7 @@ export default function DeviceSettings() {
           <Button
             onPress={() =>
               router.push({
-                pathname: "/firmware-update/[id]",
+                pathname: '/firmware-update/[id]',
                 params: { id: id as string },
               })
             }
@@ -820,7 +745,7 @@ export default function DeviceSettings() {
           <Button
             onPress={() =>
               router.push({
-                pathname: "/factory-reset/[id]",
+                pathname: '/factory-reset/[id]',
                 params: { id: id as string },
               })
             }

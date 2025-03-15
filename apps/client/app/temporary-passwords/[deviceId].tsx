@@ -1,5 +1,6 @@
-import { useLocalSearchParams } from "expo-router";
-import TemporaryPasswordsScreen from "./index";
+import { useLocalSearchParams } from 'expo-router';
+
+import TemporaryPasswordsScreen from './index';
 
 export default function DeviceTemporaryPasswords() {
   const { deviceId } = useLocalSearchParams<{ deviceId: string }>();

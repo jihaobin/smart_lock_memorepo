@@ -1,10 +1,9 @@
-import React from "react";
-import { ChevronLeft } from "lucide-react-native";
-import { Input, InputField } from "@/components/ui/input";
-import { Text } from "@/components/ui/text";
-import { Button, ButtonText } from "@/components/ui/button";
-import { VStack } from "@/components/ui/vstack";
-import { Icon } from "@/components/ui/icon";
+import { ChevronLeft } from 'lucide-react-native';
+import React from 'react';
+
+import { Button, ButtonText } from '@/components/ui/button';
+import { Icon } from '@/components/ui/icon';
+import { Input, InputField } from '@/components/ui/input';
 import {
   Modal,
   ModalBackdrop,
@@ -13,7 +12,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-} from "@/components/ui/modal";
+} from '@/components/ui/modal';
 import {
   Select,
   SelectTrigger,
@@ -22,14 +21,18 @@ import {
   SelectPortal,
   SelectContent,
   SelectItem,
-} from "@/components/ui/select";
-import type { DeviceGroup } from "@/types/device-management";
+} from '@/components/ui/select';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
+import type { DeviceGroup } from '@/types/device-management';
 
 interface EditDeviceModalProps {
   showEditDeviceDialog: boolean;
   setShowEditDeviceDialog: (show: boolean) => void;
   editingDevice: { id: string; name: string; groupId: string } | null;
-  setEditingDevice: React.Dispatch<React.SetStateAction<{ id: string; name: string; groupId: string } | null>>;
+  setEditingDevice: React.Dispatch<
+    React.SetStateAction<{ id: string; name: string; groupId: string } | null>
+  >;
   deviceGroups: DeviceGroup[];
   handleSaveEditedDevice: () => void;
 }
@@ -58,9 +61,9 @@ export function EditDeviceModal({
               <Text className="text-gray-700">设备名称</Text>
               <Input>
                 <InputField
-                  value={editingDevice?.name || ""}
-                  onChangeText={(text) =>
-                    setEditingDevice((prev) => (prev ? { ...prev, name: text } : null))
+                  value={editingDevice?.name || ''}
+                  onChangeText={text =>
+                    setEditingDevice(prev => (prev ? { ...prev, name: text } : null))
                   }
                 />
               </Input>
@@ -69,25 +72,21 @@ export function EditDeviceModal({
               <Text className="text-gray-700">设备分组</Text>
               <Select
                 selectedValue={editingDevice?.groupId}
-                onValueChange={(value) =>
-                  setEditingDevice((prev) => (prev ? { ...prev, groupId: value } : null))
+                onValueChange={value =>
+                  setEditingDevice(prev => (prev ? { ...prev, groupId: value } : null))
                 }
               >
                 <SelectTrigger>
-                  <SelectInput 
+                  <SelectInput
                     placeholder="选择分组"
-                    value={deviceGroups.find(g => g.id === editingDevice?.groupId)?.name || ""}
+                    value={deviceGroups.find(g => g.id === editingDevice?.groupId)?.name || ''}
                   />
                   <SelectIcon />
                 </SelectTrigger>
                 <SelectPortal>
                   <SelectContent>
-                    {deviceGroups.map((group) => (
-                      <SelectItem
-                        key={group.id}
-                        label={group.name}
-                        value={group.id}
-                      />
+                    {deviceGroups.map(group => (
+                      <SelectItem key={group.id} label={group.name} value={group.id} />
                     ))}
                   </SelectContent>
                 </SelectPortal>
@@ -96,11 +95,7 @@ export function EditDeviceModal({
           </VStack>
         </ModalBody>
         <ModalFooter>
-          <Button
-            variant="outline"
-            className="mr-2"
-            onPress={() => setShowEditDeviceDialog(false)}
-          >
+          <Button variant="outline" className="mr-2" onPress={() => setShowEditDeviceDialog(false)}>
             <ButtonText>取消</ButtonText>
           </Button>
           <Button onPress={handleSaveEditedDevice}>

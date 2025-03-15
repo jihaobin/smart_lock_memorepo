@@ -1,6 +1,5 @@
-import React from "react";
-import { Text } from "@/components/ui/text";
-import { Button, ButtonText } from "@/components/ui/button";
+import React from 'react';
+
 import {
   AlertDialog,
   AlertDialogBackdrop,
@@ -8,7 +7,9 @@ import {
   AlertDialogHeader,
   AlertDialogBody,
   AlertDialogFooter,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
+import { Button, ButtonText } from '@/components/ui/button';
+import { Text } from '@/components/ui/text';
 
 interface DeleteDeviceModalProps {
   showDeleteDeviceDialog: boolean;
@@ -43,11 +44,7 @@ export function DeleteDeviceModal({
           >
             <ButtonText>取消</ButtonText>
           </Button>
-          <Button
-            variant="solid"
-            action="negative"
-            onPress={confirmDeleteDevice}
-          >
+          <Button variant="solid" action="negative" onPress={confirmDeleteDevice}>
             <ButtonText>确认删除</ButtonText>
           </Button>
         </AlertDialogFooter>

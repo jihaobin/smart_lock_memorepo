@@ -1,10 +1,10 @@
-import React from "react";
-import { View, TouchableOpacity } from "react-native";
-import { ChevronLeft, Edit2, Trash2, X } from "lucide-react-native";
-import { Text } from "@/components/ui/text";
-import { Button, ButtonText } from "@/components/ui/button";
-import { VStack } from "@/components/ui/vstack";
-import { Icon } from "@/components/ui/icon";
+import { Edit2, Trash2, X } from 'lucide-react-native';
+import React from 'react';
+import { TouchableOpacity } from 'react-native';
+
+import { Box } from '@/components/ui/box';
+import { Button, ButtonText } from '@/components/ui/button';
+import { Icon } from '@/components/ui/icon';
 import {
   Modal,
   ModalBackdrop,
@@ -13,8 +13,10 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-} from "@/components/ui/modal";
-import type { Group } from "@/types/user-management";
+} from '@/components/ui/modal';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
+import type { Group } from '@/types/user-management';
 
 interface GroupActionModalProps {
   showGroupActionDialog: boolean;
@@ -43,8 +45,8 @@ export function GroupActionModal({
         </ModalHeader>
         <ModalBody>
           <VStack className="space-y-2 py-2">
-            <TouchableOpacity 
-              className="px-4 py-3 flex-row items-center" 
+            <TouchableOpacity
+              className="px-4 py-3 flex-row items-center"
               onPress={() => {
                 if (selectedActionGroup) {
                   handleEditGroup(selectedActionGroup);
@@ -54,11 +56,11 @@ export function GroupActionModal({
               <Icon as={Edit2} className="h-5 w-5 mr-3 text-gray-700" />
               <Text className="text-gray-700">编辑分组</Text>
             </TouchableOpacity>
-            
-            <View className="h-px bg-gray-100 mx-4" />
-            
-            <TouchableOpacity 
-              className="px-4 py-3 flex-row items-center" 
+
+            <Box className="h-px bg-gray-100 mx-4" />
+
+            <TouchableOpacity
+              className="px-4 py-3 flex-row items-center"
               onPress={() => {
                 if (selectedActionGroup) {
                   handleDeleteGroup(selectedActionGroup);

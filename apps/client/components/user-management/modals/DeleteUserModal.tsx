@@ -1,8 +1,8 @@
-import React from "react";
-import { ChevronLeft, X } from "lucide-react-native";
-import { Text } from "@/components/ui/text";
-import { Button, ButtonText } from "@/components/ui/button";
-import { Icon } from "@/components/ui/icon";
+import { X } from 'lucide-react-native';
+import React from 'react';
+
+import { Button, ButtonText } from '@/components/ui/button';
+import { Icon } from '@/components/ui/icon';
 import {
   Modal,
   ModalBackdrop,
@@ -11,8 +11,9 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-} from "@/components/ui/modal";
-import type { AuthorizedUser } from "@/types/user-management";
+} from '@/components/ui/modal';
+import { Text } from '@/components/ui/text';
+import type { AuthorizedUser } from '@/types/user-management';
 
 interface DeleteUserModalProps {
   showDeleteUserDialog: boolean;
@@ -38,16 +39,10 @@ export function DeleteUserModal({
           </ModalCloseButton>
         </ModalHeader>
         <ModalBody>
-          <Text>
-            您确定要删除用户 "{userToDelete?.name}" 吗？此操作无法撤销。
-          </Text>
+          <Text>您确定要删除用户 "{userToDelete?.name}" 吗？此操作无法撤销。</Text>
         </ModalBody>
         <ModalFooter>
-          <Button
-            variant="outline"
-            onPress={() => setShowDeleteUserDialog(false)}
-            className="mr-2"
-          >
+          <Button variant="outline" onPress={() => setShowDeleteUserDialog(false)} className="mr-2">
             <ButtonText>取消</ButtonText>
           </Button>
           <Button variant="solid" onPress={confirmDeleteUser}>

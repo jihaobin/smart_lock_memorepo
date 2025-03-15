@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+#!/bin/sh
+# 以前的 husky 初始化代码已删除，使用新版本格式
 
 npx lint-staged

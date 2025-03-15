@@ -1,11 +1,13 @@
 'use client';
-import React from 'react';
 import { createMenu } from '@gluestack-ui/menu';
-import { tva } from '@gluestack-ui/nativewind-utils/tva';
-import { cssInterop } from 'nativewind';
-import { Pressable, Text, View } from 'react-native';
-import { Motion, AnimatePresence } from '@legendapp/motion';
 import type { VariantProps } from '@gluestack-ui/nativewind-utils';
+import { tva } from '@gluestack-ui/nativewind-utils/tva';
+import { Motion, AnimatePresence } from '@legendapp/motion';
+import { cssInterop } from 'nativewind';
+import React from 'react';
+import { Pressable, Text, View } from 'react-native';
+
+import { Box } from '../box';
 
 const menuStyle = tva({
   base: 'rounded-md bg-background-0 border border-outline-100 p-1 shadow-hard-5',
@@ -43,11 +45,11 @@ const menuItemLabelStyle = tva({
     },
     size: {
       '2xs': 'text-2xs',
-      'xs': 'text-xs',
-      'sm': 'text-sm',
-      'md': 'text-base',
-      'lg': 'text-lg',
-      'xl': 'text-xl',
+      xs: 'text-xs',
+      sm: 'text-sm',
+      md: 'text-base',
+      lg: 'text-lg',
+      xl: 'text-xl',
       '2xl': 'text-2xl',
       '3xl': 'text-3xl',
       '4xl': 'text-4xl',
@@ -68,8 +70,7 @@ const menuItemLabelStyle = tva({
 
 const BackdropPressable = React.forwardRef<
   React.ElementRef<typeof Pressable>,
-  React.ComponentPropsWithoutRef<typeof Pressable> &
-    VariantProps<typeof menuBackdropStyle>
+  React.ComponentPropsWithoutRef<typeof Pressable> & VariantProps<typeof menuBackdropStyle>
 >(({ className, ...props }, ref) => {
   return (
     <Pressable
@@ -86,32 +87,26 @@ type IMenuItemProps = VariantProps<typeof menuItemStyle> & {
   className?: string;
 } & React.ComponentPropsWithoutRef<typeof Pressable>;
 
-const Item = React.forwardRef<
-  React.ElementRef<typeof Pressable>,
-  IMenuItemProps
->(({ className, ...props }, ref) => {
-  return (
-    <Pressable
-      ref={ref}
-      className={menuItemStyle({
-        class: className,
-      })}
-      {...props}
-    />
-  );
-});
-
-const Separator = React.forwardRef(
-  ({ className, ...props }: any, ref?: any) => {
+const Item = React.forwardRef<React.ElementRef<typeof Pressable>, IMenuItemProps>(
+  ({ className, ...props }, ref) => {
     return (
-      <View
+      <Pressable
         ref={ref}
-        className={menuSeparatorStyle({ class: className })}
+        className={menuItemStyle({
+          class: className,
+        })}
         {...props}
       />
     );
   }
 );
+
+const Separator = React.forwardRef<
+  React.ElementRef<typeof View>,
+  React.ComponentPropsWithoutRef<typeof View>
+>(({ className, ...props }, ref) => {
+  return <Box ref={ref} className={menuSeparatorStyle({ class: className })} {...props} />;
+});
 export const UIMenu = createMenu({
   Root: Motion.View,
   Item: Item,
@@ -131,6 +126,8 @@ type IMenuItemLabelProps = React.ComponentProps<typeof UIMenu.ItemLabel> &
 const Menu = React.forwardRef<React.ElementRef<typeof UIMenu>, IMenuProps>(
   ({ className, ...props }, ref) => {
     return (
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
       <UIMenu
         ref={ref}
         initial={{

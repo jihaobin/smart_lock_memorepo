@@ -1,31 +1,32 @@
-import React from "react";
-import { View, ScrollView, TouchableOpacity } from "react-native";
-import { ChevronLeft, Mail, ArrowRight, Phone } from "lucide-react-native";
-import { Button, ButtonText } from "@/components/ui/button";
-import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
-import { useRouter } from "expo-router";
-import { useToast } from "@/hooks/use-toast";
-import { Text } from "@/components/ui/text";
-import { VStack } from "@/components/ui/vstack";
-import { HStack } from "@/components/ui/hstack";
-import { Heading } from "@/components/ui/heading";
-import { Icon } from "@/components/ui/icon";
-import { useForm, Controller } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'expo-router';
+import { Mail, ArrowRight, Phone } from 'lucide-react-native';
+import React from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { ScrollView, TouchableOpacity } from 'react-native';
+import { z } from 'zod';
+
+import { Box } from '@/components/ui/box';
+import { Button, ButtonText } from '@/components/ui/button';
+import { Heading } from '@/components/ui/heading';
+import { HStack } from '@/components/ui/hstack';
+import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
+import { useToast } from '@/hooks/use-toast';
 
 // 定义表单验证schema
 const forgotPasswordSchema = z.object({
   phoneNumber: z
     .string()
-    .min(11, "手机号码必须是11位数字")
-    .max(11, "手机号码必须是11位数字")
-    .regex(/^1[3-9]\d{9}$/, "请输入有效的手机号码"),
+    .min(11, '手机号码必须是11位数字')
+    .max(11, '手机号码必须是11位数字')
+    .regex(/^1[3-9]\d{9}$/, '请输入有效的手机号码'),
   verificationCode: z
     .string()
-    .min(4, "验证码至少需要4位")
-    .max(6, "验证码最多6位")
-    .regex(/^\d+$/, "验证码只能包含数字"),
+    .min(4, '验证码至少需要4位')
+    .max(6, '验证码最多6位')
+    .regex(/^\d+$/, '验证码只能包含数字'),
 });
 
 // 定义表单数据类型
@@ -48,26 +49,26 @@ export default function ForgotPassword() {
   } = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
-      phoneNumber: "",
-      verificationCode: "",
+      phoneNumber: '',
+      verificationCode: '',
     },
   });
 
   // 监听手机号码值变化
-  const phoneNumber = watch("phoneNumber");
+  const phoneNumber = watch('phoneNumber');
 
   const handleSendVerificationCode = () => {
     if (cooldown > 0) return;
 
     // 验证手机号码格式
-    const phoneNumberValue = getValues("phoneNumber");
+    const phoneNumberValue = getValues('phoneNumber');
     const phoneRegex = /^1[3-9]\d{9}$/;
 
     if (!phoneNumberValue || !phoneRegex.test(phoneNumberValue)) {
       toast({
-        title: "手机号码格式错误",
-        description: "请输入正确的11位手机号码",
-        variant: "destructive",
+        title: '手机号码格式错误',
+        description: '请输入正确的11位手机号码',
+        variant: 'destructive',
         duration: 3000,
       });
       return;
@@ -75,14 +76,14 @@ export default function ForgotPassword() {
 
     // 模拟发送验证码
     toast({
-      title: "验证码已发送",
-      description: "请查看您的手机短信。",
+      title: '验证码已发送',
+      description: '请查看您的手机短信。',
       duration: 3000,
     });
 
     setCooldown(60);
     const timer = setInterval(() => {
-      setCooldown((prev) => {
+      setCooldown(prev => {
         if (prev <= 1) {
           clearInterval(timer);
           return 0;
@@ -92,11 +93,11 @@ export default function ForgotPassword() {
     }, 1000);
   };
 
-  const onSubmit = async (data: ForgotPasswordFormData) => {
+  const onSubmit = async () => {
     setIsLoading(true);
 
     // 模拟 API 调用
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
     // 在实际应用中，您会在这里处理密码重置
     setIsSubmitted(true);
@@ -121,10 +122,7 @@ export default function ForgotPassword() {
                   render={({ field: { onChange, onBlur, value } }) => (
                     <Input>
                       <InputSlot className="pl-3">
-                        <InputIcon
-                          className="h-5 w-5 text-gray-400"
-                          as={Phone}
-                        ></InputIcon>
+                        <InputIcon className="h-5 w-5 text-gray-400" as={Phone}></InputIcon>
                       </InputSlot>
                       <InputField
                         placeholder="请输入手机号码"
@@ -137,9 +135,7 @@ export default function ForgotPassword() {
                   )}
                 />
                 {errors.phoneNumber && (
-                  <Text className="text-red-500 text-xs mt-1">
-                    {errors.phoneNumber.message}
-                  </Text>
+                  <Text className="text-red-500 text-xs mt-1">{errors.phoneNumber.message}</Text>
                 )}
               </VStack>
 
@@ -167,9 +163,7 @@ export default function ForgotPassword() {
                     disabled={cooldown > 0}
                     className="ml-2"
                   >
-                    <ButtonText>
-                      {cooldown > 0 ? `${cooldown}s` : "发送验证码"}
-                    </ButtonText>
+                    <ButtonText>{cooldown > 0 ? `${cooldown}s` : '发送验证码'}</ButtonText>
                   </Button>
                 </HStack>
                 {errors.verificationCode && (
@@ -179,45 +173,36 @@ export default function ForgotPassword() {
                 )}
               </VStack>
 
-              <Button
-                onPress={handleSubmit(onSubmit)}
-                disabled={isLoading}
-                className="w-full mt-4"
-              >
-                <ButtonText>{isLoading ? "提交中..." : "重置密码"}</ButtonText>
+              <Button onPress={handleSubmit(onSubmit)} disabled={isLoading} className="w-full mt-4">
+                <ButtonText>{isLoading ? '提交中...' : '重置密码'}</ButtonText>
               </Button>
 
-              <View className="items-center mt-4">
-                <TouchableOpacity onPress={() => router.push("/login")}>
+              <Box className="items-center mt-4">
+                <TouchableOpacity onPress={() => router.push('/login')}>
                   <Text className="text-primary">返回登录</Text>
                 </TouchableOpacity>
-              </View>
+              </Box>
             </VStack>
           </>
         ) : (
           <VStack className="items-center py-8 space-y-4">
-            <View className="h-16 w-16 items-center justify-center rounded-full bg-green-100 mb-4">
+            <Box className="h-16 w-16 items-center justify-center rounded-full bg-green-100 mb-4">
               <Mail className="h-8 w-8 text-green-600" />
-            </View>
+            </Box>
             <Heading size="lg" className="font-bold mb-2">
-              验证码已发送
+              <Text>验证码已发送</Text>
             </Heading>
             <Text className="text-gray-600 text-center mb-6">
-              我们已向 {phoneNumber}{" "}
-              发送了一条包含验证码的短信。请输入验证码以重置您的密码。
+              我们已向 {phoneNumber} 发送了一条包含验证码的短信。请输入验证码以重置您的密码。
             </Text>
             <Text className="text-sm text-gray-500 text-center mb-6">
               如果您没有收到短信，请检查垃圾短信或尝试重新发送。
             </Text>
             <VStack space="md" className="w-full">
-              <Button
-                variant="outline"
-                onPress={() => setIsSubmitted(false)}
-                className="w-full"
-              >
+              <Button variant="outline" onPress={() => setIsSubmitted(false)} className="w-full">
                 <ButtonText>重新发送</ButtonText>
               </Button>
-              <Button onPress={() => router.push("/login")} className="w-full">
+              <Button onPress={() => router.push('/login')} className="w-full">
                 <HStack space="xs" className="items-center">
                   <ButtonText>返回登录</ButtonText>
                   <ArrowRight className="h-4 w-4 text-white" />

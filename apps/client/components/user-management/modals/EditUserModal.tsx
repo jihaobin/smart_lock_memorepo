@@ -1,10 +1,9 @@
-import React from "react";
-import { ChevronLeft, X } from "lucide-react-native";
-import { Input, InputField } from "@/components/ui/input";
-import { Text } from "@/components/ui/text";
-import { Button, ButtonText } from "@/components/ui/button";
-import { VStack } from "@/components/ui/vstack";
-import { Icon } from "@/components/ui/icon";
+import { X } from 'lucide-react-native';
+import React from 'react';
+
+import { Button, ButtonText } from '@/components/ui/button';
+import { Icon } from '@/components/ui/icon';
+import { Input, InputField } from '@/components/ui/input';
 import {
   Modal,
   ModalBackdrop,
@@ -13,7 +12,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-} from "@/components/ui/modal";
+} from '@/components/ui/modal';
 import {
   Select,
   SelectTrigger,
@@ -22,8 +21,10 @@ import {
   SelectPortal,
   SelectContent,
   SelectItem,
-} from "@/components/ui/select";
-import type { AuthorizedUser, Group } from "@/types/user-management";
+} from '@/components/ui/select';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
+import type { AuthorizedUser, Group } from '@/types/user-management';
 
 interface EditUserModalProps {
   showEditUserDialog: boolean;
@@ -58,8 +59,8 @@ export function EditUserModal({
               <Text className="text-gray-700">姓名</Text>
               <Input>
                 <InputField
-                  value={editingUser?.name || ""}
-                  onChangeText={(text) =>
+                  value={editingUser?.name || ''}
+                  onChangeText={(text: string) =>
                     editingUser && setEditingUser({ ...editingUser, name: text })
                   }
                 />
@@ -69,8 +70,8 @@ export function EditUserModal({
               <Text className="text-gray-700">电子邮箱</Text>
               <Input>
                 <InputField
-                  value={editingUser?.email || ""}
-                  onChangeText={(text) =>
+                  value={editingUser?.email || ''}
+                  onChangeText={(text: string) =>
                     editingUser && setEditingUser({ ...editingUser, email: text })
                   }
                   keyboardType="email-address"
@@ -81,8 +82,8 @@ export function EditUserModal({
               <Text className="text-gray-700">手机号码</Text>
               <Input>
                 <InputField
-                  value={editingUser?.phone || ""}
-                  onChangeText={(text) =>
+                  value={editingUser?.phone || ''}
+                  onChangeText={(text: string) =>
                     editingUser && setEditingUser({ ...editingUser, phone: text })
                   }
                   keyboardType="phone-pad"
@@ -93,7 +94,7 @@ export function EditUserModal({
               <Text className="text-gray-700">用户分组</Text>
               <Select
                 selectedValue={editingUser?.group}
-                onValueChange={(value) =>
+                onValueChange={(value: string) =>
                   editingUser && setEditingUser({ ...editingUser, group: value })
                 }
               >
@@ -103,12 +104,8 @@ export function EditUserModal({
                 </SelectTrigger>
                 <SelectPortal>
                   <SelectContent>
-                    {groups.map((group) => (
-                      <SelectItem
-                        key={group.id}
-                        label={group.name}
-                        value={group.id}
-                      />
+                    {groups.map(group => (
+                      <SelectItem key={group.id} label={group.name} value={group.id} />
                     ))}
                   </SelectContent>
                 </SelectPortal>
@@ -117,11 +114,7 @@ export function EditUserModal({
           </VStack>
         </ModalBody>
         <ModalFooter>
-          <Button
-            variant="outline"
-            onPress={() => setShowEditUserDialog(false)}
-            className="mr-2"
-          >
+          <Button variant="outline" onPress={() => setShowEditUserDialog(false)} className="mr-2">
             <ButtonText>取消</ButtonText>
           </Button>
           <Button onPress={handleSaveEditedUser}>

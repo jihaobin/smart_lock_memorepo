@@ -1,45 +1,24 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
-import { AppService } from './app.service';
-import { ApiResponse, Lock, formatDate } from '@smart-lock/shared';
+import { Controller, Get, Inject } from '@nestjs/common';
+import { schema, DbType } from '@smart-lock/shared';
+
+import { APP_CONFIG, AppConfig } from './config/config.provider';
+import { DB } from './database/database.provider';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
-
+  @Inject(DB)
+  private readonly db: DbType;
+  @Inject(APP_CONFIG)
+  private readonly config: AppConfig;
   @Get()
-  getHello(): ApiResponse<string> {
-    return {
-      success: true,
-      data: this.appService.getHello(),
-      message: 'Hello message retrieved successfully',
-    };
-  }
-
-  @Get('locks')
-  getLocks(): ApiResponse<Lock[]> {
-    const locks = this.appService.getLocks();
-    return {
-      success: true,
-      data: locks,
-      message: `Retrieved ${locks.length} locks`,
-    };
-  }
-
-  @Post('format-date')
-  formatDate(@Body() body: { date: string }): ApiResponse<string> {
-    try {
-      const date = new Date(body.date);
-      const formattedDate = formatDate(date);
-      return {
-        success: true,
-        data: formattedDate,
-        message: 'Date formatted successfully',
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: 'Invalid date format',
-      };
-    }
+  async getHello() {
+    await this.db
+      .insert(schema.users)
+      .values({
+        email: 'test@test.com',
+        passwordHash: 'test',
+      })
+      .returning();
+    return this.config.JWT_EXPIRES_IN;
   }
 }

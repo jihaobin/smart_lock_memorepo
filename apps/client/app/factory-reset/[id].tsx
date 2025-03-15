@@ -1,18 +1,13 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import {
-  ArrowLeft,
-  AlertTriangle,
-  RefreshCw,
-  CheckCircle,
-  XCircle,
-  Info,
-} from "lucide-react-native";
-import { View, ScrollView, ActivityIndicator, TextInput } from "react-native";
-import { Button, ButtonText } from "@/components/ui/button";
-import { Progress, ProgressFilledTrack } from "@/components/ui/progress";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { AlertTriangle, RefreshCw, CheckCircle, XCircle, Info } from 'lucide-react-native';
+import React, { useState, useEffect } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { ScrollView, ActivityIndicator, TextInput } from 'react-native';
+import { z } from 'zod';
+
 import {
   AlertDialog,
   AlertDialogBackdrop,
@@ -20,25 +15,23 @@ import {
   AlertDialogHeader,
   AlertDialogBody,
   AlertDialogFooter,
-} from "@/components/ui/alert-dialog";
-import { Box } from "@/components/ui/box";
-import { HStack } from "@/components/ui/hstack";
-import { VStack } from "@/components/ui/vstack";
-import { Text } from "@/components/ui/text";
-import { Pressable } from "@/components/ui/pressable";
-import { Badge } from "@/components/ui/badge";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Box } from '@/components/ui/box';
+import { Button, ButtonText } from '@/components/ui/button';
+import { HStack } from '@/components/ui/hstack';
+import { Progress, ProgressFilledTrack } from '@/components/ui/progress';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
 
 // 定义PIN码验证schema
 const pinSchema = z.object({
   pin: z
     .string()
-    .min(4, "PIN码至少需要4位")
-    .max(8, "PIN码最多8位")
-    .refine((val) => val === "1234", {
-      message: "PIN码不正确，请重试",
+    .min(4, 'PIN码至少需要4位')
+    .max(8, 'PIN码最多8位')
+    .refine(val => val === '1234', {
+      message: 'PIN码不正确，请重试',
     }),
 });
 
@@ -47,11 +40,11 @@ type PinFormData = z.infer<typeof pinSchema>;
 
 // 模拟设备数据
 const deviceData = {
-  id: "1",
-  name: "前门智能锁",
-  model: "SmartLock Pro X1",
-  installDate: "2023-05-15",
-  lastReset: "从未重置",
+  id: '1',
+  name: '前门智能锁',
+  model: 'SmartLock Pro X1',
+  installDate: '2023-05-15',
+  lastReset: '从未重置',
 };
 
 export default function FactoryResetPage() {
@@ -62,9 +55,9 @@ export default function FactoryResetPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showFinalConfirmDialog, setShowFinalConfirmDialog] = useState(false);
-  const [resetState, setResetState] = useState<
-    "idle" | "in-progress" | "success" | "error"
-  >("idle");
+  const [resetState, setResetState] = useState<'idle' | 'in-progress' | 'success' | 'error'>(
+    'idle'
+  );
   const [progress, setProgress] = useState(0);
 
   // 设置react-hook-form
@@ -90,16 +83,16 @@ export default function FactoryResetPage() {
 
   // 模拟重置过程
   const startReset = () => {
-    setResetState("in-progress");
+    setResetState('in-progress');
     setProgress(0);
 
     const interval = setInterval(() => {
-      setProgress((prev) => {
+      setProgress(prev => {
         if (prev >= 100) {
           clearInterval(interval);
           // 模拟有小概率失败的情况
           const success = Math.random() > 0.1;
-          setResetState(success ? "success" : "error");
+          setResetState(success ? 'success' : 'error');
           return 100;
         }
         return prev + 5;
@@ -110,7 +103,7 @@ export default function FactoryResetPage() {
   };
 
   // 处理 PIN 码确认
-  const handlePinConfirmation = (data: PinFormData) => {
+  const handlePinConfirmation = () => {
     // PIN码验证已经由zod完成，如果能到这里，说明PIN码正确
     setShowFinalConfirmDialog(true);
     setShowConfirmDialog(false);
@@ -124,22 +117,19 @@ export default function FactoryResetPage() {
 
   // 返回设备管理页面
   const goBack = () => {
-    router.push("/device-management");
+    router.push('/device-management');
   };
 
   // 重试重置过程
   const retryReset = () => {
-    setResetState("idle");
+    setResetState('idle');
     setProgress(0);
   };
 
   if (isLoading) {
     return (
       <Box className="p-4">
-        <VStack
-          space="md"
-          className="items-center justify-center min-h-[300px]"
-        >
+        <VStack space="md" className="items-center justify-center min-h-[300px]">
           <ActivityIndicator size="large" color="#3B82F6" />
           <Text className="text-gray-500">正在加载设备信息...</Text>
         </VStack>
@@ -150,15 +140,14 @@ export default function FactoryResetPage() {
   return (
     <ScrollView>
       <Box className="p-4">
-        {resetState === "idle" && (
+        {resetState === 'idle' && (
           <Box className="bg-white rounded-lg border border-gray-200 overflow-hidden">
             <Box className="p-4">
               <HStack space="md" className="justify-between items-start">
                 <VStack space="xs">
                   <Text className="text-lg font-bold">{deviceData.name}</Text>
-                  <Text className="text-sm text-gray-500">
-                    型号: {deviceData.model}
-                  </Text>
+                  <Text className="text-sm text-gray-500">型号: {deviceData.model}</Text>
+                  <Text className="text-sm text-gray-500">ID: {id}</Text>
                 </VStack>
                 <Badge variant="outline">
                   <Text className="text-amber-600">敏感操作</Text>
@@ -167,10 +156,7 @@ export default function FactoryResetPage() {
             </Box>
 
             <VStack space="md" className="p-4">
-              <HStack
-                space="md"
-                className="p-4 bg-amber-50 rounded-lg border border-amber-200"
-              >
+              <HStack space="md" className="p-4 bg-amber-50 rounded-lg border border-amber-200">
                 <AlertTriangle size={24} color="#D97706" />
                 <VStack space="xs" className="flex-1">
                   <Text className="font-semibold text-amber-800">重要警告</Text>
@@ -220,15 +206,10 @@ export default function FactoryResetPage() {
                 </VStack>
               </VStack>
 
-              <HStack
-                space="md"
-                className="p-4 bg-blue-50 rounded-lg border border-blue-200"
-              >
+              <HStack space="md" className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                 <Info size={24} color="#3B82F6" />
                 <VStack space="xs" className="flex-1">
-                  <Text className="font-semibold text-blue-800">
-                    重置后需要重新设置
-                  </Text>
+                  <Text className="font-semibold text-blue-800">重置后需要重新设置</Text>
                   <Text className="text-sm text-blue-700 flex-shrink flex-wrap">
                     重置后，您需要重新配置设备并添加用户访问权限。请确保您有管理员凭据。
                   </Text>
@@ -250,13 +231,11 @@ export default function FactoryResetPage() {
           </Box>
         )}
 
-        {resetState === "in-progress" && (
+        {resetState === 'in-progress' && (
           <Box className="bg-white rounded-lg border border-gray-200 overflow-hidden">
             <Box className="p-4">
               <Text className="text-lg font-bold">正在重置设备</Text>
-              <Text className="text-sm text-gray-500">
-                请勿断开设备电源或关闭应用
-              </Text>
+              <Text className="text-sm text-gray-500">请勿断开设备电源或关闭应用</Text>
             </Box>
 
             <VStack space="lg" className="p-4">
@@ -274,76 +253,41 @@ export default function FactoryResetPage() {
                 <Text className="font-semibold">重置步骤：</Text>
                 <VStack space="sm">
                   <HStack space="sm" className="items-center">
-                    <CheckCircle
-                      size={20}
-                      color={progress >= 20 ? "#10B981" : "#A1A1AA"}
-                    />
+                    <CheckCircle size={20} color={progress >= 20 ? '#10B981' : '#A1A1AA'} />
                     <Text
-                      className={
-                        progress >= 20
-                          ? "text-sm text-black"
-                          : "text-sm text-gray-500"
-                      }
+                      className={progress >= 20 ? 'text-sm text-black' : 'text-sm text-gray-500'}
                     >
                       清除用户数据
                     </Text>
                   </HStack>
                   <HStack space="sm" className="items-center">
-                    <CheckCircle
-                      size={20}
-                      color={progress >= 40 ? "#10B981" : "#A1A1AA"}
-                    />
+                    <CheckCircle size={20} color={progress >= 40 ? '#10B981' : '#A1A1AA'} />
                     <Text
-                      className={
-                        progress >= 40
-                          ? "text-sm text-black"
-                          : "text-sm text-gray-500"
-                      }
+                      className={progress >= 40 ? 'text-sm text-black' : 'text-sm text-gray-500'}
                     >
                       重置系统设置
                     </Text>
                   </HStack>
                   <HStack space="sm" className="items-center">
-                    <CheckCircle
-                      size={20}
-                      color={progress >= 60 ? "#10B981" : "#A1A1AA"}
-                    />
+                    <CheckCircle size={20} color={progress >= 60 ? '#10B981' : '#A1A1AA'} />
                     <Text
-                      className={
-                        progress >= 60
-                          ? "text-sm text-black"
-                          : "text-sm text-gray-500"
-                      }
+                      className={progress >= 60 ? 'text-sm text-black' : 'text-sm text-gray-500'}
                     >
                       清除访问日志
                     </Text>
                   </HStack>
                   <HStack space="sm" className="items-center">
-                    <CheckCircle
-                      size={20}
-                      color={progress >= 80 ? "#10B981" : "#A1A1AA"}
-                    />
+                    <CheckCircle size={20} color={progress >= 80 ? '#10B981' : '#A1A1AA'} />
                     <Text
-                      className={
-                        progress >= 80
-                          ? "text-sm text-black"
-                          : "text-sm text-gray-500"
-                      }
+                      className={progress >= 80 ? 'text-sm text-black' : 'text-sm text-gray-500'}
                     >
                       恢复出厂设置
                     </Text>
                   </HStack>
                   <HStack space="sm" className="items-center">
-                    <CheckCircle
-                      size={20}
-                      color={progress >= 100 ? "#10B981" : "#A1A1AA"}
-                    />
+                    <CheckCircle size={20} color={progress >= 100 ? '#10B981' : '#A1A1AA'} />
                     <Text
-                      className={
-                        progress >= 100
-                          ? "text-sm text-black"
-                          : "text-sm text-gray-500"
-                      }
+                      className={progress >= 100 ? 'text-sm text-black' : 'text-sm text-gray-500'}
                     >
                       完成重置
                     </Text>
@@ -366,14 +310,12 @@ export default function FactoryResetPage() {
           </Box>
         )}
 
-        {resetState === "success" && (
+        {resetState === 'success' && (
           <Box className="bg-white rounded-lg border border-gray-200 overflow-hidden">
             <VStack space="sm" className="items-center p-4">
               <CheckCircle size={64} color="#10B981" />
               <Text className="text-xl font-bold mt-2">重置成功</Text>
-              <Text className="text-sm text-gray-500">
-                设备已成功恢复出厂设置
-              </Text>
+              <Text className="text-sm text-gray-500">设备已成功恢复出厂设置</Text>
             </VStack>
 
             <VStack space="md" className="p-4">
@@ -416,14 +358,12 @@ export default function FactoryResetPage() {
           </Box>
         )}
 
-        {resetState === "error" && (
+        {resetState === 'error' && (
           <Box className="bg-white rounded-lg border border-gray-200 overflow-hidden">
             <VStack space="sm" className="items-center p-4">
               <XCircle size={64} color="#EF4444" />
               <Text className="text-xl font-bold mt-2">重置失败</Text>
-              <Text className="text-sm text-gray-500">
-                设备重置过程中出现错误
-              </Text>
+              <Text className="text-sm text-gray-500">设备重置过程中出现错误</Text>
             </VStack>
 
             <VStack space="md" className="p-4">
@@ -501,8 +441,7 @@ export default function FactoryResetPage() {
               <VStack space="xs">
                 <Text className="text-lg font-bold">确认恢复出厂设置</Text>
                 <Text className="text-sm text-gray-500 flex-shrink flex-wrap">
-                  请输入设备管理员 PIN
-                  码以确认重置操作。此操作将删除所有数据并无法撤销。
+                  请输入设备管理员 PIN 码以确认重置操作。此操作将删除所有数据并无法撤销。
                 </Text>
               </VStack>
             </AlertDialogHeader>
@@ -521,27 +460,18 @@ export default function FactoryResetPage() {
                         onChangeText={onChange}
                         onBlur={onBlur}
                         className={`border rounded-lg p-2.5 w-full ${
-                          errors.pin ? "border-red-500" : "border-gray-200"
+                          errors.pin ? 'border-red-500' : 'border-gray-200'
                         }`}
                       />
                     )}
                   />
-                  {errors.pin && (
-                    <Text className="text-sm text-red-500">
-                      {errors.pin.message}
-                    </Text>
-                  )}
+                  {errors.pin && <Text className="text-sm text-red-500">{errors.pin.message}</Text>}
                 </VStack>
               </VStack>
             </AlertDialogBody>
             <AlertDialogFooter>
               <HStack space="sm" className="justify-end">
-                <Button
-                  action="primary"
-                  variant="outline"
-                  size="sm"
-                  onPress={closeConfirmDialog}
-                >
+                <Button action="primary" variant="outline" size="sm" onPress={closeConfirmDialog}>
                   <ButtonText>取消</ButtonText>
                 </Button>
                 <Button

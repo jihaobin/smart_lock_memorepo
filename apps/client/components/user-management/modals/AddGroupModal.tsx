@@ -1,10 +1,9 @@
-import React from "react";
-import { ChevronLeft, X } from "lucide-react-native";
-import { Input, InputField } from "@/components/ui/input";
-import { Text } from "@/components/ui/text";
-import { Button, ButtonText } from "@/components/ui/button";
-import { VStack } from "@/components/ui/vstack";
-import { Icon } from "@/components/ui/icon";
+import { X } from 'lucide-react-native';
+import React from 'react';
+
+import { Button, ButtonText } from '@/components/ui/button';
+import { Icon } from '@/components/ui/icon';
+import { Input, InputField } from '@/components/ui/input';
 import {
   Modal,
   ModalBackdrop,
@@ -13,8 +12,10 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-} from "@/components/ui/modal";
-import type { Group } from "@/types/user-management";
+} from '@/components/ui/modal';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
+import type { Group } from '@/types/user-management';
 
 interface AddGroupModalProps {
   showAddGroupDialog: boolean;
@@ -47,8 +48,8 @@ export function AddGroupModal({
               <Text className="text-gray-700">分组名称</Text>
               <Input>
                 <InputField
-                  value={newGroup.name || ""}
-                  onChangeText={(text) =>
+                  value={newGroup.name || ''}
+                  onChangeText={(text: string | undefined) =>
                     setNewGroup({ ...newGroup, name: text })
                   }
                 />
@@ -57,11 +58,7 @@ export function AddGroupModal({
           </VStack>
         </ModalBody>
         <ModalFooter>
-          <Button
-            variant="outline"
-            onPress={() => setShowAddGroupDialog(false)}
-            className="mr-2"
-          >
+          <Button variant="outline" onPress={() => setShowAddGroupDialog(false)} className="mr-2">
             <ButtonText>取消</ButtonText>
           </Button>
           <Button onPress={handleAddGroup}>

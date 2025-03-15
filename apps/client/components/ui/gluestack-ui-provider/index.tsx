@@ -1,10 +1,12 @@
-import React, { useEffect } from 'react';
-import { config } from './config';
-import { View, ViewProps } from 'react-native';
 import { OverlayProvider } from '@gluestack-ui/overlay';
 import { ToastProvider } from '@gluestack-ui/toast';
 import { useColorScheme } from 'nativewind';
+import React, { useEffect } from 'react';
+import { ViewProps } from 'react-native';
+
+import { config } from './config';
 import { ModeType } from './types';
+import { Box } from '../box';
 
 export function GluestackUIProvider({
   mode = 'light',
@@ -22,7 +24,7 @@ export function GluestackUIProvider({
   }, [mode]);
 
   return (
-    <View
+    <Box
       style={[
         config[colorScheme!],
         // eslint-disable-next-line react-native/no-inline-styles
@@ -33,6 +35,6 @@ export function GluestackUIProvider({
       <OverlayProvider>
         <ToastProvider>{props.children}</ToastProvider>
       </OverlayProvider>
-    </View>
+    </Box>
   );
 }
