@@ -17,7 +17,7 @@ export * as schema from './db/schema';
 /**
  * API响应类型导出
  */
-export { ErrorCode as ApiErrorCode } from './types/common';
+export { ErrorCode } from './types/common';
 export type { ApiStatusCode, ApiResponse, PaginationMeta, PaginatedData } from './types/common';
 
 // 为了向后兼容，保留原有的命名空间导出

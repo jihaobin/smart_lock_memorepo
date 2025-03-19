@@ -6,3 +6,6 @@ export * from './db';
 
 // 导出所有错误类型
 export * from './error';
+
+// 导出所有认证类型
+export * from './auth';

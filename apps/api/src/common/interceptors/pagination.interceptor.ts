@@ -71,27 +71,13 @@ export class PaginationInterceptor<T>
     next: CallHandler,
   ): Observable<PaginatedData<T>> {
     const request = context.switchToHttp().getRequest<Request>();
-    const { method, url, query } = request;
+    const { method, url } = request;
     const path = url;
-
-    // 记录请求日志
-    const pageQuery = Number(query.page) || this.options.defaultPage;
-    const limitQuery = Number(query.limit) || this.options.defaultLimit;
-    this.logger.log(
-      `分页请求 - ${method} ${path} - 页码: ${pageQuery}, 每页条数: ${limitQuery}`,
-      'PaginationInterceptor',
-    );
 
     return next.handle().pipe(
       map((data: IPaginatedResult<T>) => {
         // 如果不是分页数据格式，直接返回原始数据
         if (!this.isPaginatedResult(data)) {
-          if (this.logger) {
-            this.logger.warn(
-              `非分页数据格式 - ${method} ${path}`,
-              'PaginationInterceptor',
-            );
-          }
           return data;
         }
 

@@ -32,9 +32,11 @@ export const users = pgTable(
       .$default(() => createId())
       .unique(),
     email: varchar('email', { length: 255 }).unique().notNull(),
+    nikeName: varchar('nike_name', { length: 255 }).notNull(),
     passwordHash: text('password_hash').notNull(),
     qrCode: text('qr_code'), // 个人名片二维码
     createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
   },
   table => [
     uniqueIndex('users_email_idx').on(table.email),
@@ -55,7 +57,9 @@ export const devices = pgTable(
     type: varchar('type', { length: 50 }).notNull(), // 设备类型（如门锁型号）
     status: jsonb('status')
       .$type<{
+        // 设备电量
         batteryLevel: number;
+        // 设备固件版本
         firmwareVersion: string;
       }>()
       .notNull(), // 设备状态

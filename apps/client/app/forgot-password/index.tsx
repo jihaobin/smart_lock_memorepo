@@ -17,11 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 
 // 定义表单验证schema
 const forgotPasswordSchema = z.object({
-  phoneNumber: z
-    .string()
-    .min(11, '手机号码必须是11位数字')
-    .max(11, '手机号码必须是11位数字')
-    .regex(/^1[3-9]\d{9}$/, '请输入有效的手机号码'),
+  email: z.string().email('请输入有效的电子邮箱').min(1, '邮箱不能为空'),
   verificationCode: z
     .string()
     .min(4, '验证码至少需要4位')
@@ -49,25 +45,25 @@ export default function ForgotPassword() {
   } = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
-      phoneNumber: '',
+      email: '',
       verificationCode: '',
     },
   });
 
-  // 监听手机号码值变化
-  const phoneNumber = watch('phoneNumber');
+  // 监听邮箱值变化
+  const email = watch('email');
 
   const handleSendVerificationCode = () => {
     if (cooldown > 0) return;
 
-    // 验证手机号码格式
-    const phoneNumberValue = getValues('phoneNumber');
-    const phoneRegex = /^1[3-9]\d{9}$/;
+    // 验证邮箱格式
+    const emailValue = getValues('email');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!phoneNumberValue || !phoneRegex.test(phoneNumberValue)) {
+    if (!emailValue || !emailRegex.test(emailValue)) {
       toast({
-        title: '手机号码格式错误',
-        description: '请输入正确的11位手机号码',
+        title: '邮箱格式错误',
+        description: '请输入正确的邮箱',
         variant: 'destructive',
         duration: 3000,
       });
@@ -118,15 +114,15 @@ export default function ForgotPassword() {
                 <Text className="text-typography-500">手机号码</Text>
                 <Controller
                   control={control}
-                  name="phoneNumber"
+                  name="email"
                   render={({ field: { onChange, onBlur, value } }) => (
                     <Input>
                       <InputSlot className="pl-3">
                         <InputIcon className="h-5 w-5 text-gray-400" as={Phone}></InputIcon>
                       </InputSlot>
                       <InputField
-                        placeholder="请输入手机号码"
-                        keyboardType="phone-pad"
+                        placeholder="请输入邮箱"
+                        keyboardType="email-address"
                         value={value}
                         onChangeText={onChange}
                         onBlur={onBlur}
@@ -134,8 +130,8 @@ export default function ForgotPassword() {
                     </Input>
                   )}
                 />
-                {errors.phoneNumber && (
-                  <Text className="text-red-500 text-xs mt-1">{errors.phoneNumber.message}</Text>
+                {errors.email && (
+                  <Text className="text-red-500 text-xs mt-1">{errors.email.message}</Text>
                 )}
               </VStack>
 
@@ -193,10 +189,10 @@ export default function ForgotPassword() {
               <Text>验证码已发送</Text>
             </Heading>
             <Text className="text-gray-600 text-center mb-6">
-              我们已向 {phoneNumber} 发送了一条包含验证码的短信。请输入验证码以重置您的密码。
+              我们已向 {email} 发送了一条包含验证码的邮件。请输入验证码以重置您的密码。
             </Text>
             <Text className="text-sm text-gray-500 text-center mb-6">
-              如果您没有收到短信，请检查垃圾短信或尝试重新发送。
+              如果您没有收到邮件，请检查垃圾邮件或尝试重新发送。
             </Text>
             <VStack space="md" className="w-full">
               <Button variant="outline" onPress={() => setIsSubmitted(false)} className="w-full">

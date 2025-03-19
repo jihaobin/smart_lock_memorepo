@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
-import { Lock, Phone } from 'lucide-react-native';
+import { Lock, Mail } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { TouchableOpacity, ScrollView } from 'react-native';
@@ -20,7 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 
 // 定义表单验证schema
 const loginSchema = z.object({
-  phoneNumber: z.string().min(11, '手机号必须是11位').max(11, '手机号必须是11位'),
+  email: z.string().email('请输入有效的电子邮箱').min(1, '邮箱不能为空'),
   password: z.string().min(6, '密码至少6位字符'),
   rememberMe: z.boolean().optional(),
 });
@@ -46,7 +46,7 @@ export default function Login() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      phoneNumber: '',
+      email: '',
       password: '',
       rememberMe: false,
     },
@@ -66,12 +66,12 @@ export default function Login() {
     const correctPhone = '13800138000';
     const correctPassword = 'password123';
 
-    if (data.phoneNumber === correctPhone && data.password === correctPassword) {
+    if (data.email === correctPhone && data.password === correctPassword) {
       login({
         id: '1',
         name: '测试用户',
         email: 'test@example.com',
-        phone: data.phoneNumber,
+        phone: data.email,
       });
       toast({
         title: '登录成功',
@@ -106,18 +106,18 @@ export default function Login() {
 
         <VStack space="md" className="space-y-6">
           <VStack space="xs">
-            <Text className="text-typography-500">手机号码</Text>
+            <Text className="text-typography-500">邮箱</Text>
             <Controller
               control={control}
-              name="phoneNumber"
+              name="email"
               render={({ field: { onChange, onBlur, value } }) => (
                 <Input>
                   <InputSlot className="pl-3">
-                    <InputIcon className="h-5 w-5 text-gray-400" as={Phone} />
+                    <InputIcon className="h-5 w-5 text-gray-400" as={Mail} />
                   </InputSlot>
                   <InputField
-                    placeholder="请输入手机号码"
-                    keyboardType="phone-pad"
+                    placeholder="请输入邮箱"
+                    keyboardType="email-address"
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
@@ -125,9 +125,7 @@ export default function Login() {
                 </Input>
               )}
             />
-            {errors.phoneNumber && (
-              <Text className="text-error-500 text-xs">{errors.phoneNumber.message}</Text>
-            )}
+            {errors.email && <Text className="text-error-500 text-xs">{errors.email.message}</Text>}
           </VStack>
 
           <VStack space="xs">

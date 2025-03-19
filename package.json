@@ -13,12 +13,12 @@
     "prebuild": "turbo run prebuild",
     "dev": "turbo run dev",
     "dev:client": "pnpm --filter @smart-lock/client dev",
-    "dev:server": "pnpm --filter @smart-lock/server dev",
+    "dev:api": "pnpm --filter @smart-lock/api dev",
     "db:studio": "pnpm --filter @smart-lock/shared studio",
     "db:migrate": "pnpm --filter @smart-lock/shared migrate",
     "db:generate": "pnpm --filter @smart-lock/shared generate",
     "db:generate:migrate": "pnpm --filter @smart-lock/shared generate && pnpm --filter @smart-lock/shared migrate",
-    "api": "turbo run start",
+    "start": "turbo run start",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "clean": "turbo run clean",
     "lint": "eslint --config eslint.config.mjs",
@@ -58,6 +58,7 @@
   "packageManager": "pnpm@8.15.4",
   "dependencies": {
     "dotenv": "^16.4.7",
+    "nestjs-zod": "^4.3.1",
     "zod": "^3.24.2"
   }
 }

@@ -142,11 +142,12 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
       // 如果有其他详细信息，添加到data
       if ('error' in response) {
-        errorResponse.data = errorResponse.data || {};
-        // 使用索引访问和类型断言
-        errorResponse.data.error = (response as Record<string, unknown>)[
-          'error'
-        ];
+        errorResponse.data =
+          errorResponse.data || ({} as Record<string, unknown>);
+        errorResponse.data = {
+          ...(errorResponse.data as Record<string, unknown>),
+          error: (response as Record<string, unknown>)['error'],
+        };
       }
     }
   }

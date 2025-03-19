@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
-import { Lock, Phone, Eye, EyeOff, Mail, User, CheckIcon } from 'lucide-react-native';
+import { Lock, Eye, EyeOff, Mail, User, CheckIcon } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { ScrollView, TouchableOpacity } from 'react-native';
@@ -177,7 +177,7 @@ export default function Register() {
               render={({ field: { onChange, onBlur, value } }) => (
                 <Input>
                   <InputSlot className="pl-3">
-                    <InputIcon className="h-5 w-5 text-gray-400" as={Phone} />
+                    <InputIcon className="h-5 w-5 text-gray-400" as={Mail} />
                   </InputSlot>
                   <InputField
                     placeholder="请输入手机号码"
@@ -228,7 +228,7 @@ export default function Register() {
           </VStack>
 
           {/* 电子邮箱 */}
-          <VStack space="xs">
+          {/* <VStack space="xs">
             <Text className="text-typography-500">电子邮箱</Text>
             <Controller
               control={control}
@@ -251,7 +251,7 @@ export default function Register() {
             {errors.email && (
               <Text className="text-red-500 text-xs mt-1">{errors.email.message}</Text>
             )}
-          </VStack>
+          </VStack> */}
 
           {/* 密码 */}
           <VStack space="xs">

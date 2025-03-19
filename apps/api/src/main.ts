@@ -17,8 +17,15 @@ async function bootstrap() {
   logger.setContext('Bootstrap');
   app.useLogger(logger);
 
+  // 设置全局路由前缀，不包括通配符路由
+  app.setGlobalPrefix('api', {
+    exclude: ['*', '*path'],
+  });
+
   // 注册全局异常过滤器
   app.useGlobalFilters(new HttpExceptionFilter(logger));
+
+  // 注意：我们使用自定义的基于Zod的验证管道，不需要全局的ValidationPipe
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port);

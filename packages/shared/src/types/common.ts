@@ -16,7 +16,7 @@ export enum ApiStatusCode {
 /**
  * 统一API响应接口
  */
-export interface ApiResponse<T> {
+export interface ApiResponse<T = unknown> {
   /**
    * 状态码
    * 0表示成功，其他值表示错误
