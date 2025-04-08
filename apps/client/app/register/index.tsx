@@ -1,10 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { RegisterSchema, RegisterSchemaType } from '@smart-lock/shared/shared';
 import { useRouter } from 'expo-router';
 import { Lock, Eye, EyeOff, Mail, User, CheckIcon } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { ScrollView, TouchableOpacity } from 'react-native';
-import { z } from 'zod';
 
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
@@ -15,44 +15,12 @@ import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useToast } from '@/hooks/use-toast';
-
-// 定义表单验证schema
-const registerSchema = z
-  .object({
-    name: z.string().min(2, '姓名至少需要2个字符'),
-    phoneNumber: z
-      .string()
-      .min(11, '手机号码必须是11位数字')
-      .max(11, '手机号码必须是11位数字')
-      .regex(/^1[3-9]\d{9}$/, '请输入有效的手机号码'),
-    email: z.string().email('请输入有效的电子邮箱'),
-    verificationCode: z
-      .string()
-      .min(4, '验证码至少需要4位')
-      .max(6, '验证码最多6位')
-      .regex(/^\d+$/, '验证码只能包含数字'),
-    password: z
-      .string()
-      .min(8, '密码至少需要8个字符')
-      .regex(/[A-Z]/, '密码需要包含至少一个大写字母')
-      .regex(/[a-z]/, '密码需要包含至少一个小写字母')
-      .regex(/[0-9]/, '密码需要包含至少一个数字'),
-    confirmPassword: z.string(),
-    agreeTerms: z.boolean().refine(val => val === true, {
-      message: '您必须同意服务条款和隐私政策',
-    }),
-  })
-  .refine(data => data.password === data.confirmPassword, {
-    message: '两次输入的密码不匹配',
-    path: ['confirmPassword'],
-  });
-
-// 定义表单数据类型
-type RegisterFormData = z.infer<typeof registerSchema>;
+import { useAuthApi } from '@/hooks/useAuth';
 
 export default function Register() {
   const router = useRouter();
   const { toast } = useToast();
+  const { sendVerificationCode, register } = useAuthApi();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [cooldown, setCooldown] = useState(0);
@@ -63,12 +31,11 @@ export default function Register() {
     handleSubmit,
     formState: { errors },
     getValues,
-  } = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
+  } = useForm<RegisterSchemaType>({
+    resolver: zodResolver(RegisterSchema),
     defaultValues: {
-      name: '',
-      phoneNumber: '',
-      email: '',
+      nikeName: '',
+      phone: '',
       verificationCode: '',
       password: '',
       confirmPassword: '',
@@ -76,27 +43,42 @@ export default function Register() {
     },
   });
 
-  const handleSendVerificationCode = () => {
+  const handleSendVerificationCode = async () => {
     if (cooldown > 0) return;
 
-    // 验证手机号码格式
-    const phoneNumberValue = getValues('phoneNumber');
+    // // 验证手机号码格式
+    // const phoneNumberValue = getValues('phoneNumber');
+    // const phoneRegex = /^1[3-9]\d{9}$/;
+
+    // if (!phoneNumberValue || !phoneRegex.test(phoneNumberValue)) {
+    //   toast({
+    //     title: '手机号码格式错误',
+    //     description: '请输入正确的11位手机号码',
+    //     variant: 'destructive',
+    //     duration: 3000,
+    //   });
+    //   return;
+    // }
+
+    // 验证手机号格式
+    const phoneValue = getValues('phone');
     const phoneRegex = /^1[3-9]\d{9}$/;
 
-    if (!phoneNumberValue || !phoneRegex.test(phoneNumberValue)) {
+    if (!phoneValue || !phoneRegex.test(phoneValue)) {
       toast({
-        title: '手机号码格式错误',
-        description: '请输入正确的11位手机号码',
+        title: '手机号格式错误',
+        description: '请输入有效的手机号',
         variant: 'destructive',
         duration: 3000,
       });
       return;
     }
+    await sendVerificationCode({ phone: phoneValue, biz: 'register' });
 
     // 模拟发送验证码
     toast({
       title: '验证码已发送',
-      description: '请查看您的手机短信。',
+      description: '请查看您的短信。',
       duration: 3000,
     });
 
@@ -112,21 +94,23 @@ export default function Register() {
     }, 1000);
   };
 
-  const onSubmit = async () => {
+  const onSubmit = async (data: RegisterSchemaType) => {
     setIsLoading(true);
 
-    // 模拟 API 调用
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    // 在实际应用中，您会在这里处理注册
-    toast({
-      title: '注册成功',
-      description: '您的账户已成功创建。',
-      duration: 3000,
-    });
-    router.push('/login');
-
-    setIsLoading(false);
+    try{
+      await register(data);
+      // 在实际应用中，您会在这里处理注册
+      toast({
+        title: '注册成功',
+        description: '您的账户已成功创建。',
+        duration: 3000,
+      });
+      router.push('/');
+    } catch (error) {
+      console.error('error', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -148,7 +132,7 @@ export default function Register() {
             <Text className="text-typography-500">姓名</Text>
             <Controller
               control={control}
-              name="name"
+              name="nikeName"
               render={({ field: { onChange, onBlur, value } }) => (
                 <Input>
                   <InputSlot className="pl-3">
@@ -163,24 +147,24 @@ export default function Register() {
                 </Input>
               )}
             />
-            {errors.name && (
-              <Text className="text-red-500 text-xs mt-1">{errors.name.message}</Text>
+            {errors.nikeName && (
+              <Text className="text-red-500 text-xs mt-1">{errors.nikeName.message}</Text>
             )}
           </VStack>
 
           {/* 手机号码 */}
           <VStack space="xs">
-            <Text className="text-typography-500">手机号码</Text>
+            <Text className="text-typography-500">手机号</Text>
             <Controller
               control={control}
-              name="phoneNumber"
+              name="phone"
               render={({ field: { onChange, onBlur, value } }) => (
                 <Input>
                   <InputSlot className="pl-3">
                     <InputIcon className="h-5 w-5 text-gray-400" as={Mail} />
                   </InputSlot>
                   <InputField
-                    placeholder="请输入手机号码"
+                    placeholder="请输入手机号"
                     keyboardType="phone-pad"
                     value={value}
                     onChangeText={onChange}
@@ -189,8 +173,8 @@ export default function Register() {
                 </Input>
               )}
             />
-            {errors.phoneNumber && (
-              <Text className="text-red-500 text-xs mt-1">{errors.phoneNumber.message}</Text>
+            {errors.phone && (
+              <Text className="text-red-500 text-xs mt-1">{errors.phone.message}</Text>
             )}
           </VStack>
 

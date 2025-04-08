@@ -6,5 +6,6 @@
   "eslint.workingDirectories": [{ "mode": "location" }],
   "eslint.options": {
     "overrideConfigFile": "eslint.config.mjs"
-  }
+  },
+  "commentTranslate.hover.enabled": false
 }

@@ -1,5 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, } from '@nestjs/common';
 import { Redis, RedisOptions } from 'ioredis';
+import { AppLoggerService } from 'src/common/logger';
 import { v4 as uuidv4 } from 'uuid';
 
 import { IAdvancedCacheService } from '../interfaces/cache-service.interface';
@@ -16,7 +17,6 @@ interface IoRedisCacheOptions {
 
 @Injectable()
 export class IoRedisCacheService implements IAdvancedCacheService {
-  private readonly logger = new Logger(IoRedisCacheService.name);
   private readonly client: Redis;
   private readonly pubSubClient: Redis | null = null;
 
@@ -24,9 +24,10 @@ export class IoRedisCacheService implements IAdvancedCacheService {
    * 构造函数
    * @param options Redis连接选项
    */
-  constructor(options: IoRedisCacheOptions) {
-    this.client = new Redis(options.redisOptions);
+  constructor(options: IoRedisCacheOptions, @Inject(AppLoggerService) private readonly logger: AppLoggerService) {
+    this.logger.setContext(IoRedisCacheService.name);
 
+    this.client = new Redis(options.redisOptions);
     // 订阅/发布需要单独的连接
     if (options.enablePubSub) {
       this.pubSubClient = new Redis(options.redisOptions);
@@ -34,7 +35,7 @@ export class IoRedisCacheService implements IAdvancedCacheService {
 
     // 连接错误处理
     this.client.on('error', (error: Error) => {
-      this.logger.error('Redis连接错误', error);
+      this.logger.error('Redis连接错误', error.message);
     });
 
     // 成功连接处理

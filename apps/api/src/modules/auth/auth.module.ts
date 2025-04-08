@@ -1,7 +1,8 @@
 import { Module, Inject } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { JwtSharedModule } from 'src/common/auth/jwt-shared.module';
 import { MailModule } from 'src/common/mail/main.module';
+import { SmsModule } from 'src/common/sms/sms.module';
 import { APP_CONFIG, AppConfig } from 'src/config/config.provider';
 
 import { AuthController } from './controllers/auth.controller';
@@ -12,25 +13,13 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 @Module({
   imports: [
     MailModule,
-    // 导入PassportJS模块
+    SmsModule,
+    JwtSharedModule, // 导入共享模块而不是 JwtModule
     PassportModule.register({ defaultStrategy: 'jwt' }),
-
-    // 配置JWT模块
-    JwtModule.registerAsync({
-      inject: [APP_CONFIG],
-      useFactory: (config: AppConfig) => ({
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        secret: config.JWT_SECRET,
-        signOptions: {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-          expiresIn: config.JWT_EXPIRES_IN,
-        },
-      }),
-    }),
   ],
   controllers: [AuthController],
   providers: [AuthService, AuthRepository, JwtStrategy],
-  exports: [AuthService, JwtStrategy, PassportModule],
+  exports: [AuthService, JwtStrategy, PassportModule], // 不再需要导出 JwtModule
 })
 export class AuthModule {
   constructor(@Inject(APP_CONFIG) private config: AppConfig) {}

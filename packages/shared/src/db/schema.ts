@@ -31,7 +31,8 @@ export const users = pgTable(
       .primaryKey()
       .$default(() => createId())
       .unique(),
-    email: varchar('email', { length: 255 }).unique().notNull(),
+    phone: varchar('phone', { length: 11 }).unique().notNull(),
+    email: varchar('email', { length: 255 }).unique(),
     nikeName: varchar('nike_name', { length: 255 }).notNull(),
     passwordHash: text('password_hash').notNull(),
     qrCode: text('qr_code'), // 个人名片二维码
@@ -39,6 +40,7 @@ export const users = pgTable(
     updatedAt: timestamp('updated_at').defaultNow(),
   },
   table => [
+    uniqueIndex('users_phone_idx').on(table.phone),
     uniqueIndex('users_email_idx').on(table.email),
     index('users_qr_code_idx').on(table.qrCode),
   ]
@@ -151,7 +153,7 @@ export const unlockRecords = pgTable(
     deviceId: char('device_id', { length: 5 }).notNull(), // 关联设备
     userId: char('user_id', { length: 5 }), // 可能为空（临时密码开门）
     unlockType: varchar('unlock_type', {
-      enum: ['remote', 'temporary_password', 'direct'],
+      enum: ['remote', 'temporary_password', 'direct','nfc',"permanent_password",'face','eye','fingerprint'],
     }).notNull(), // 开锁类型 (远程开锁、临时密码开锁、钥匙开锁，NFC开锁，永久密码开锁，人脸识别开锁，瞳孔识别开锁，指纹开锁，)
     temporaryPasswordId: char('temporary_password_id', { length: 5 }), // 关联临时密码
     timestamp: timestamp('timestamp').defaultNow(),
@@ -174,24 +176,73 @@ export const notifications = pgTable(
     userId: char('user_id', { length: 5 }).notNull(), // 接收用户
     type: varchar('type', {
       enum: [
-        'doorbell',
-        'temp_password_used',
-        'door_open_alert',
-        'device_low_battery',
-        'door_broken',
-        'device_offline',
-        'device_online',
-        'firmware_update',
+        'doorbell', // 门铃
+        'device_open_alert', // 长时间没有关门
+        'device_low_battery', // 电量低
+        'device_broken', // 门被破坏
+        'device_open', // 开门
+        'device_close', // 关门
+        'device_offline', // 设备离线
+        'device_online', // 设备上线
+        'firmware_update', // 固件更新
       ],
-    }).notNull(), // 通知类型(门铃、临时密码使用、忘记关门、设备电量低、门被破坏、设备离线、设备上线、设备固件需要更新)
+    }).notNull(),
+    data: jsonb('data').$type<{
+      temp_password?: string; // 临时密码
+      device_battery?: number; // 设备电量
+      device_firmware_version?: string; // 设备固件版本
+      openType?: 'remote'| 'temporary_password'| 'direct'|'nfc'|"permanent_password"|'face'|'eye'|'fingerprint'; // 开门方式
+      openFriend?: string; // 开门好友
+      noOpenTime?: number; // 未开门时长
+    }>(),
     message: text('message').notNull(),
     timestamp: timestamp('timestamp').defaultNow(),
     deviceId: char('device_id', { length: 5 }), // 关联设备
-    isRead: boolean('is_read').default(false),
+    importanceLevel: varchar('importance_level', {
+      enum: ['low', 'medium', 'high', 'critical'], // 低，中，高，紧急
+    }).default('medium').notNull(), // 重要程度
+    notificationMethod: varchar('notification_method', {
+      enum: ['app', 'sms', 'call'],
+    }).default('app').notNull(), // 通知方式
+    deliveryStatus: varchar('delivery_status', {
+      enum: ['pending', 'sent', 'delivered', 'failed'],
+    }).default('pending'), // 传递状态
   },
   table => [
     index('notifications_user_time_idx').on(table.userId, table.timestamp.desc()), // 优化用户通知列表查询，按时间倒序
-    index('notifications_user_unread_idx').on(table.userId, table.isRead), // 优化未读通知查询
+    index('notifications_importance_idx').on(table.importanceLevel), // 优化按重要性查询
+    index('notifications_status_idx').on(table.deliveryStatus), // 优化按状态查询
+  ]
+);
+
+/** 通知发送记录表 */
+export const notificationDeliveryLogs = pgTable(
+  'notification_delivery_logs',
+  {
+    id: char('id', { length: 5 })
+      .primaryKey()
+      .$default(() => createId())
+      .unique(),
+    notificationId: char('notification_id', { length: 5 }).notNull(), // 关联到通知记录
+    deliveryMethod: varchar('delivery_method', {
+      enum: ['sms', 'call','app'],
+    }).notNull(), // 发送方式
+    targetNumber: varchar('target_number', { length: 20 }).notNull(), // 目标号码
+    status: varchar('status', {
+      enum: ['pending', 'sent', 'delivered', 'failed'],
+    }).default('pending'), // 发送状态
+    errorMessage: text('error_message'), // 错误消息
+    attemptTime: timestamp('attempt_time').defaultNow(), // 尝试时间
+    completionTime: timestamp('completion_time'), // 完成时间
+    retryCount: integer('retry_count').default(0), // 重试次数
+    aliYunMsgId: varchar('aliyun_msg_id', { length: 64 }), // 阿里云返回的消息ID
+    maxDeliveryTime: timestamp('max_delivery_time'), // 最大等待送达时间
+  },
+  table => [
+    index('delivery_logs_notification_idx').on(table.notificationId),
+    index('delivery_logs_status_idx').on(table.status),
+    index('delivery_logs_method_idx').on(table.deliveryMethod),
+    index('delivery_logs_aliyun_id_idx').on(table.aliYunMsgId),
   ]
 );
 
@@ -381,9 +432,9 @@ export const unlockRecordsRelations = relations(unlockRecords, ({ one }) => ({
 /** 通知关系
  * 一个通知只能对应一个用户
  * 一个通知只能对应一个设备
- * 一个通知可以有很多类型，不只是开锁才会进行通知(例如：门铃、临时密码使用、门开警报，设备电量低等等)
+ * 一个通知可以有多条发送记录（例如重试情况）
  */
-export const notificationsRelations = relations(notifications, ({ one }) => ({
+export const notificationsRelations = relations(notifications, ({ one, many }) => ({
   user: one(users, {
     fields: [notifications.userId],
     references: [users.id],
@@ -391,6 +442,17 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
   device: one(devices, {
     fields: [notifications.deviceId],
     references: [devices.id],
+  }),
+  deliveryLogs: many(notificationDeliveryLogs),
+}));
+
+/** 通知发送记录关系
+ * 一条发送记录对应一条通知
+ */
+export const notificationDeliveryLogsRelations = relations(notificationDeliveryLogs, ({ one }) => ({
+  notification: one(notifications, {
+    fields: [notificationDeliveryLogs.notificationId],
+    references: [notifications.id],
   }),
 }));
 
@@ -414,6 +476,8 @@ erDiagram
 
   deviceGroups ||--o{ devices : "包含"
   userGroups ||--o{ friends : "分组"
+
+  notifications ||--o{ notificationDeliveryLogs : "产生"
 
   deviceGroupRelations }o--|| devices : "设备"
   deviceGroupRelations }o--|| deviceGroups : "分组"

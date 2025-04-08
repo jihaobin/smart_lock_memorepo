@@ -1,5 +1,5 @@
 import { Global, Module, OnModuleInit } from '@nestjs/common';
-import { connect, db, setLogWriter } from '@smart-lock/shared';
+import { connect, db, setLogWriter } from '@smart-lock/shared/server';
 
 import { DB } from './database.provider';
 import { AppLoggerService } from '../common/logger';

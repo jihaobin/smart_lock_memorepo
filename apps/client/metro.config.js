@@ -22,5 +22,11 @@ config.resolver.nodeModulesPaths = [
 // 3. 强制 Metro 解析工作空间内的模块，而不仅仅是基于 node_modules
 config.resolver.disableHierarchicalLookup = true;
 
+// 4. 添加对子路径导出的支持
+config.resolver.extraNodeModules = {
+  '@smart-lock/shared': path.resolve(workspaceRoot, 'packages/shared'),
+  '@smart-lock/shared/client': path.resolve(workspaceRoot, 'packages/shared/dist/client'),
+};
+
 // 应用 NativeWind 配置
 module.exports = withNativeWind(config, { input: './global.css' });

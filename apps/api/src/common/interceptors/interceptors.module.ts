@@ -1,5 +1,5 @@
 import { Module, Global, Provider, DynamicModule } from '@nestjs/common';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_INTERCEPTOR , Reflector } from '@nestjs/core';
 
 import { PaginationInterceptor } from './pagination.interceptor';
 import { TimeoutInterceptor } from './timeout.interceptor';
@@ -84,15 +84,15 @@ export class InterceptorsModule {
       transform: {
         createProvider: () => ({
           provide: TransformInterceptor,
-          useFactory: (logger: AppLoggerService) =>
-            new TransformInterceptor(logger, { defaultSuccessMessage }),
-          inject: [AppLoggerService],
+          useFactory: (logger: AppLoggerService, reflector: Reflector) =>
+            new TransformInterceptor(logger, { defaultSuccessMessage }, reflector),
+          inject: [AppLoggerService, Reflector],
         }),
         createGlobalProvider: () => ({
           provide: APP_INTERCEPTOR,
-          useFactory: (logger: AppLoggerService) =>
-            new TransformInterceptor(logger, { defaultSuccessMessage }),
-          inject: [AppLoggerService],
+          useFactory: (logger: AppLoggerService, reflector: Reflector) =>
+            new TransformInterceptor(logger, { defaultSuccessMessage }, reflector),
+          inject: [AppLoggerService, Reflector],
         }),
       },
       timeout: {

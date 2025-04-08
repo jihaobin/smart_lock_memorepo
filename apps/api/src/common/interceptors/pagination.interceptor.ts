@@ -29,12 +29,12 @@ export interface PaginationInterceptorOptions {
   /**
    * 默认页码
    */
-  defaultPage?: number;
+  defaultPage: number;
 
   /**
    * 默认每页条数
    */
-  defaultLimit?: number;
+  defaultLimit: number;
 }
 
 /**
@@ -45,19 +45,18 @@ export interface PaginationInterceptorOptions {
 export class PaginationInterceptor<T>
   implements NestInterceptor<IPaginatedResult<T>, PaginatedData<T>>
 {
-  private readonly defaultOptions: PaginationInterceptorOptions = {
-    defaultPage: 1,
-    defaultLimit: 10,
-  };
 
   constructor(
     private readonly logger: AppLoggerService,
-    private readonly options: PaginationInterceptorOptions = {},
+    private readonly options: PaginationInterceptorOptions = {
+      defaultPage: 1,
+      defaultLimit: 10,
+    },
   ) {
     if (this.logger) {
       this.logger.setContext('PaginationInterceptor');
     }
-    this.options = { ...this.defaultOptions, ...options };
+    this.options = { ...this.options, ...options };
   }
 
   /**

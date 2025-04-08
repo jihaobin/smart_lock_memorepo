@@ -11,9 +11,17 @@ import {
 } from '@smart-lock/shared';
 import { ZodBody } from 'src/common';
 import { Public } from 'src/common/auth/jwt-auth.guard';
+import { z } from 'zod';
 
 import { ZodValidationPipe } from '../../../common/pipes';
 import { AuthService } from '../services/auth.service';
+
+// 刷新令牌请求模式
+const RefreshTokenSchema = z.object({
+  refreshToken: z.string().min(1, '刷新令牌不能为空'),
+});
+
+type RefreshTokenSchemaType = z.infer<typeof RefreshTokenSchema>;
 
 @Controller('auth')
 export class AuthController {
@@ -29,10 +37,7 @@ export class AuthController {
   @UsePipes(new ZodValidationPipe(RegisterSchema))
   async register(@Body() registerDto: RegisterSchemaType) {
     const result = await this.authService.register(registerDto);
-    return {
-      message: '注册成功',
-      data: result,
-    };
+    return result;
   }
 
   /**
@@ -45,10 +50,20 @@ export class AuthController {
   @UsePipes(new ZodValidationPipe(LoginSchema))
   async login(@Body() loginDto: LoginSchemaType) {
     const result = await this.authService.login(loginDto);
-    return {
-      message: '登录成功',
-      data: result,
-    };
+    return result;
+  }
+
+  /**
+   * 刷新访问令牌
+   * @param refreshTokenDto 刷新令牌信息
+   * @returns 新的访问令牌和刷新令牌
+   */
+  @Public()
+  @Post('refresh-token')
+  @UsePipes(new ZodValidationPipe(RefreshTokenSchema))
+  async refreshToken(@Body() refreshTokenDto: RefreshTokenSchemaType) {
+    const result = await this.authService.refreshToken(refreshTokenDto.refreshToken);
+    return result;
   }
 
   /**
@@ -60,10 +75,10 @@ export class AuthController {
   @Post('forgot-password')
   @UsePipes(new ZodValidationPipe(ForgotPasswordSchema))
   async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordSchemaType) {
-    // 这里应该有发送重置密码邮件的逻辑，暂不实现
+    // 使用手机号发送重置密码短信验证码
     return {
-      message: '重置密码邮件已发送',
-      data: { email: forgotPasswordDto.email },
+      message: '重置密码验证码已发送到您的手机',
+      data: { phone: forgotPasswordDto.phone },
     };
   }
 
@@ -73,13 +88,13 @@ export class AuthController {
    * @returns 验证码发送结果
    */
   @Public()
-  @Post('verify-code')
+  @Post('send_verification_code')
   @ZodBody(VerifyCodeSchema)
-  async verifyCode(@Body() verifyCodeDto: VerifyCodeSchemaType) {
-    const result = await this.authService.sendVerifyCode(verifyCodeDto.email);
-    return {
-      message: '验证码发送成功',
-      data: result,
-    };
+  async sendVerificationCode(@Body() verifyCodeDto: VerifyCodeSchemaType) {
+    const result = await this.authService.sendVerifyCode(
+      verifyCodeDto.phone,
+      verifyCodeDto.biz,
+    );
+    return result;
   }
 }

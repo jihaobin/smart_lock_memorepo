@@ -1,0 +1,266 @@
+{
+  "info": {
+    "_postman_id": "1a2b3c4d-5e6f-7g8h-9i0j-1k2l3m4n5o6p",
+    "name": "智能锁通知API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "用于创建和管理智能锁系统的通知"
+  },
+  "item": [
+    {
+      "name": "创建并发送通知",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"示例通知\",\n  \"content\": \"这是一个示例通知内容\",\n  \"type\": \"DEVICE_OFFLINE\",\n  \"userId\": \"user_123\",\n  \"deviceId\": \"device_123\",\n  \"data\": {\n    \"lastOnlineTime\": \"2024-04-02T15:30:00Z\",\n    \"batteryLevel\": 15\n  },\n  \"importanceLevel\": \"HIGH\",\n  \"notificationMethod\": \"sms\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/notifications",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "notifications"
+          ]
+        },
+        "description": "创建并发送通知，支持多种通知类型和重要级别"
+      }
+    },
+    {
+      "name": "获取通知状态",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/notifications/{{notification_id}}/status",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "notifications",
+            "{{notification_id}}",
+            "status"
+          ]
+        },
+        "description": "获取指定通知的发送状态和递送日志"
+      }
+    },
+    {
+      "name": "获取通知列表",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/notifications?userId={{user_id}}&page=1&limit=10&type=DEVICE_OFFLINE",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "notifications"
+          ],
+          "query": [
+            {
+              "key": "userId",
+              "value": "{{user_id}}"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            },
+            {
+              "key": "type",
+              "value": "DEVICE_OFFLINE"
+            }
+          ]
+        },
+        "description": "获取通知列表，支持分页和多种过滤条件"
+      }
+    },
+    {
+      "name": "门铃通知(低级别)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"门铃通知-低级别\",\n  \"content\": \"有人按响了您的门铃\",\n  \"type\": \"DOORBELL\",\n  \"userId\": \"{{user_id}}\",\n  \"deviceId\": \"device_101\",\n  \"data\": {\n    \"timestamp\": \"2024-04-02T10:00:00Z\",\n    \"visitorImageUrl\": \"https://example.com/visitor/img1.jpg\"\n  },\n  \"importanceLevel\": \"LOW\",\n  \"notificationMethod\": \"app\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/notifications",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "notifications"
+          ]
+        },
+        "description": "发送低级别门铃通知示例"
+      }
+    },
+    {
+      "name": "设备电量低(中级别)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"设备电量低-中级别\",\n  \"content\": \"您的智能锁电量低于20%，请及时充电\",\n  \"type\": \"DEVICE_LOW_BATTERY\",\n  \"userId\": \"{{user_id}}\",\n  \"deviceId\": \"device_103\",\n  \"data\": {\n    \"batteryLevel\": 18,\n    \"estimatedDaysRemaining\": 7\n  },\n  \"importanceLevel\": \"MEDIUM\",\n  \"notificationMethod\": \"app\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/notifications",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "notifications"
+          ]
+        },
+        "description": "发送中级别设备电量低通知示例"
+      }
+    },
+    {
+      "name": "设备离线(高级别)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"设备离线-高级别\",\n  \"content\": \"您的智能锁已离线超过2小时，请检查设备\",\n  \"type\": \"DEVICE_OFFLINE\",\n  \"userId\": \"{{user_id}}\",\n  \"deviceId\": \"device_107\",\n  \"data\": {\n    \"timestamp\": \"2024-04-02T18:00:00Z\",\n    \"lastOnlineTime\": \"2024-04-02T16:00:00Z\",\n    \"offlineDuration\": \"02:00:00\",\n    \"possibleReason\": \"power_issue\"\n  },\n  \"importanceLevel\": \"HIGH\",\n  \"notificationMethod\": \"sms\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/notifications",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "notifications"
+          ]
+        },
+        "description": "发送高级别设备离线通知示例"
+      }
+    },
+    {
+      "name": "设备故障(紧急级别)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"设备故障-紧急级别\",\n  \"content\": \"您的智能锁核心组件严重故障，设备无法正常工作，请立即联系客服\",\n  \"type\": \"DEVICE_BROKEN\",\n  \"userId\": \"{{user_id}}\",\n  \"deviceId\": \"device_104\",\n  \"data\": {\n    \"errorCode\": \"E501\",\n    \"component\": \"main_controller\",\n    \"severity\": \"critical\",\n    \"supportContact\": \"+86-10-12345678\"\n  },\n  \"importanceLevel\": \"CRITICAL\",\n  \"notificationMethod\": \"call\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/notifications",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "notifications"
+          ]
+        },
+        "description": "发送紧急级别设备故障通知示例"
+      }
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "your_jwt_token_here",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "user_123",
+      "type": "string"
+    },
+    {
+      "key": "notification_id",
+      "value": "notification_123",
+      "type": "string"
+    }
+  ]
+}

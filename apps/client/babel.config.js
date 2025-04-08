@@ -10,7 +10,9 @@ module.exports = function(api) {
             root: ["./"],
             alias: {
                 "@": "./",
-                "tailwind.config": "./tailwind.config.js"
+                "tailwind.config": "./tailwind.config.js",
+                '@smart-lock/shared': '../../packages/shared/dist',
+                '@smart-lock/shared/client': '../../packages/shared/dist/client',
             }
         }]]
     };

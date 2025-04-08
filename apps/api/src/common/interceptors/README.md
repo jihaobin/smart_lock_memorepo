@@ -257,3 +257,29 @@ function renderPaginatedData(result) {
   renderPagination(meta);
 }
 ```
+
+## 拦截器使用指南
+
+### 响应转换拦截器 (TransformInterceptor)
+
+响应转换拦截器用于统一API响应格式，在全局范围内自动应用。
+
+#### 跳过响应转换
+
+在某些情况下，如对接第三方系统时，可能需要返回原始的控制器数据而不是标准的API响应格式。使用 `SkipTransform` 装饰器可以跳过响应转换：
+
+```typescript
+import { Controller, Get } from '@nestjs/common';
+import { SkipTransform } from '@common/interceptors';
+
+@Controller('external')
+export class ExternalController {
+  @Get('data')
+  @SkipTransform()  // 使用装饰器跳过响应转换
+  getExternalData() {
+    return { rawData: 'value' };  // 将直接返回这个对象，不会被包装
+  }
+}
+```
+
+使用此装饰器的接口将返回控制器方法的原始返回值，而不会被转换为标准响应格式。

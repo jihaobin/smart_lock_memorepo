@@ -1,6 +1,6 @@
 import { NodePgDatabase } from 'drizzle-orm/node-postgres/driver';
 
-import * as dbSchema from '../db/schema';
+import * as dbSchema from '../../db/schema';
 
 export type DbType = NodePgDatabase<typeof dbSchema>;
 

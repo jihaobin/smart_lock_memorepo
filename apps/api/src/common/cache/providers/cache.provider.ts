@@ -1,5 +1,6 @@
 import { Provider } from '@nestjs/common';
 import { RedisOptions } from 'ioredis';
+import { AppLoggerService } from 'src/common/logger';
 
 import {
   IAdvancedCacheService,
@@ -59,15 +60,19 @@ export const createIoRedisCacheService = (
   options: IoRedisCacheOptions,
 ): Provider => ({
   provide: 'IOREDIS_CACHE_SERVICE',
-  useFactory: () => {
+  useFactory: (logger: AppLoggerService) => {
     const redisOptions: RedisOptions = {
       ...options.redisOptions,
     };
-    return new IoRedisCacheService({
-      redisOptions,
-      enablePubSub: options.enablePubSub ?? false,
-    });
+    return new IoRedisCacheService(
+      {
+        redisOptions,
+        enablePubSub: options.enablePubSub ?? false,
+      },
+      logger
+    );
   },
+  inject: [AppLoggerService],
 });
 
 /**

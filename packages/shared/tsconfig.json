@@ -1,9 +1,23 @@
 {
-  "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "node",
     "baseUrl": "./src",
     "outDir": "./dist",
-    "incremental": false
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "@smart-lock/shared": ["./index.ts"],
+      "@smart-lock/shared/client": ["./client/index.ts"],
+      "@smart-lock/shared/server": ["./server/index.ts"],
+      "@smart-lock/shared/api": ["./api/index.ts"],
+      "@smart-lock/shared/shared": ["./shared/index.ts"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

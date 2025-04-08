@@ -1,10 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { LoginSchema, LoginSchemaType } from '@smart-lock/shared/shared';
 import { useRouter } from 'expo-router';
 import { Lock, Mail } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { TouchableOpacity, ScrollView } from 'react-native';
-import { z } from 'zod';
 
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText, ButtonIcon } from '@/components/ui/button';
@@ -15,22 +15,13 @@ import { EyeIcon, EyeOffIcon, CheckIcon, Icon } from '@/components/ui/icon';
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-
-// 定义表单验证schema
-const loginSchema = z.object({
-  email: z.string().email('请输入有效的电子邮箱').min(1, '邮箱不能为空'),
-  password: z.string().min(6, '密码至少6位字符'),
-  rememberMe: z.boolean().optional(),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
+import { useAuthApi } from '@/hooks/useAuth';
 
 export default function Login() {
   const { toast } = useToast();
   const router = useRouter();
-  const { login } = useAuth();
+  const { login } = useAuthApi();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -43,10 +34,10 @@ export default function Login() {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
+  } = useForm<LoginSchemaType>({
+    resolver: zodResolver(LoginSchema),
     defaultValues: {
-      email: '',
+      phone: '',
       password: '',
       rememberMe: false,
     },
@@ -56,39 +47,26 @@ export default function Login() {
     setShowPassword(prevState => !prevState);
   };
 
-  const onSubmit = async (data: LoginFormData) => {
+  const onSubmit = async (data: LoginSchemaType) => {
     setIsLoading(true);
 
-    // 模拟API调用的延迟
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // 预设的正确手机号和密码
-    const correctPhone = '13800138000';
-    const correctPassword = 'password123';
-
-    if (data.email === correctPhone && data.password === correctPassword) {
-      login({
-        id: '1',
-        name: '测试用户',
-        email: 'test@example.com',
-        phone: data.email,
+    try{
+      const res = await login({
+        phone: data.phone,
+        password: data.password,
+        rememberMe: data.rememberMe,
       });
       toast({
         title: '登录成功',
-        description: '欢迎回来，测试用户！',
+        description: `欢迎回来，${res.user.nikeName}！`,
         duration: 3000,
       });
       router.push('/');
-    } else {
-      toast({
-        title: '登录失败',
-        description: '手机号或密码错误，请重试。',
-        variant: 'destructive',
-        duration: 3000,
-      });
+    } catch (error) {
+      console.error('error', error);
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   return (
@@ -106,18 +84,18 @@ export default function Login() {
 
         <VStack space="md" className="space-y-6">
           <VStack space="xs">
-            <Text className="text-typography-500">邮箱</Text>
+            <Text className="text-typography-500">手机号</Text>
             <Controller
               control={control}
-              name="email"
+              name="phone"
               render={({ field: { onChange, onBlur, value } }) => (
                 <Input>
                   <InputSlot className="pl-3">
                     <InputIcon className="h-5 w-5 text-gray-400" as={Mail} />
                   </InputSlot>
                   <InputField
-                    placeholder="请输入邮箱"
-                    keyboardType="email-address"
+                    placeholder="请输入手机号"
+                    keyboardType="phone-pad"
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
@@ -125,7 +103,7 @@ export default function Login() {
                 </Input>
               )}
             />
-            {errors.email && <Text className="text-error-500 text-xs">{errors.email.message}</Text>}
+            {errors.phone && <Text className="text-error-500 text-xs">{errors.phone.message}</Text>}
           </VStack>
 
           <VStack space="xs">

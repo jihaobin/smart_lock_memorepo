@@ -6,3 +6,8 @@ export * from './interceptors';
 export * from './validation';
 export * from './pipes';
 export * from './decorators';
+
+// 导出服务模块
+export * from './cache';
+export * from './sms';
+export * from './sts';

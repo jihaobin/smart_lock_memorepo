@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException, Inject } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { DbType, schema } from '@smart-lock/shared';
+import { DbType, schema } from '@smart-lock/shared/server';
 import { eq } from 'drizzle-orm';
 import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
@@ -36,7 +36,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       const result = await this.db
         .select()
         .from(schema.users)
-        .where(eq(schema.users.email, payload.email))
+        .where(eq(schema.users.phone, payload.phone))
         .limit(1);
 
       const user = result[0];

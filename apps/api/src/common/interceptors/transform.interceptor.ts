@@ -4,13 +4,26 @@ import {
   ExecutionContext,
   CallHandler,
   HttpStatus,
+  SetMetadata,
 } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { ApiResponse, ApiStatusCode } from '@smart-lock/shared';
 import { Request, Response } from 'express';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { AppLoggerService } from '../logger';
+
+/**
+ * 用于标记跳过响应转换的元数据键
+ */
+export const SKIP_TRANSFORM_KEY = 'skipTransform';
+
+/**
+ * 跳过响应转换装饰器
+ * 用于标记控制器方法返回原始数据，不进行标准格式转换
+ */
+export const SkipTransform = () => SetMetadata(SKIP_TRANSFORM_KEY, true);
 
 /**
  * 转换拦截器选项接口
@@ -38,7 +51,7 @@ export interface TransformInterceptorOptions {
  */
 @Injectable()
 export class TransformInterceptor<T>
-  implements NestInterceptor<T, ApiResponse<T>>
+  implements NestInterceptor<T, ApiResponse<T> | T>
 {
   private readonly defaultOptions: TransformInterceptorOptions = {
     logResponse: true,
@@ -49,6 +62,7 @@ export class TransformInterceptor<T>
   constructor(
     private readonly logger: AppLoggerService,
     private readonly options: TransformInterceptorOptions = {},
+    private readonly reflector?: Reflector,
   ) {
     this.logger.setContext('TransformInterceptor');
     this.options = { ...this.defaultOptions, ...options };
@@ -63,7 +77,7 @@ export class TransformInterceptor<T>
   intercept(
     context: ExecutionContext,
     next: CallHandler,
-  ): Observable<ApiResponse<T>> {
+  ): Observable<ApiResponse<T> | T> {
     const request = context.switchToHttp().getRequest<Request>();
     // 使用类型断言确保类型安全
     const method = request.method;
@@ -73,6 +87,12 @@ export class TransformInterceptor<T>
     const query = request.query as Record<string, unknown>;
     const path = url; // 保存请求路径，与异常过滤器保持一致
     const now = Date.now();
+
+    // 检查是否需要跳过转换
+    const skipTransform = this.reflector?.get<boolean>(
+      SKIP_TRANSFORM_KEY,
+      context.getHandler(),
+    ) || false;
 
     // 记录请求日志
     if (this.options.logResponse) {
@@ -101,16 +121,7 @@ export class TransformInterceptor<T>
           ? Date.now()
           : undefined;
 
-        // 构建统一响应格式，与异常过滤器返回格式保持一致
-        const result: ApiResponse<T> = {
-          code: ApiStatusCode.SUCCESS,
-          message: this.getSuccessMessage(data),
-          data: (data as T) || null,
-          timestamp,
-          path, // 添加请求路径，与异常过滤器保持一致
-        };
-
-        // 记录响应日志
+        // 记录响应完成日志
         if (this.options.logResponse) {
           const duration = Date.now() - now;
           this.logger.log(
@@ -121,11 +132,27 @@ export class TransformInterceptor<T>
           // 在开发环境下记录响应详情
           if (process.env.NODE_ENV !== 'production') {
             this.logger.debug(
-              `响应详情: ${this.sanitizeResponseData(result)}`,
+              `响应详情: ${this.sanitizeResponseData(
+                skipTransform ? data : { data, transformed: true },
+              )}`,
               'TransformInterceptor',
             );
           }
         }
+
+        // 如果标记为跳过转换，则直接返回原始数据
+        if (skipTransform) {
+          return data;
+        }
+
+        // 构建统一响应格式，与异常过滤器返回格式保持一致
+        const result: ApiResponse<T> = {
+          code: ApiStatusCode.SUCCESS,
+          message: this.getSuccessMessage(data),
+          data: (data as T),
+          timestamp: timestamp || Date.now(),
+          path, // 添加请求路径，与异常过滤器保持一致
+        };
 
         return result;
       }),
@@ -144,7 +171,7 @@ export class TransformInterceptor<T>
     }
 
     // 否则使用默认成功消息
-    return this.options.defaultSuccessMessage;
+    return this.options.defaultSuccessMessage || "";
   }
 
   /**

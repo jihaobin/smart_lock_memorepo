@@ -1,4 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { AppLoggerService } from 'src/common/logger';
 
 import { ICacheService } from '../interfaces/cache-service.interface';
 
@@ -16,12 +17,12 @@ interface CacheItem<T> {
  */
 @Injectable()
 export class MemoryCacheService implements ICacheService {
-  private readonly logger = new Logger(MemoryCacheService.name);
   private readonly cache = new Map<string, CacheItem<unknown>>();
   private readonly defaultTTL = 300; // 默认缓存时间，单位秒
   private readonly cleanupInterval: NodeJS.Timeout;
 
-  constructor() {
+  constructor(private readonly logger: AppLoggerService) {
+    this.logger.setContext(MemoryCacheService.name)
     this.logger.log('自定义内存缓存服务已初始化');
     // 定期清理过期缓存
     this.cleanupInterval = setInterval(() => this.cleanupExpiredItems(), 60000); // 每分钟清理一次

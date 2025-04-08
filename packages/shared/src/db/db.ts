@@ -12,7 +12,6 @@ dotenv.config({ path: '../../.env' });
 if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL 环境变量未配置');
 }
-console.info('DATABASE_URL', process.env.DATABASE_URL);
 
 // 扩展日志接口
 interface EnhancedLogWriter extends LogWriter {
@@ -44,6 +43,10 @@ const db = drizzle(connection, {
 });
 
 const connect = async () => {
+  if (!connection) {
+    throw new Error('数据库连接未初始化，这可能是因为当前不是服务器环境');
+  }
+
   try {
     const client = await connection.connect();
     logWriter.write('数据库连接成功');

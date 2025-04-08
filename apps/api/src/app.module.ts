@@ -1,17 +1,19 @@
+import { BullModule } from '@nestjs/bullmq';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
-import { JwtModule } from '@nestjs/jwt';
 
+import { STSModule } from './common';
 import { JwtAuthGuard } from './common/auth/jwt-auth.guard';
-import { CacheModule } from './common/cache';
+import { JwtSharedModule } from './common/auth/jwt-shared.module';
+import { CacheModule, CacheType } from './common/cache';
 import { ExceptionsModule } from './common/exceptions';
 import { InterceptorsModule } from './common/interceptors';
 import { LoggerModule, LogFormatterType, LogLevel } from './common/logger';
 import { LoggerMiddleware } from './common/logger/middleware/logger.middleware';
 import ConfigModule from './config/config.module';
-import { APP_CONFIG, AppConfig } from './config/config.provider';
 import DatabaseModule from './database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { NotificationModule } from './modules/notification/notification.module';
 
 @Module({
   imports: [
@@ -31,23 +33,37 @@ import { AuthModule } from './modules/auth/auth.module';
       },
     }),
 
-    // JWT模块，用于JWT验证
-    JwtModule.registerAsync({
-      inject: [APP_CONFIG],
-      useFactory: (config: AppConfig) => ({
-        secret: config.JWT_SECRET,
-        signOptions: {
-          expiresIn: config.JWT_EXPIRES_IN,
-        },
-      }),
+    // 配置和数据库模块先导入
+    ConfigModule,
+    DatabaseModule,
+
+    // JWT 模块
+    JwtSharedModule,
+
+    // BullMQ 模块
+    BullModule.forRoot({
+      connection: {
+        host: 'localhost',
+        port: 6379,
+      },
     }),
 
-    // 缓存模块 - 使用简单同步注册
-    CacheModule.register(),
+    // 业务模块
+    AuthModule,
+    NotificationModule,
 
-    // 数据库和配置模块
-    DatabaseModule,
-    ConfigModule,
+    // 缓存模块 - 使用redis
+    CacheModule.registerAsync({
+      type: CacheType.IOREDIS,
+      redisOptions: {
+        host: 'localhost',
+        port: 6379,
+        db: 0,
+      },
+    }),
+
+    // 功能模块
+    STSModule,
 
     // 异常过滤器模块
     ExceptionsModule.forRoot({
@@ -61,9 +77,6 @@ import { AuthModule } from './modules/auth/auth.module';
       timeout: 30000,
       defaultSuccessMessage: '操作成功',
     }),
-
-    // 业务模块
-    AuthModule,
   ],
   controllers: [],
   providers: [

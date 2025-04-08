@@ -103,7 +103,7 @@ export class CacheInterceptor implements NestInterceptor {
         void (this.cacheManager as unknown as TypedCache).set(
           key,
           data,
-          (this.options?.ttl || this.defaultOptions.ttl) * 1000,
+          ((this.options?.ttl || this.defaultOptions.ttl)) as number * 1000,
         );
 
         if (this.options?.logCacheEvents) {

@@ -39,7 +39,7 @@ export default function Home() {
         <VStack className="p-4 flex-1">
           <HStack className="justify-between mb-6">
             <VStack>
-              <Text className="text-2xl font-bold">您好，{user?.name ?? '用户'}</Text>
+              <Text className="text-2xl font-bold">您好，{user?.nikeName ?? '用户'}</Text>
               <Text className="text-gray-500">欢迎使用智能门锁</Text>
             </VStack>
             <Link href="/user-management" asChild>

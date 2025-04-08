@@ -1,28 +1,16 @@
 /**
- * 类型导出
+ * 共享库主入口文件
+ * 导出所有平台通用的代码
  */
-export * from './types';
 
-/**
- * 工具函数导出
- */
-export * from './utils';
+// 直接导出共享模块的所有内容
+export * from './shared';
 
-/**
- * 数据库相关导出
- */
-export { connect, db, setLogWriter } from './db';
-export * as schema from './db/schema';
+// 命名空间导出（方便使用）
+import * as SharedCommon from './shared/common/index';
+import * as SharedTypes from './shared/types';
+import * as SharedUtils from './shared/utils';
 
-/**
- * API响应类型导出
- */
-export { ErrorCode } from './types/common';
-export type { ApiStatusCode, ApiResponse, PaginationMeta, PaginatedData } from './types/common';
-
-// 为了向后兼容，保留原有的命名空间导出
-import * as TypeExports from './types';
-import * as UtilsExports from './utils';
-
-export const types = TypeExports;
-export const utils = UtilsExports;
+export const types = SharedTypes;
+export const utils = SharedUtils;
+export const common = SharedCommon;

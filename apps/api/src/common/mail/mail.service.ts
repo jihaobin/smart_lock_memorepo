@@ -34,7 +34,6 @@ const MAIL_LIMITS = {
 @Injectable()
 export class MailService {
   private transporter: nodemailer.Transporter;
-  private instanceId = Math.random().toString(36).substring(2, 10);
 
   constructor(
     @Inject(APP_CONFIG)
@@ -75,8 +74,8 @@ export class MailService {
     return `mail:limit:total:hourly:${date}:${hour}`;
   }
 
-  private getRegisterVerificationCodeKey(email: string) {
-    return `verificationCode:${email}`;
+  private getRegisterVerificationCodeKey(email: string, biz: string) {
+    return `verificationCode:${biz}:${email}`;
   }
 
   private async checkEmailLimit(email: string): Promise<void> {
@@ -216,14 +215,16 @@ export class MailService {
    * @param params.email 邮箱
    * @param params.codeLength 验证码长度
    * @param params.expires 验证码有效期(分钟)
+   * @param params.biz 业务类型
    * @returns
    */
   async sendVerifyCode(params: {
     email: string;
     codeLength?: number;
     expires?: number;
+    biz: string;
   }) {
-    const { email, codeLength = 6, expires = 10 } = params;
+    const { email, codeLength = 6, expires = 10, biz} = params;
     const code = Math.floor(
       10 ** (codeLength - 1) +
         Math.random() * (10 ** codeLength - 10 ** (codeLength - 1)),
@@ -235,7 +236,7 @@ export class MailService {
     };
     await this.sendEmail(mailInfo);
     // 存储验证码在缓存中
-    const verificationCodeKey = this.getRegisterVerificationCodeKey(email);
+    const verificationCodeKey = this.getRegisterVerificationCodeKey(email, biz);
     await this.cacheService.set(verificationCodeKey, code, expires * 60);
 
     return code;
@@ -246,12 +247,13 @@ export class MailService {
    * @param params
    * @param params.email 邮箱
    * @param params.code 验证码
+   * @param params.biz 业务类型
    * @returns
    */
-  async verifyCode(params: { email: string; code: string }) {
-    const { email, code } = params;
+  async verifyCode(params: { email: string; code: string; biz: string }) {
+    const { email, code, biz } = params;
     const cacheCode = await this.cacheService.get<string>(
-      this.getRegisterVerificationCodeKey(email),
+      this.getRegisterVerificationCodeKey(email, biz),
     );
     if (cacheCode !== code) {
       throw new ValidationException('验证码错误');
