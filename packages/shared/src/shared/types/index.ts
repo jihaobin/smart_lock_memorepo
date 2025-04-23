@@ -9,8 +9,12 @@ export * from './error';
 
 // 导出所有认证类型
 export * from './auth';
+export * from './admin/auth';
+export * from './admin';
+
+export * from './friend';
 
 // 导出所有用户类型
 export * from './user';
 
-export * from './notification'
+export * from './notification';

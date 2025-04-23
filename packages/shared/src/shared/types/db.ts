@@ -1,8 +1,9 @@
 import { NodePgDatabase } from 'drizzle-orm/node-postgres/driver';
 
-import * as dbSchema from '../../db/schema';
+import * as adminSchema from '../../db/schema/admin_schema';
+import * as dbSchema from '../../db/schema/schema';
 
-export type DbType = NodePgDatabase<typeof dbSchema>;
+export type DbType = NodePgDatabase<typeof dbSchema & typeof adminSchema>;
 
 // 数据库配置类型
 export interface DbConfig {

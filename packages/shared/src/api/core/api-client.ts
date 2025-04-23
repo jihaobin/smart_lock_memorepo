@@ -102,14 +102,14 @@ export class ApiClient {
     this.errorHandler = config.errorHandler || new BaseErrorHandler();
 
     // 创建axios实例时剔除自定义配置属性
-    const {...axiosConfig } = config;
+    const { ...axiosConfig } = config;
 
     this.axiosInstance = axios.create({
       baseURL: config.baseURL,
       timeout: config.timeout || 10000,
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
+        Accept: 'application/json',
         ...config.headers,
       },
       ...axiosConfig,
@@ -124,7 +124,7 @@ export class ApiClient {
   protected setupInterceptors(): void {
     // 请求拦截器
     this.axiosInstance.interceptors.request.use(
-      async (config) => {
+      async config => {
         // 如果已有认证头，直接使用
         if (config.headers.Authorization) {
           return config;
@@ -133,6 +133,7 @@ export class ApiClient {
         try {
           // 获取认证令牌
           const token = await this.platformAdapter.getStorage().getItem(this.config.tokenKey!);
+          console.log('token', token);
           if (token) {
             config.headers.Authorization = `Bearer ${token}`;
           }
@@ -142,7 +143,7 @@ export class ApiClient {
 
         return config;
       },
-      (error) => Promise.reject(error)
+      error => Promise.reject(error)
     );
 
     // 响应拦截器
@@ -167,22 +168,35 @@ export class ApiClient {
 
           // 如果是401未授权，可能需要刷新Token或重定向到登录
           if (status === 401) {
-            try {
-              // 尝试刷新Token
-              const refreshed = await this.refreshToken();
-              if (refreshed) {
-                // 重新发送原始请求
-                const originalRequest = error.config;
-                if (originalRequest) {
-                  const token = await this.platformAdapter.getStorage().getItem(this.config.tokenKey!);
-                  if (token && originalRequest.headers) {
-                    originalRequest.headers.Authorization = `Bearer ${token}`;
+            // 检查是否已经尝试过刷新Token，避免死循环
+            const isRefreshTokenRequest = error.config?.url?.includes('/auth/refresh-token');
+
+            if (!isRefreshTokenRequest) {
+              try {
+                // 尝试刷新Token
+                const refreshed = await this.refreshToken();
+                if (refreshed) {
+                  // 重新发送原始请求
+                  const originalRequest = error.config;
+                  if (originalRequest) {
+                    const token = await this.platformAdapter
+                      .getStorage()
+                      .getItem(this.config.tokenKey!);
+                    if (token && originalRequest.headers) {
+                      originalRequest.headers.Authorization = `Bearer ${token}`;
+                    }
+                    return this.axiosInstance(originalRequest);
                   }
-                  return this.axiosInstance(originalRequest);
+                } else {
+                  // 刷新失败但没有抛出异常，主动处理认证失败
+                  await this.handleAuthFailure();
                 }
+              } catch {
+                // 刷新Token失败，重定向到登录
+                await this.handleAuthFailure();
               }
-            } catch {
-              // 刷新Token失败，重定向到登录
+            } else {
+              // 刷新Token请求本身失败，直接处理认证失败
               await this.handleAuthFailure();
             }
           }
@@ -244,19 +258,33 @@ export class ApiClient {
    */
   protected async refreshToken(): Promise<boolean> {
     try {
-      const refreshToken = await this.platformAdapter.getStorage().getItem(this.config.refreshTokenKey!);
+      const refreshToken = await this.platformAdapter
+        .getStorage()
+        .getItem(this.config.refreshTokenKey!);
       if (!refreshToken) {
         return false;
       }
 
-      const response = await this.axiosInstance.post<ApiResponse<{ token: string; refreshToken: string }>>('/auth/refresh-token', {
-        refreshToken,
-      });
+      // 创建一个不会触发刷新令牌逻辑的axios实例
+      const response = await axios.post<ApiResponse<{ token: string; refreshToken: string }>>(
+        `${this.config.baseURL}/auth/refresh-token`,
+        { refreshToken },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+        }
+      );
 
-      if (response.data.code === ApiStatusCode.SUCCESS) {
+      if (response.status === 200 && response.data.code === ApiStatusCode.SUCCESS) {
         // 保存新token
-        await this.platformAdapter.getStorage().setItem(this.config.tokenKey!, response.data.data.token);
-        await this.platformAdapter.getStorage().setItem(this.config.refreshTokenKey!, response.data.data.refreshToken);
+        await this.platformAdapter
+          .getStorage()
+          .setItem(this.config.tokenKey!, response.data.data.token);
+        await this.platformAdapter
+          .getStorage()
+          .setItem(this.config.refreshTokenKey!, response.data.data.refreshToken);
         return true;
       }
 
@@ -390,7 +418,11 @@ export class ApiClient {
    * @param config 请求配置
    * @returns 响应数据
    */
-  public async post<T, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig): Promise<T> {
+  public async post<T, D = unknown>(
+    url: string,
+    data?: D,
+    config?: AxiosRequestConfig
+  ): Promise<T> {
     return this.request<T>({ ...config, method: 'POST', url, data });
   }
 
@@ -412,7 +444,11 @@ export class ApiClient {
    * @param config 请求配置
    * @returns 响应数据
    */
-  public async patch<T, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig): Promise<T> {
+  public async patch<T, D = unknown>(
+    url: string,
+    data?: D,
+    config?: AxiosRequestConfig
+  ): Promise<T> {
     return this.request<T>({ ...config, method: 'PATCH', url, data });
   }
 
@@ -488,7 +524,7 @@ export class ApiClient {
         message: apiResponse.message,
         url,
         method,
-        timestamp: apiResponse.timestamp || Date.now()
+        timestamp: apiResponse.timestamp || Date.now(),
       });
     }
   }

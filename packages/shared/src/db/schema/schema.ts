@@ -1,5 +1,4 @@
 // schema.ts
-import { init } from '@paralleldrive/cuid2';
 import { relations } from 'drizzle-orm';
 import {
   pgTable,
@@ -15,9 +14,7 @@ import {
   index,
 } from 'drizzle-orm/pg-core';
 
-const createId = init({
-  length: 5,
-});
+import { createId } from '.';
 
 // --------------------------
 // 核心表定义
@@ -35,14 +32,12 @@ export const users = pgTable(
     email: varchar('email', { length: 255 }).unique(),
     nikeName: varchar('nike_name', { length: 255 }).notNull(),
     passwordHash: text('password_hash').notNull(),
-    qrCode: text('qr_code'), // 个人名片二维码
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
   table => [
     uniqueIndex('users_phone_idx').on(table.phone),
     uniqueIndex('users_email_idx').on(table.email),
-    index('users_qr_code_idx').on(table.qrCode),
   ]
 );
 
@@ -103,7 +98,7 @@ export const friendGroups = pgTable(
   table => [uniqueIndex('friend_groups_user_name_idx').on(table.userId, table.groupName)]
 );
 
-/** 好友表（备注系统） */
+/** 好友表 */
 export const friends = pgTable(
   'friends',
   {
@@ -113,11 +108,13 @@ export const friends = pgTable(
       .unique(),
     userId: char('user_id', { length: 5 }).notNull(), // 所属用户
     remarkName: varchar('remark_name', { length: 255 }).notNull(),
-    linkedPasswords: jsonb('linked_passwords').$type<string[]>().default([]), // 关联的临时密码
+    linkedPasswords: varchar('linked_passwords', { length: 6 }), // 关联的密码
+    friendGroupId: char('friend_group_id', { length: 5 }).notNull(), // 新增分组外键字段
   },
   table => [
     index('friends_user_idx').on(table.userId),
     index('friends_remark_name_idx').on(table.remarkName),
+    index('friends_group_idx').on(table.friendGroupId), // 新增分组索引
   ]
 );
 
@@ -153,7 +150,16 @@ export const unlockRecords = pgTable(
     deviceId: char('device_id', { length: 5 }).notNull(), // 关联设备
     userId: char('user_id', { length: 5 }), // 可能为空（临时密码开门）
     unlockType: varchar('unlock_type', {
-      enum: ['remote', 'temporary_password', 'direct','nfc',"permanent_password",'face','eye','fingerprint'],
+      enum: [
+        'remote',
+        'temporary_password',
+        'direct',
+        'nfc',
+        'permanent_password',
+        'face',
+        'eye',
+        'fingerprint',
+      ],
     }).notNull(), // 开锁类型 (远程开锁、临时密码开锁、钥匙开锁，NFC开锁，永久密码开锁，人脸识别开锁，瞳孔识别开锁，指纹开锁，)
     temporaryPasswordId: char('temporary_password_id', { length: 5 }), // 关联临时密码
     timestamp: timestamp('timestamp').defaultNow(),
@@ -191,7 +197,15 @@ export const notifications = pgTable(
       temp_password?: string; // 临时密码
       device_battery?: number; // 设备电量
       device_firmware_version?: string; // 设备固件版本
-      openType?: 'remote'| 'temporary_password'| 'direct'|'nfc'|"permanent_password"|'face'|'eye'|'fingerprint'; // 开门方式
+      openType?:
+        | 'remote'
+        | 'temporary_password'
+        | 'direct'
+        | 'nfc'
+        | 'permanent_password'
+        | 'face'
+        | 'eye'
+        | 'fingerprint'; // 开门方式
       openFriend?: string; // 开门好友
       noOpenTime?: number; // 未开门时长
     }>(),
@@ -200,10 +214,14 @@ export const notifications = pgTable(
     deviceId: char('device_id', { length: 5 }), // 关联设备
     importanceLevel: varchar('importance_level', {
       enum: ['low', 'medium', 'high', 'critical'], // 低，中，高，紧急
-    }).default('medium').notNull(), // 重要程度
+    })
+      .default('medium')
+      .notNull(), // 重要程度
     notificationMethod: varchar('notification_method', {
       enum: ['app', 'sms', 'call'],
-    }).default('app').notNull(), // 通知方式
+    })
+      .default('app')
+      .notNull(), // 通知方式
     deliveryStatus: varchar('delivery_status', {
       enum: ['pending', 'sent', 'delivered', 'failed'],
     }).default('pending'), // 传递状态
@@ -225,7 +243,7 @@ export const notificationDeliveryLogs = pgTable(
       .unique(),
     notificationId: char('notification_id', { length: 5 }).notNull(), // 关联到通知记录
     deliveryMethod: varchar('delivery_method', {
-      enum: ['sms', 'call','app'],
+      enum: ['sms', 'call', 'app'],
     }).notNull(), // 发送方式
     targetNumber: varchar('target_number', { length: 20 }).notNull(), // 目标号码
     status: varchar('status', {
@@ -270,51 +288,6 @@ export const deviceToDeviceGroupRelations = relations(deviceToDeviceGroup, ({ on
     references: [deviceGroups.id],
   }),
 }));
-
-/** 好友-好友分组关系映射表 */
-export const friendToFriendGroup = pgTable(
-  'friend_to_friend_group',
-  {
-    friendId: char('friend_id', { length: 5 }).notNull(),
-    friendGroupId: char('friend_group_id', { length: 5 }).notNull(),
-  },
-  table => [primaryKey({ columns: [table.friendId, table.friendGroupId] })]
-);
-
-export const friendToFriendGroupRelations = relations(friendToFriendGroup, ({ one }) => ({
-  friend: one(friends, {
-    fields: [friendToFriendGroup.friendId],
-    references: [friends.id],
-  }),
-  friendGroup: one(friendGroups, {
-    fields: [friendToFriendGroup.friendGroupId],
-    references: [friendGroups.id],
-  }),
-}));
-
-/** 好友-临时密码关系映射表 */
-export const friendToTemporaryPassword = pgTable(
-  'friend_to_temporary_password',
-  {
-    friendId: char('friend_id', { length: 5 }).notNull(),
-    temporaryPasswordId: char('temporary_password_id', { length: 5 }).notNull(),
-  },
-  table => [primaryKey({ columns: [table.friendId, table.temporaryPasswordId] })]
-);
-
-export const friendToTemporaryPasswordRelations = relations(
-  friendToTemporaryPassword,
-  ({ one }) => ({
-    friend: one(friends, {
-      fields: [friendToTemporaryPassword.friendId],
-      references: [friends.id],
-    }),
-    temporaryPassword: one(temporaryPasswords, {
-      fields: [friendToTemporaryPassword.temporaryPasswordId],
-      references: [temporaryPasswords.id],
-    }),
-  })
-);
 
 // --------------------------
 // Drizzle 关系定义（类型安全）
@@ -372,7 +345,7 @@ export const friendGroupsRelations = relations(friendGroups, ({ one, many }) => 
     fields: [friendGroups.userId],
     references: [users.id],
   }),
-  friends: many(friendToFriendGroup),
+  friends: many(friends), // 直接关联好友表
 }));
 
 /** 好友关系
@@ -380,13 +353,17 @@ export const friendGroupsRelations = relations(friendGroups, ({ one, many }) => 
  * 一个好友可以属于多个好友分组
  * 一个好友可以拥有多个临时密码
  */
-export const friendsRelations = relations(friends, ({ one, many }) => ({
+export const friendsRelations = relations(friends, ({ one }) => ({
+  // 修改为单关系
   user: one(users, {
     fields: [friends.userId],
     references: [users.id],
   }),
-  groups: many(friendToFriendGroup), // 一个好友有多个好友分组
-  passwords: many(friendToTemporaryPassword), // 一个好友有多个临时密码
+  friendGroup: one(friendGroups, {
+    // 新增分组关系
+    fields: [friends.friendGroupId],
+    references: [friendGroups.id],
+  }),
 }));
 
 /** 临时密码关系
@@ -404,7 +381,6 @@ export const temporaryPasswordsRelations = relations(temporaryPasswords, ({ one,
     fields: [temporaryPasswords.creatorId],
     references: [users.id],
   }),
-  recipients: many(friendToTemporaryPassword), // 一个临时密码可以被多个好友持有
   unlockRecords: many(unlockRecords), // 一个临时密码可以被多个开锁记录持有
 }));
 
