@@ -14,12 +14,12 @@ import {
 } from '@smart-lock/shared';
 import * as argon2 from 'argon2';
 import ms, { StringValue } from 'ms';
+import { JwtPayload } from 'src/common/auth/strategies/jwt.strategy';
 import { SmsService } from 'src/common/sms/sms.service';
 import { APP_CONFIG, AppConfig } from 'src/config/config.provider';
 
 import { ValidationException } from '../../../common/exceptions';
 import { AuthRepository } from '../repositories/auth.repository';
-import { JwtPayload } from '../schemas/auth.schema';
 
 @Injectable()
 export class AuthService {
@@ -33,10 +33,12 @@ export class AuthService {
     @Inject(APP_CONFIG) private readonly config: AppConfig,
   ) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    this.expires_in = new Date().getTime() + ms(this.config.JWT_EXPIRES_IN as StringValue);
+    this.expires_in =
+      new Date().getTime() + ms(this.config.JWT_EXPIRES_IN as StringValue);
     // 刷新令牌的过期时间，默认设置为访问令牌的10倍
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    this.refresh_expires_in = new Date().getTime() + ms(this.config.JWT_EXPIRES_IN as StringValue) * 10;
+    this.refresh_expires_in =
+      new Date().getTime() + ms(this.config.JWT_EXPIRES_IN as StringValue) * 10;
   }
 
   /**
@@ -72,7 +74,12 @@ export class AuthService {
    */
   async register(registerDto: RegisterSchemaType): Promise<IAuthResponse> {
     // 验证必需字段
-    if (!registerDto.phone || !registerDto.password || !registerDto.verificationCode || !registerDto.nikeName) {
+    if (
+      !registerDto.phone ||
+      !registerDto.password ||
+      !registerDto.verificationCode ||
+      !registerDto.nikeName
+    ) {
       throw new ValidationException('缺少必需字段', ErrorCode.VALIDATION_ERROR);
     }
 
@@ -113,8 +120,9 @@ export class AuthService {
 
     // 生成JWT令牌
     const payload: JwtPayload = {
-      sub: user.id,
-      phone: user.phone,
+      userId: user.id,
+      name: user.phone,
+      type: 'user',
     };
 
     const { access_token, refresh_token } = this.generateTokens(payload);
@@ -160,8 +168,9 @@ export class AuthService {
 
     // 生成JWT令牌
     const payload: JwtPayload = {
-      sub: user.id,
-      phone: user.phone,
+      userId: user.id,
+      name: user.phone,
+      type: 'user',
     };
 
     const { access_token, refresh_token } = this.generateTokens(payload);
@@ -208,8 +217,9 @@ export class AuthService {
 
       // 生成新的令牌
       const newPayload: JwtPayload = {
-        sub: user.id,
-        phone: user.phone,
+        userId: user.id,
+        name: user.phone,
+        type: 'user',
       };
 
       const { access_token, refresh_token } = this.generateTokens(newPayload);
@@ -236,7 +246,7 @@ export class AuthService {
    * @returns 验证成功的用户信息
    */
   async validateUser(payload: JwtPayload) {
-    const user = await this.authRepository.findUserByPhone(payload.phone);
+    const user = await this.authRepository.findUserByPhone(payload.name);
     if (!user) {
       throw new UnauthorizedException('未授权');
     }
@@ -252,7 +262,12 @@ export class AuthService {
    * @param expires 验证码有效期(分钟)
    * @returns 验证码
    */
-  async sendVerifyCode(phone?: string, biz: string = 'register', codeLength?: number, expires?: number) {
+  async sendVerifyCode(
+    phone?: string,
+    biz: string = 'register',
+    codeLength?: number,
+    expires?: number,
+  ) {
     try {
       if (!phone) {
         throw new BadRequestException('请提供手机号');

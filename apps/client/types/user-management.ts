@@ -1,25 +1,20 @@
-// 用户管理模块的类型定义
 export interface AuthorizedUser {
   id: string;
-  name: string;
-  email?: string;
-  phone?: string;
-  group: string;
-  permissions: Permission[];
-  lastAccess: string;
-  avatar?: string;
+  userId: string;
+  remarkName: string;
+  linkedPasswords: string;
+  friendGroupId: string;
 }
 
 export interface Permission {
   doorId: string;
-  type: "permanent" | "temporary";
+  type: 'permanent' | 'temporary';
   validUntil?: string;
 }
 
 export interface Group {
   id: string;
-  name: string;
-  type: string;
+  groupName: string;
 }
 
 // 额外类型定义
@@ -51,7 +46,7 @@ export interface UserManagementState {
   showDeleteGroupDialog: boolean;
   showUserActionDialog: boolean;
   showGroupActionDialog: boolean;
-  
+
   // 新建和编辑状态
   newUser: Partial<AuthorizedUser>;
   newGroup: Partial<Group>;

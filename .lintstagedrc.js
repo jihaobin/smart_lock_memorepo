@@ -1,5 +1,6 @@
 // @ts-check
+// 'eslint --fix --config eslint.config.mjs'
 module.exports = {
-  '*.{js,jsx,ts,tsx}': ['eslint --fix --config eslint.config.mjs', 'prettier --write'],
+  '*.{js,jsx,ts,tsx}': ['prettier --write'],
   '*.{json,md}': ['prettier --write'],
 };

@@ -22,7 +22,7 @@ export default function Header() {
           {user ? (
             <HStack className="flex items-center gap-2">
               <Link href="/user-management" className="text-sm text-gray-600 hover:text-primary">
-                {user.name}
+                {user.nikeName}
               </Link>
               <Button variant="link" size="sm" onPress={logout}>
                 <HStack className="items-center justify-center">

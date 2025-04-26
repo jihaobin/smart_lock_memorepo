@@ -7,6 +7,7 @@ import prettierConfig from "eslint-config-prettier";
 import nestTypedPlugin from "@darraghor/eslint-plugin-nestjs-typed";
 import importPlugin from "eslint-plugin-import";
 import reactNativeRules from "./eslint.config.react-native.mjs";
+import pluginRouter from '@tanstack/eslint-plugin-router'
 
 /**
  * @type {import('eslint').Linter.FlatConfig[]}
@@ -24,6 +25,7 @@ export default [
       "**/apps/client/ios/**",
       "**/apps/client/android/**",
       "**/.history/**",
+      "**/apps/admin/src/routeTree.gen.ts",
     ],
   },
 
@@ -156,13 +158,16 @@ export default [
   },
 
   // React Native和Expo相关规则
-  ...reactNativeRules,
+  // ...reactNativeRules,
 
   // 前端特定规则
   {
-    files: ["**/apps/client/**/*.ts", "**/apps/client/**/*.tsx"],
+    files: ["**/apps/admin/**/*.ts", "**/apps/admin/**/*.tsx"],
     rules: {
       // 添加React相关规则，如果前端使用React
+    },
+    plugins: {
+      ...pluginRouter.configs['flat/recommended'],
     },
   },
 

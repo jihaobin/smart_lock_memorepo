@@ -1,13 +1,13 @@
-import {IAdminAuthUser, RouteItem } from '@smart-lock/shared/shared';
+import { IAdminAuthUser, RouteItem } from '@smart-lock/shared/shared';
 import type React from 'react';
 import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 
-import { 
-  flattenRoutes, 
-  checkPermission, 
-  loadAuthFromStorage, 
-  saveUserToStorage, 
-  clearUserFromStorage 
+import {
+  flattenRoutes,
+  checkPermission,
+  loadAuthFromStorage,
+  saveUserToStorage,
+  clearUserFromStorage,
 } from './authUtils';
 
 interface AuthContextType {
@@ -17,7 +17,7 @@ interface AuthContextType {
   logout: () => void;
   isLoading: boolean;
   setToken: (token: string | null) => void;
-  accessibleRoutes: RouteItem[]
+  accessibleRoutes: RouteItem[];
   hasPermission: (routePath: string) => boolean;
 }
 
@@ -33,7 +33,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const flattenedRoutes = useMemo((): RouteItem[] => {
     return flattenRoutes(accessibleRoutes);
-  }, [accessibleRoutes])
+  }, [accessibleRoutes]);
 
   useEffect(() => {
     // 检查保存的用户信息和token
@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(userData);
     setAccessibleRoutes(userData.accessibleRoutes);
     saveUserToStorage(userData);
-    
+
     // 注意：我们不在此处设置token
     // token的设置由useAuth.ts中的login函数通过ApiClient来处理
   };
@@ -74,12 +74,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     setToken(null);
     clearUserFromStorage();
-    
+
     // ApiClient的clearAuth方法会在logout后被调用
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isLoading, setToken, accessibleRoutes, hasPermission }}>
+    <AuthContext.Provider
+      value={{ user, token, login, logout, isLoading, setToken, accessibleRoutes, hasPermission }}
+    >
       {children}
     </AuthContext.Provider>
   );

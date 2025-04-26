@@ -51,7 +51,7 @@ export function useAuthApi() {
           id: response.user.id,
           name: response.user.name,
           roles: response.user.roles,
-          accessibleRoutes: response.user.accessibleRoutes
+          accessibleRoutes: response.user.accessibleRoutes,
         });
 
         navigate({ to: '/', replace: true });
@@ -92,6 +92,6 @@ export function useAuthApi() {
     login,
     logout,
     loading,
-    error
+    error,
   };
 }

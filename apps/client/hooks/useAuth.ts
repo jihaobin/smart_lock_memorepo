@@ -1,4 +1,10 @@
-import { ForgotPasswordSchemaType, IAuthResponse, LoginSchemaType, RegisterSchemaType, VerifyCodeSchemaType } from '@smart-lock/shared/shared';
+import {
+  ForgotPasswordSchemaType,
+  IAuthResponse,
+  LoginSchemaType,
+  RegisterSchemaType,
+  VerifyCodeSchemaType,
+} from '@smart-lock/shared/shared';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 
@@ -15,17 +21,6 @@ import { useState } from 'react';
 
 import { useApi } from '../contexts/ApiContext';
 import { useAuth as useAuthContext } from '../contexts/AuthContext';
-
-// 响应类型定义
-interface RegisterResponse {
-  success: boolean;
-  message?: string;
-  user?: {
-    id: string;
-    username: string;
-    email: string;
-  };
-}
 
 interface ResetResponse {
   success: boolean;
@@ -61,7 +56,7 @@ export function useAuthApi() {
         // 更新AuthContext中的用户信息
         setAuth({
           id: response.user.id,
-          email: response.user.email,
+          phone: response.user.phone,
           nikeName: response.user.nikeName,
         });
 
@@ -121,7 +116,7 @@ export function useAuthApi() {
         // 更新AuthContext中的用户信息
         setAuth({
           id: response.user.id,
-          email: response.user.email,
+          phone: response.user.phone,
           nikeName: response.user.nikeName,
         });
 
@@ -187,6 +182,6 @@ export function useAuthApi() {
     forgotPassword,
     sendVerificationCode,
     loading,
-    error
+    error,
   };
 }

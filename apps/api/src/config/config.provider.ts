@@ -58,14 +58,13 @@ export const envSchema = z.object({
     .min(1, 'ALIYUN_STS_ROLE_SESSION_NAME 不能为空')
     .nonempty('ALIYUN_STS_ROLE_SESSION_NAME 不能为空')
     .default('SmartLockApp'),
-  ALIYUN_STS_POLICY: z
-    .string()
-    .optional()
-    .default(''),
+  ALIYUN_STS_POLICY: z.string().optional().default(''),
   ALIYUN_STS_DURATION_SECONDS: z
     .string()
     .min(1, 'ALIYUN_STS_DURATION_SECONDS 不能为空')
     .default('3600'),
+  SUPER_ADMIN_USERNAME: z.string().min(1, 'SUPER_ADMIN_USERNAME 不能为空'),
+  SUPER_ADMIN_PASSWORD: z.string().min(1, 'SUPER_ADMIN_PASSWORD 不能为空'),
 });
 
 export type AppConfig = Required<z.infer<typeof envSchema>>;

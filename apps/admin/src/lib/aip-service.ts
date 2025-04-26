@@ -5,9 +5,9 @@ import {
   ApiFactory,
   createQueryHooks,
   BaseErrorHandler,
-  ErrorHandlerContext
+  ErrorHandlerContext,
 } from '@smart-lock/shared/api';
-import { toast } from "sonner"
+import { toast } from 'sonner';
 
 /**
  * Toast适配器实现
@@ -15,7 +15,7 @@ import { toast } from "sonner"
  */
 class ToastAdapter implements IToaster {
   showError(message: string): void {
-    toast.error(message)
+    toast.error(message);
   }
 
   showWarning(message: string): void {
@@ -23,11 +23,11 @@ class ToastAdapter implements IToaster {
   }
 
   showInfo(message: string): void {
-    toast.info(message)
+    toast.info(message);
   }
 
   showSuccess(message: string): void {
-    toast.success(message)
+    toast.success(message);
   }
 }
 
@@ -103,7 +103,7 @@ const apiClient = ApiFactory.createClient({
 });
 
 // 设置处理未授权错误的特殊处理，例如重定向到登录页面
-errorHandler.registerErrorListener((context) => {
+errorHandler.registerErrorListener(context => {
   if (context.errorCode === ErrorCode.UNAUTHORIZED) {
     // 可以在此处添加登录过期的特殊处理逻辑
     // 例如重定向到登录页

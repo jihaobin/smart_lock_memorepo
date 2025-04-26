@@ -125,7 +125,7 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
   // 当token改变时更新Authorization头
   useEffect(() => {
     // 使用ApiClient提供的公开方法设置认证令牌
-    if (apiClient) {
+    if (apiClient && token) {
       void apiClient.setAuthToken(token);
     }
   }, [token, apiClient]);

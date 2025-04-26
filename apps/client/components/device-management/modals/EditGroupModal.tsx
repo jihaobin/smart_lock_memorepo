@@ -49,7 +49,7 @@ export function EditGroupModal({
               <Input>
                 <InputField
                   value={editingGroup?.name || ''}
-                  onChangeText={text =>
+                  onChangeText={(text: string) =>
                     setEditingGroup(prev => (prev ? { ...prev, name: text } : null))
                   }
                 />

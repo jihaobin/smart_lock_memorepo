@@ -8,7 +8,6 @@ import { APP_CONFIG, AppConfig } from 'src/config/config.provider';
 import { AuthController } from './controllers/auth.controller';
 import { AuthRepository } from './repositories/auth.repository';
 import { AuthService } from './services/auth.service';
-import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
   imports: [
@@ -18,8 +17,8 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     PassportModule.register({ defaultStrategy: 'jwt' }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, AuthRepository, JwtStrategy],
-  exports: [AuthService, JwtStrategy, PassportModule], // 不再需要导出 JwtModule
+  providers: [AuthService, AuthRepository],
+  exports: [AuthService, PassportModule], // 不再需要导出 JwtModule
 })
 export class AuthModule {
   constructor(@Inject(APP_CONFIG) private config: AppConfig) {}

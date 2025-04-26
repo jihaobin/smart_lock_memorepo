@@ -11,16 +11,17 @@ import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
 import type { Observable } from 'rxjs';
 import { APP_CONFIG, AppConfig } from 'src/config/config.provider';
-import { JwtPayload } from 'src/modules/auth/schemas/auth.schema';
+
+import { JwtPayload } from './strategies/jwt.strategy';
 
 export const IS_PUBLIC_KEY = 'isPublic';
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
 
-// declare module 'express' {
-//   interface Request {
-//     user: JwtPayload;
-//   }
-// }
+declare module 'express' {
+  interface Request {
+    user: JwtPayload;
+  }
+}
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
@@ -53,7 +54,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     return super.canActivate(context);
   }
 
-  handleRequest<TUser>(
+  handleRequest<TUser extends JwtPayload>(
     err: Error | null,
     user: TUser,
     info: unknown,
@@ -78,14 +79,14 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     if (authHeader && authHeader.startsWith('Bearer ')) {
       try {
         const token = authHeader.substring(7);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
         const decoded = this.jwtService.verify<JwtPayload>(token, {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           secret: this.configService.JWT_SECRET as string,
         });
 
         // 将解码后的JWT信息设置到请求上下文中
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
         request.user = decoded;
       } catch {
         // 解析失败时不抛出异常，让后续的验证流程处理

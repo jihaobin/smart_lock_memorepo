@@ -1,10 +1,12 @@
 import { BullModule } from '@nestjs/bullmq';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
+import { PassportModule } from '@nestjs/passport';
 
 import { STSModule } from './common';
 import { JwtAuthGuard } from './common/auth/jwt-auth.guard';
 import { JwtSharedModule } from './common/auth/jwt-shared.module';
+import { JwtStrategy } from './common/auth/strategies/jwt.strategy';
 import { CacheModule, CacheType } from './common/cache';
 import { ExceptionsModule } from './common/exceptions';
 import { InterceptorsModule } from './common/interceptors';
@@ -12,11 +14,14 @@ import { LoggerModule, LogFormatterType, LogLevel } from './common/logger';
 import { LoggerMiddleware } from './common/logger/middleware/logger.middleware';
 import ConfigModule from './config/config.module';
 import DatabaseModule from './database/database.module';
+import { AdminModule } from './modules/admin/admin.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { FriendModule } from './modules/friend/friend.module';
 import { NotificationModule } from './modules/notification/notification.module';
 
 @Module({
   imports: [
+    PassportModule.register({ defaultStrategy: 'jwt' }),
     // 日志模块
     LoggerModule.forRoot({
       appName: 'smart-lock-api',
@@ -51,6 +56,8 @@ import { NotificationModule } from './modules/notification/notification.module';
     // 业务模块
     AuthModule,
     NotificationModule,
+    FriendModule,
+    AdminModule, // 添加管理员模块
 
     // 缓存模块 - 使用redis
     CacheModule.registerAsync({
@@ -80,6 +87,7 @@ import { NotificationModule } from './modules/notification/notification.module';
   ],
   controllers: [],
   providers: [
+    JwtStrategy,
     // 全局注册JWT守卫
     {
       provide: APP_GUARD,

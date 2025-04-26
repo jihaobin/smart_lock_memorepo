@@ -16,9 +16,9 @@ import { useAuthApi } from '@/hooks/useAuth';
 
 // 定义登录表单验证模式
 const loginSchema = z.object({
-  name: z.string().min(1,"用户名不能为空"),
+  name: z.string().min(1, '用户名不能为空'),
   password: z.string().min(6, '密码至少需要6个字符'),
-  rememberMe: z.boolean().default(false)
+  rememberMe: z.boolean().default(false),
 });
 
 // 推导表单数据类型
@@ -32,14 +32,14 @@ function LoginPage() {
   const {
     register,
     handleSubmit,
-    formState: { errors }
+    formState: { errors },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       name: '',
       password: '',
-      rememberMe: false
-    }
+      rememberMe: false,
+    },
   });
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -47,14 +47,14 @@ function LoginPage() {
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
 
-    try{
+    try {
       const res = await login({
         phone: data.name,
         password: data.password,
         rememberMe: data.rememberMe,
       });
-      toast.success("登录成功",{description: `欢迎回来，${res.user.name}！`})
-      navigate({to: "/"});
+      toast.success('登录成功', { description: `欢迎回来，${res.user.name}！` });
+      navigate({ to: '/' });
     } catch (error) {
       console.error('error', error);
     } finally {
@@ -89,9 +89,7 @@ function LoginPage() {
                   placeholder="请输入用户名"
                   {...register('name')}
                 />
-                {errors.name && (
-                  <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>
-                )}
+                {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>}
               </div>
             </div>
 
@@ -116,14 +114,8 @@ function LoginPage() {
 
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="remember"
-                  {...register('rememberMe')}
-                />
-                <label
-                  htmlFor="remember"
-                  className="text-sm cursor-pointer text-muted-foreground"
-                >
+                <Checkbox id="remember" {...register('rememberMe')} />
+                <label htmlFor="remember" className="text-sm cursor-pointer text-muted-foreground">
                   记住我
                 </label>
               </div>
@@ -133,7 +125,7 @@ function LoginPage() {
             </div>
 
             <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? <Loader2 className='animate-spin'/> : '登录'}
+              {isLoading ? <Loader2 className="animate-spin" /> : '登录'}
             </Button>
           </form>
         </div>

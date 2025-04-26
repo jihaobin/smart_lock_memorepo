@@ -8,24 +8,33 @@ import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-/* 导入拆分后的组件 */
-import { AddGroupModal } from '@/components/user-management/modals/AddGroupModal';
-import { AddUserModal } from '@/components/user-management/modals/AddUserModal';
+import { AuthorizedTab } from '@/components/user-management/AuthorizedTab';
 import { DeleteGroupModal } from '@/components/user-management/modals/DeleteGroupModal';
 import { DeleteUserModal } from '@/components/user-management/modals/DeleteUserModal';
-import { EditGroupModal } from '@/components/user-management/modals/EditGroupModal';
-import { EditUserModal } from '@/components/user-management/modals/EditUserModal';
-import { GroupActionModal } from '@/components/user-management/modals/GroupActionModal';
-import { QRCodeModal } from '@/components/user-management/modals/QRCodeModal';
-import { UserActionModal } from '@/components/user-management/modals/UserActionModal';
-import { AuthorizedTab } from '@/components/user-management/tabs/AuthorizedTab';
-import { ProfileTab } from '@/components/user-management/tabs/ProfileTab';
-/* 导入自定义钩子 */
-import { useUserManagement } from '@/hooks/user-management/useUserManagement';
-import { AuthorizedUser } from '@/types/management';
+import { DirectAddGroupModal } from '@/components/user-management/modals/DirectAddGroupModal';
+import { DirectAddUserModal } from '@/components/user-management/modals/DirectAddUserModal';
+import { DirectEditGroupModal } from '@/components/user-management/modals/DirectEditGroupModal';
+import { DirectEditUserModal } from '@/components/user-management/modals/DirectEditUserModal';
+import { DirectGroupActionModal } from '@/components/user-management/modals/DirectGroupActionModal';
+import { DirectUserActionModal } from '@/components/user-management/modals/UserActionModal';
+import { ProfileTab } from '@/components/user-management/ProfileTab';
+/* 导入上下文提供者 */
+import { UserManagementProvider, useUserManagement } from '@/contexts/UserManagementContext';
+import { AuthorizedUser } from '@/types/user-management';
 
-export default function UserManagement() {
-  // 使用自定义钩子管理状态和逻辑
+// 主页面内容组件
+function UserManagementContent() {
+  // 使用上下文钩子获取状态和方法
+  const {
+    // 直接从上下文获取的属性
+    groups,
+    filteredUsers,
+    isLoadingUsers,
+    // 从UI对象获取属性和方法
+    ui,
+  } = useUserManagement();
+
+  // 从ui对象中解构出需要的属性和方法
   const {
     // 状态
     activeTab,
@@ -33,63 +42,37 @@ export default function UserManagement() {
     tabs,
     searchText,
     setSearchText,
-    showQRCode,
     setShowQRCode,
     isEditing,
     setIsEditing,
     selectedGroup,
     setSelectedGroup,
-    groups,
-    filteredUsers,
     editedUser,
     setEditedUser,
-    showAddUserDialog,
     setShowAddUserDialog,
-    showAddGroupDialog,
     setShowAddGroupDialog,
-    showEditUserDialog,
-    setShowEditUserDialog,
-    showEditGroupDialog,
     setShowEditGroupDialog,
-    showDeleteUserDialog,
-    setShowDeleteUserDialog,
-    showDeleteGroupDialog,
-    setShowDeleteGroupDialog,
-    showUserActionDialog,
-    setShowUserActionDialog,
-    showGroupActionDialog,
-    setShowGroupActionDialog,
-    newUser,
-    setNewUser,
-    newGroup,
-    setNewGroup,
-    editingUser,
-    setEditingUser,
-    editingGroup,
-    setEditingGroup,
-    userToDelete,
-    groupToDelete,
-    selectedActionUser,
-    selectedActionGroup,
 
     // Refs
     scrollViewRef,
 
-    // 方法
+    // 基本方法
     handleScroll,
-    handleUserAction,
-    handleEditUser,
-    handleDeleteUser,
-    confirmDeleteUser,
-    handleAddUser,
-    handleSaveEditedUser,
-    handleGroupAction,
-    handleAddGroup,
-    handleEditGroup,
-    handleDeleteGroup,
-    confirmDeleteGroup,
-    handleSaveEditedGroup,
-  } = useUserManagement();
+
+    // 用户和群组操作方法
+    userActions,
+    groupActions,
+  } = ui;
+
+  // 将操作方法映射为组件中使用的处理函数
+  const handleUserAction = userActions.handleAction;
+
+  const handleGroupAction = groupActions.handleAction;
+
+  const handleSaveProfile = () => {
+    // 实现保存个人资料的逻辑
+    setIsEditing(false);
+  };
 
   return (
     <Box className="flex-1 bg-white">
@@ -113,7 +96,7 @@ export default function UserManagement() {
               className="h-10 w-10 rounded-full"
               onPress={() => setShowAddUserDialog(true)}
             >
-              <Icon as={Plus} className="h-5 w-5" />
+              <Icon as={Plus} className="h-5 w-5 text-white" />
             </Button>
           </HStack>
         </HStack>
@@ -160,6 +143,7 @@ export default function UserManagement() {
               handleUserAction={handleUserAction}
               handleGroupAction={handleGroupAction}
               setShowAddGroupDialog={setShowAddGroupDialog}
+              isLoading={{ users: isLoadingUsers }}
             />
           </Box>
           <Box style={[styles.tabContent, activeTab === 1 ? styles.activeTab : styles.inactiveTab]}>
@@ -170,78 +154,33 @@ export default function UserManagement() {
               setEditedUser={
                 setEditedUser as React.Dispatch<React.SetStateAction<AuthorizedUser | null>>
               }
+              handleSaveProfile={handleSaveProfile}
             />
           </Box>
         </Box>
 
-        {/* 各种模态框组件 */}
-        <AddUserModal
-          showAddUserDialog={showAddUserDialog}
-          setShowAddUserDialog={setShowAddUserDialog}
-          newUser={newUser}
-          setNewUser={setNewUser}
-          groups={groups}
-          handleAddUser={handleAddUser}
-        />
+        {/* 各种模态框组件 - 使用直接绑定上下文的新模态框 */}
+        <DirectAddUserModal />
+        <DirectAddGroupModal />
+        <DirectEditUserModal />
+        <DirectEditGroupModal />
+        <DirectUserActionModal />
+        <DirectGroupActionModal />
 
-        <AddGroupModal
-          showAddGroupDialog={showAddGroupDialog}
-          setShowAddGroupDialog={setShowAddGroupDialog}
-          newGroup={newGroup}
-          setNewGroup={setNewGroup}
-          handleAddGroup={handleAddGroup}
-        />
-
-        <EditUserModal
-          showEditUserDialog={showEditUserDialog}
-          setShowEditUserDialog={setShowEditUserDialog}
-          editingUser={editingUser}
-          setEditingUser={setEditingUser}
-          groups={groups}
-          handleSaveEditedUser={handleSaveEditedUser}
-        />
-
-        <EditGroupModal
-          showEditGroupDialog={showEditGroupDialog}
-          setShowEditGroupDialog={setShowEditGroupDialog}
-          editingGroup={editingGroup}
-          setEditingGroup={setEditingGroup}
-          handleSaveEditedGroup={handleSaveEditedGroup}
-        />
-
-        <DeleteUserModal
-          showDeleteUserDialog={showDeleteUserDialog}
-          setShowDeleteUserDialog={setShowDeleteUserDialog}
-          userToDelete={userToDelete}
-          confirmDeleteUser={confirmDeleteUser}
-        />
-
-        <DeleteGroupModal
-          showDeleteGroupDialog={showDeleteGroupDialog}
-          setShowDeleteGroupDialog={setShowDeleteGroupDialog}
-          groupToDelete={groupToDelete}
-          confirmDeleteGroup={confirmDeleteGroup}
-        />
-
-        <QRCodeModal showQRCode={showQRCode} setShowQRCode={setShowQRCode} />
-
-        <UserActionModal
-          showUserActionDialog={showUserActionDialog}
-          setShowUserActionDialog={setShowUserActionDialog}
-          selectedActionUser={selectedActionUser}
-          handleEditUser={handleEditUser}
-          handleDeleteUser={handleDeleteUser}
-        />
-
-        <GroupActionModal
-          showGroupActionDialog={showGroupActionDialog}
-          setShowGroupActionDialog={setShowGroupActionDialog}
-          selectedActionGroup={selectedActionGroup}
-          handleEditGroup={handleEditGroup}
-          handleDeleteGroup={handleDeleteGroup}
-        />
+        {/* 删除用户和群组的模态框现在已使用直接从上下文获取数据的方式实现，不再需要传递props */}
+        <DeleteUserModal />
+        <DeleteGroupModal />
       </VStack>
     </Box>
+  );
+}
+
+// 导出包含上下文提供者的页面组件
+export default function UserManagement() {
+  return (
+    <UserManagementProvider>
+      <UserManagementContent />
+    </UserManagementProvider>
   );
 }
 

@@ -120,7 +120,7 @@ export function AuthorizedTab({
                           selectedGroup === group.id ? 'text-white' : 'text-gray-700'
                         }`}
                       >
-                        {group.name}
+                        {group.groupName}
                       </Text>
                     </TouchableOpacity>
 
@@ -179,7 +179,7 @@ export function AuthorizedTab({
                     </HStack>
                     <HStack className="items-center mt-1">
                       <Text className="text-sm text-gray-500" numberOfLines={1}>
-                        {groups.find(g => g.id === user.group)?.name}
+                        {groups.find(g => g.id === user.group)?.groupName}
                       </Text>
                       <Text className="mx-2 text-gray-500">•</Text>
                       <Text className="text-sm text-gray-500" numberOfLines={1}>

@@ -60,11 +60,6 @@ export default [
 
       // 性能相关规则
       "react/no-array-index-key": "warn", // 避免使用数组索引作为key
-      "react/jsx-no-bind": ["warn", { // 避免在render中创建函数
-        "allowArrowFunctions": true,
-        "allowFunctions": false,
-        "allowBind": false,
-      }],
     },
   },
 

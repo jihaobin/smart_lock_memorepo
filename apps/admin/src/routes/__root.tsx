@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { Outlet, createRootRoute } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+import { Outlet, createRootRoute } from '@tanstack/react-router';
+import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 
 import NotFound from '@/components/notfound';
 import { AuthProvider } from '@/context/AuthContext';
@@ -21,8 +21,8 @@ export const Route = createRootRoute({
   context: () => ({
     queryClient,
   }),
-  notFoundComponent: () =>{
-    return <NotFound />
+  notFoundComponent: () => {
+    return <NotFound />;
   },
   component: () => {
     return (
@@ -35,5 +35,4 @@ export const Route = createRootRoute({
       </QueryClientProvider>
     );
   },
-})
-
+});

@@ -8,7 +8,6 @@ import {
   ChevronLeft,
   Plus,
   Clock,
-  RefreshCw,
   Trash2,
   Copy,
   Check,
@@ -26,13 +25,14 @@ import 'dayjs/locale/zh-cn';
 import { z } from 'zod';
 
 // 导入本地Gluestack UI组件
+import CreatePassword from '@/components/create_password';
 import { Badge, BadgeText } from '@/components/ui/badge';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
-import { Input, InputField, InputSlot } from '@/components/ui/input';
+import { Input, InputField } from '@/components/ui/input';
 import {
   Modal,
   ModalBackdrop,
@@ -206,9 +206,9 @@ export default function TemporaryPasswords({ deviceId }: TemporaryPasswordsProps
     }
   };
 
-  const generateNewCode = () => {
-    setValue('code', Math.floor(100000 + Math.random() * 900000).toString());
-  };
+  // const generateNewCode = () => {
+  //   setValue('code', Math.floor(100000 + Math.random() * 900000).toString());
+  // };
 
   const handleDateChange = (date: DateType) => {
     if (date && date.date) {
@@ -368,37 +368,14 @@ export default function TemporaryPasswords({ deviceId }: TemporaryPasswordsProps
                   control={control}
                   name="code"
                   render={({ field: { value, onChange } }) => (
-                    <Box>
-                      <Text className="mb-1 font-medium">密码</Text>
-                      <Box className="flex-row">
-                        <Input className="flex-1 rounded-l-lg">
-                          <InputField
-                            value={value}
-                            onChangeText={(text: string) => {
-                              // 只允许输入数字，并限制长度为6位
-                              const numericText = text.replace(/[^0-9]/g, '');
-                              if (numericText.length <= 6) {
-                                onChange(numericText);
-                              }
-                            }}
-                            keyboardType="numeric"
-                            maxLength={6}
-                            placeholder="输入6位数字密码"
-                          />
-                          <InputSlot>
-                            <TouchableOpacity
-                              onPress={generateNewCode}
-                              className="w-12 h-12 border border-l-0 border-gray-200 rounded-r-lg bg-gray-50 items-center justify-center"
-                            >
-                              <RefreshCw size={20} color="#6b7280" />
-                            </TouchableOpacity>
-                          </InputSlot>
-                        </Input>
-                      </Box>
-                      {errors.code && (
-                        <Text className="text-red-500 text-xs mt-1">{errors.code.message}</Text>
-                      )}
-                    </Box>
+                    <CreatePassword
+                      value={value}
+                      onChange={onChange}
+                      errors={errors}
+                      refreshPassword={password => {
+                        setValue('code', password);
+                      }}
+                    />
                   )}
                 />
 

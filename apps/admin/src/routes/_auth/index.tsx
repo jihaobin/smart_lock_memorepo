@@ -1,15 +1,15 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { Home } from 'lucide-react'
+import { createFileRoute } from '@tanstack/react-router';
+import { Home } from 'lucide-react';
 
 // import logo from './logo.svg'
 
 export const Route = createFileRoute('/_auth/')({
   component: App,
   staticData: {
-    title: "首页",
-    icon: <Home size={16} />
-  }
-})
+    title: '首页',
+    icon: <Home size={16} />,
+  },
+});
 
 function App() {
   return (
@@ -41,5 +41,5 @@ function App() {
         </a>
       </header>
     </div>
-  )
+  );
 }
