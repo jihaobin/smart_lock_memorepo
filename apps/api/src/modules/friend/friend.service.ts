@@ -53,7 +53,7 @@ export class FriendService {
     groupName: string;
     groupId: string;
   }) {
-    return this.friendRepository.updateFriendGroup(groupData);
+    return await this.friendRepository.updateFriendGroup(groupData);
   }
 
   // 好友管理
@@ -83,7 +83,7 @@ export class FriendService {
    * @returns 更新后的好友信息
    */
   async updateFriend(update: UpdateFriendSchemaType) {
-    return this.friendRepository.updateFriend(update);
+    return await this.friendRepository.updateFriend(update);
   }
 
   /**

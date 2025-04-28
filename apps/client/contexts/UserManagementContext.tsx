@@ -3,26 +3,25 @@ import React, { createContext, useContext, ReactNode } from 'react';
 import { useGroups } from '@/hooks/useGroups';
 import { useUIState } from '@/hooks/useUIState';
 import { useUsers } from '@/hooks/useUsers';
-import type { AuthorizedUser, Group, Permission } from '@/types/user-management';
+import type { AuthorizedUser, Group } from '@/types/user-management';
 
 // 定义上下文类型
 interface UserManagementContextType {
   // 用户数据和方法
   users: AuthorizedUser[];
   filteredUsers: AuthorizedUser[];
-  createUser: (userData: Partial<AuthorizedUser>) => Promise<AuthorizedUser>;
+  createUser: (userData: AuthorizedUser) => Promise<AuthorizedUser>;
   updateUser: (id: string, userData: Partial<AuthorizedUser>) => Promise<AuthorizedUser>;
   deleteUser: (id: string, userName: string) => Promise<void>;
-  updateUserPermissions: (userId: string, permissions: Permission[]) => Promise<AuthorizedUser>;
   isLoadingUsers: boolean;
   isMutatingUser: boolean;
 
   // 群组数据和方法
   groups: Group[];
   groupNameMap: Record<string, string>;
-  createGroup: (groupData: Partial<Group>) => Promise<Group>;
-  updateGroup: (groupData: Partial<Group>) => Promise<Group>;
-  deleteGroup: (id: string, groupName: string) => Promise<void>;
+  createGroup: (groupData: Partial<Group>) => void;
+  updateGroup: (groupData: Group) => void;
+  deleteGroup: (id: string, groupName: string) => void;
   isLoadingGroups: boolean;
   isMutatingGroup: boolean;
 
@@ -74,7 +73,6 @@ export function UserManagementProvider({ children }: { children: ReactNode }) {
     createUser: users.createUser,
     updateUser: users.updateUser,
     deleteUser: users.deleteUser,
-    updateUserPermissions: users.updateUserPermissions,
     isLoadingUsers: users.status.isLoading,
     isMutatingUser: users.status.isMutating,
 

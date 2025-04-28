@@ -153,7 +153,12 @@ export class FriendRepository {
         linkedPasswords: updateData.linkedPasswords,
         friendGroupId: updateData.friendGroupId,
       })
-      .where(eq(schema.friends.id, updateData.friendId))
+      .where(
+        and(
+          eq(schema.friends.friendGroupId, updateData.friendGroupId),
+          eq(schema.friends.id, updateData.id),
+        ),
+      )
       .returning();
   }
 

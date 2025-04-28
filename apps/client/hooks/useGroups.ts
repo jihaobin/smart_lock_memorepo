@@ -42,11 +42,11 @@ export function useGroups() {
    */
   const createGroup = async (groupData: Partial<Group>) => {
     try {
-      const result = await createGroupMutation.mutateAsync(groupData, {
-        onSuccess: () => {
+      const result = createGroupMutation.mutate(groupData, {
+        onSuccess: data => {
           toast({
             title: '用户组已创建',
-            description: `用户组 "${groupData.groupName}" 已成功创建。`,
+            description: `用户组 "${data.groupName}" 已成功创建。`,
           });
         },
       });
@@ -65,13 +65,12 @@ export function useGroups() {
    * 更新用户组信息
    */
   const updateGroup = (groupData: Partial<Group>) => {
-    console.log('groupData', groupData);
     try {
       const result = updateGroupMutation.mutate(groupData, {
-        onSuccess: () => {
+        onSuccess: data => {
           toast({
             title: '用户组已更新',
-            description: `用户组 "${groupData.groupName}" 的信息已成功更新。`,
+            description: `用户组 "${data.groupName}" 的信息已成功更新。`,
           });
         },
       });
@@ -92,10 +91,13 @@ export function useGroups() {
    */
   const deleteGroup = async (id: string, groupName: string) => {
     try {
-      await deleteGroupMutation.mutateAsync(id);
-      toast({
-        title: '用户组已删除',
-        description: `用户组 "${groupName}" 已成功删除。`,
+      deleteGroupMutation.mutate(id, {
+        onSuccess: () => {
+          toast({
+            title: '用户组已删除',
+            description: `用户组 "${groupName}" 已成功删除。`,
+          });
+        },
       });
     } catch (error) {
       console.error('删除用户组失败:', error);

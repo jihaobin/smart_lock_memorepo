@@ -1,0 +1,37 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Expo (Android)",
+      "request": "launch",
+      "type": "reactnative",
+      "cwd": "${workspaceFolder}/apps/client",
+      "platform": "android",
+      "target": "expo-go",
+      "sourceMaps": true
+    },
+    {
+      "name": "Debug Expo (iOS)",
+      "request": "launch",
+      "type": "reactnative",
+      "cwd": "${workspaceFolder}/apps/client",
+      "platform": "ios",
+      "target": "expo-go",
+      "sourceMaps": true
+    },
+    {
+      "name": "Attach to packager",
+      "request": "attach",
+      "type": "reactnative",
+      "cwd": "${workspaceFolder}/apps/client"
+    },
+    {
+      "name": "Debug in Exponent",
+      "request": "launch",
+      "type": "reactnative",
+      "cwd": "${workspaceFolder}/apps/client",
+      "sourceMaps": true,
+      "expoHostType": "tunnel"
+    }
+  ]
+}

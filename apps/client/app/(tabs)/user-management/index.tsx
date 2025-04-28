@@ -51,7 +51,6 @@ function UserManagementContent() {
     setEditedUser,
     setShowAddUserDialog,
     setShowAddGroupDialog,
-    setShowEditGroupDialog,
 
     // Refs
     scrollViewRef,

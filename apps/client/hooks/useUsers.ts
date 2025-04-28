@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { useUserManagementApi } from './api/useUserManagementApi';
 import { useToast } from './use-toast';
 
-import type { AuthorizedUser, Permission } from '@/types/user-management';
+import type { AuthorizedUser } from '@/types/user-management';
 
 /**
  * 用户管理钩子 - 专注于用户数据的管理
@@ -18,7 +18,6 @@ export function useUsers() {
     useCreateUser,
     useUpdateUser,
     useDeleteUser,
-    useUpdateUserPermissions,
     useUpdateUserNFC,
     useUpdateUserFingerprint,
     useUpdateUserFace,
@@ -34,7 +33,6 @@ export function useUsers() {
   const createUserMutation = useCreateUser();
   const updateUserMutation = useUpdateUser();
   const deleteUserMutation = useDeleteUser();
-  const updatePermissionsMutation = useUpdateUserPermissions();
   const updateNFCMutation = useUpdateUserNFC();
   const updateFingerprintMutation = useUpdateUserFingerprint();
   const updateFaceMutation = useUpdateUserFace();
@@ -108,27 +106,6 @@ export function useUsers() {
       toast({
         title: '删除用户失败',
         description: '删除用户时发生错误，请稍后重试。',
-      });
-      throw error;
-    }
-  };
-
-  /**
-   * 更新用户权限
-   */
-  const updateUserPermissions = async (userId: string, permissions: Permission[]) => {
-    try {
-      const result = await updatePermissionsMutation.mutateAsync({ userId, permissions });
-      toast({
-        title: '权限已更新',
-        description: '用户权限已成功更新。',
-      });
-      return result;
-    } catch (error) {
-      console.error('更新权限失败:', error);
-      toast({
-        title: '更新权限失败',
-        description: '更新用户权限时发生错误，请稍后重试。',
       });
       throw error;
     }
@@ -225,7 +202,6 @@ export function useUsers() {
         createUserMutation.isPending ||
         updateUserMutation.isPending ||
         deleteUserMutation.isPending ||
-        updatePermissionsMutation.isPending ||
         updateNFCMutation.isPending ||
         updateFingerprintMutation.isPending ||
         updateFaceMutation.isPending ||
@@ -240,7 +216,6 @@ export function useUsers() {
       createUserMutation.isPending,
       updateUserMutation.isPending,
       deleteUserMutation.isPending,
-      updatePermissionsMutation.isPending,
       updateNFCMutation.isPending,
       updateFingerprintMutation.isPending,
       updateFaceMutation.isPending,
@@ -259,7 +234,6 @@ export function useUsers() {
     createUser,
     updateUser,
     deleteUser,
-    updateUserPermissions,
 
     // 认证方法
     auth: authMethods,

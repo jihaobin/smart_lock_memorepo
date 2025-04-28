@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 
 import { useApi } from '../../contexts/ApiContext';
-import { AuthorizedUser, Group, Permission } from '../../types/user-management';
+import { AuthorizedUser, Group } from '../../types/user-management';
 
 import queryClient from '@/lib/queryClient';
 
@@ -43,6 +43,11 @@ export function useUserManagementApi() {
     return useApiMutation<AuthorizedUser, { id: string; userData: Partial<AuthorizedUser> }>(
       '/users/update',
       {
+        mutationFn: data =>
+          apiClient.put<AuthorizedUser>('/friend', {
+            ...data.userData,
+            id: data.id,
+          }),
         onSuccess: updatedUser => {
           queryClient.invalidateQueries({ queryKey: queryKeys.users });
           if (updatedUser.id) {
@@ -56,28 +61,13 @@ export function useUserManagementApi() {
   const useDeleteUser = () => {
     const queryClient = useQueryClient();
 
-    return useApiMutation<void, string>('/users/delete', {
+    return useApiMutation<void, string>('/friend', {
+      mutationFn: id => apiClient.delete<void>(`/friend/${id}`),
       onSuccess: (_, variables) => {
         queryClient.invalidateQueries({ queryKey: queryKeys.users });
         queryClient.invalidateQueries({ queryKey: queryKeys.user(variables) });
       },
     });
-  };
-
-  const useUpdateUserPermissions = () => {
-    const queryClient = useQueryClient();
-
-    return useApiMutation<AuthorizedUser, { userId: string; permissions: Permission[] }>(
-      '/users/permissions',
-      {
-        onSuccess: updatedUser => {
-          queryClient.invalidateQueries({ queryKey: queryKeys.users });
-          if (updatedUser.id) {
-            queryClient.invalidateQueries({ queryKey: queryKeys.user(updatedUser.id) });
-          }
-        },
-      }
-    );
   };
 
   // 群组相关查询和变更
@@ -112,8 +102,10 @@ export function useUserManagementApi() {
   const useDeleteGroup = () => {
     const queryClient = useQueryClient();
 
-    return useApiMutation<void, string>('/groups/delete', {
+    return useApiMutation<void, string>('/friend/group/delete', {
+      mutationFn: id => apiClient.delete<void>(`/friend/group/${id}`),
       onSuccess: (_, variables) => {
+        queryClient.invalidateQueries({ queryKey: queryKeys.users });
         queryClient.invalidateQueries({ queryKey: queryKeys.groups });
         queryClient.invalidateQueries({ queryKey: queryKeys.group(variables) });
       },
@@ -224,7 +216,6 @@ export function useUserManagementApi() {
     useCreateUser,
     useUpdateUser,
     useDeleteUser,
-    useUpdateUserPermissions,
     useCreateGroup,
     useUpdateGroup,
     useDeleteGroup,

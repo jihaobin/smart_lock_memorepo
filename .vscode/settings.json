@@ -15,5 +15,6 @@
   },
   "search.exclude": {
     "**/routeTree.gen.ts": true
-  }
+  },
+  "terminal.integrated.fontFamily": "MesloLGM Nerd Font Mono"
 }

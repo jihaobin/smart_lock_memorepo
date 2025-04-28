@@ -214,6 +214,14 @@ export class ApiClient {
           if (error.response.data && typeof error.response.data === 'object') {
             if ('code' in error.response.data && 'message' in error.response.data) {
               errorResponse = error.response.data as ApiResponse<null>;
+
+              // 格式化错误数据中的errors数组
+              if (errorResponse.data) {
+                errorResponse = {
+                  ...errorResponse,
+                  data: this.formatErrorData(errorResponse.data),
+                } as ApiResponse<null>;
+              }
             }
           }
 
@@ -385,8 +393,12 @@ export class ApiClient {
       // 返回data字段中的实际数据
       return response.data.data;
     } catch (error: unknown) {
-      // 如果错误已经是标准ApiResponse格式，直接抛出
+      // 如果错误已经是标准ApiResponse格式，处理后抛出
       if (error && typeof error === 'object' && 'code' in error && 'message' in error) {
+        // 格式化错误数据中的errors数组
+        if ('data' in error && error.data) {
+          error.data = this.formatErrorData(error.data);
+        }
         throw error;
       }
 
@@ -509,12 +521,61 @@ export class ApiClient {
    * @param url 请求URL
    * @param method 请求方法
    */
+  /**
+   * 格式化错误数据中的errors数组
+   * @param data 错误数据
+   * @returns 格式化后的错误数据
+   */
+  protected formatErrorData(data: unknown): unknown {
+    // 如果data为空或不是对象，直接返回
+    if (!data || typeof data !== 'object') {
+      return data;
+    }
+
+    // 复制一份数据，避免修改原始数据
+    const formattedData = { ...data };
+
+    // 处理errors数组
+    if ('errors' in formattedData && Array.isArray(formattedData.errors)) {
+      // 将errors数组中的对象转换为字符串
+      formattedData.errors = formattedData.errors.map((error: unknown) => {
+        if (typeof error === 'object' && error !== null) {
+          try {
+            // 尝试将对象转换为JSON字符串
+            return JSON.stringify(error);
+          } catch {
+            // 如果转换失败，返回原始对象
+            return error;
+          }
+        }
+        return error;
+      });
+
+      // 如果需要，可以将整个errors数组合并为一个字符串
+      // formattedData.errorsText = formattedData.errors.join('; ');
+    }
+
+    return formattedData;
+  }
+
+  /**
+   * 处理API错误
+   * @param apiResponse API响应
+   * @param originalError 原始错误
+   * @param url 请求URL
+   * @param method 请求方法
+   */
   protected handleApiError(
     apiResponse: ApiResponse<unknown>,
     originalError: unknown,
     url?: string,
     method?: string
   ): void {
+    // 格式化错误数据中的errors数组
+    if (apiResponse && apiResponse.data) {
+      apiResponse.data = this.formatErrorData(apiResponse.data);
+    }
+
     // 如果有错误处理器，使用它处理错误
     if (this.errorHandler) {
       this.errorHandler.handleError({

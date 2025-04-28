@@ -118,7 +118,7 @@ export class FriendController {
   }
 
   /**
-   * 删除好友关系
+   * 删除好友信息
    * @route DELETE /friend/:friendId
    * @param friendId 好友关系ID
    * @returns 删除的好友信息
@@ -137,7 +137,7 @@ export class FriendController {
   @UsePipes(new ZodValidationPipe(updateFriendSchema))
   @Put()
   async updateFriend(@Body() updateData: UpdateFriendSchemaType) {
-    return this.friendService.updateFriend(updateData);
+    return await this.friendService.updateFriend(updateData);
   }
 
   /**
