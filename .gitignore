@@ -65,3 +65,5 @@ drizzle/
 .history/
 
 .lingma
+
+apps/client/.metro-cache/*

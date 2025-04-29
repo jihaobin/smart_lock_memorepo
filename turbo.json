@@ -1,44 +1,58 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
   "globalDependencies": ["**/.env.*local"],
-  "pipeline": {
+  "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+      "cache": true,
+      "inputs": ["src/**/*.{ts,tsx,js,jsx}", "package.json", "tsconfig.json"]
     },
     "build:android": {
       "dependsOn": ["^build"],
       "outputs": ["android/app/build/outputs/**"],
-      "cache": true
+      "cache": true,
+      "inputs": ["src/**/*.{ts,tsx,js,jsx}", "android/**/*.{java,xml,gradle}", "package.json"]
     },
     "build:ios": {
       "dependsOn": ["^build"],
       "outputs": ["ios/build/**"],
-      "cache": false
+      "cache": true,
+      "inputs": ["src/**/*.{ts,tsx,js,jsx}", "ios/**/*.{m,h,swift,plist,pbxproj}", "package.json"]
     },
     "prebuild": {
       "dependsOn": ["^build"],
       "outputs": ["ios/**", "android/**"],
-      "cache": false
+      "cache": true,
+      "inputs": ["package.json", "app.json", "tsconfig.json"]
     },
     "start": {
       "dependsOn": ["^build"],
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "interactive": true
     },
     "dev": {
       "dependsOn": ["^build"],
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "interactive": true
     },
     "lint": {
-      "outputs": []
+      "outputs": [],
+      "cache": true,
+      "inputs": ["src/**/*.{ts,tsx,js,jsx}", ".eslintrc*", "eslint.config.*"]
     },
     "lint:fix": {
-      "outputs": []
+      "outputs": [],
+      "cache": true,
+      "inputs": ["src/**/*.{ts,tsx,js,jsx}", ".eslintrc*", "eslint.config.*"]
     },
     "format": {
-      "outputs": []
+      "outputs": [],
+      "cache": true,
+      "inputs": ["src/**/*.{ts,tsx,js,jsx,md,json}", ".prettierrc*"]
     },
     "clean": {
       "cache": false
@@ -46,7 +60,8 @@
     "test": {
       "dependsOn": ["^build"],
       "outputs": ["coverage/**"],
-      "inputs": ["src/**/*.tsx", "src/**/*.ts", "test/**/*.ts", "test/**/*.tsx"]
+      "inputs": ["src/**/*.tsx", "src/**/*.ts", "test/**/*.ts", "test/**/*.tsx"],
+      "cache": true
     }
   }
 }

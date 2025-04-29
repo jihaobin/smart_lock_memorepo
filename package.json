@@ -14,11 +14,17 @@
     "dev": "turbo run dev",
     "dev:client": "pnpm --filter @smart-lock/client dev",
     "dev:api": "pnpm --filter @smart-lock/api dev",
+    "dev:admin": "pnpm --filter @smart-lock/admin dev",
+    "dev:admin-api": "turbo run dev --filter=@smart-lock/admin --filter=@smart-lock/api",
+    "dev:client-api": "turbo run dev --filter=@smart-lock/client --filter=@smart-lock/api",
+    "dev:all": "turbo run dev --filter=@smart-lock/client --filter=@smart-lock/admin --filter=@smart-lock/api",
     "db:studio": "pnpm --filter @smart-lock/shared studio",
     "db:migrate": "pnpm --filter @smart-lock/shared migrate",
     "db:generate": "pnpm --filter @smart-lock/shared generate",
     "db:generate:migrate": "pnpm --filter @smart-lock/shared generate && pnpm --filter @smart-lock/shared migrate",
     "start": "turbo run start",
+    "start:client": "pnpm --filter @smart-lock/client start",
+    "start:api": "pnpm --filter @smart-lock/api start",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "clean": "turbo run clean",
     "lint": "eslint --config eslint.config.mjs",
@@ -51,7 +57,7 @@
     "husky": "^9.0.11",
     "lint-staged": "^15.5.0",
     "prettier": "^3.2.5",
-    "turbo": "^1.12.4",
+    "turbo": "^2.5.2",
     "typescript": "^5.3.3",
     "typescript-eslint": "^8.26.1"
   },
@@ -61,10 +67,10 @@
   "packageManager": "pnpm@8.15.4",
   "dependencies": {
     "dotenv": "^16.4.7",
-    "nestjs-zod": "^4.3.1",
-    "zod": "^3.24.2",
     "expo": "~52.0.46",
+    "nestjs-zod": "^4.3.1",
     "react": "18.3.1",
-    "react-native": "0.76.9"
+    "react-native": "0.76.9",
+    "zod": "^3.24.2"
   }
 }
