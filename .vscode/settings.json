@@ -16,5 +16,7 @@
   "search.exclude": {
     "**/routeTree.gen.ts": true
   },
-  "terminal.integrated.fontFamily": "MesloLGM Nerd Font Mono"
+  "terminal.integrated.fontFamily": "MesloLGM Nerd Font Mono",
+  "eslint.codeActionsOnSave.mode": "problems",
+  "editor.formatOnSave": false
 }

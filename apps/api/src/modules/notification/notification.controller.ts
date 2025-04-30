@@ -5,12 +5,22 @@ import {
   Param,
   Post,
   Query,
+  Req,
+  UsePipes,
 } from '@nestjs/common';
+import {
+  CreateNotificationSchema,
+  GetNotificationsSchema,
+} from '@smart-lock/shared';
+import { Request } from 'express';
+import { ZodValidationPipe } from 'src/common';
 import { Public } from 'src/common/auth/jwt-auth.guard';
 import { ZodBody } from 'src/common/decorators';
-import { ZodValidationPipe } from 'src/common/pipes';
 
-import { CreateNotificationSchema, CreateNotificationDto, GetNotificationsSchema, GetNotificationsDto } from './dto/notification.dto';
+import {
+  CreateNotificationDto,
+  GetNotificationsDto,
+} from './dto/notification.dto';
 import { NotificationService } from './notification.service';
 
 @Controller('notifications')
@@ -26,7 +36,9 @@ export class NotificationController {
   async createAndSendNotification(
     @Body() createNotificationDto: CreateNotificationDto,
   ) {
-    return this.notificationService.createAndSendNotification(createNotificationDto);
+    return this.notificationService.createAndSendNotification(
+      createNotificationDto,
+    );
   }
 
   /**
@@ -39,21 +51,20 @@ export class NotificationController {
   }
 
   /**
-   * 获取通知列表
-   * 注意：此为示例API，实际功能需要在NotificationService中实现
+   * 获取用户通知列表
    */
-  @Public()
   @Get()
-  async getNotifications(
-    @Query(new ZodValidationPipe(GetNotificationsSchema))
-    queryParams: GetNotificationsDto,
+  @UsePipes(new ZodValidationPipe(GetNotificationsSchema))
+  async getUserNotifications(
+    @Query() query: GetNotificationsDto,
+    @Req() request: Request,
   ) {
-    // 示例返回
-    return {
-      items: [],
-      total: 0,
-      page: queryParams.page,
-      limit: queryParams.limit,
-    };
+    const userId = request.user.userId;
+    return this.notificationService.getUserNotifications({
+      userId,
+      page: 1,
+      limit: 10,
+      ...query,
+    });
   }
 }

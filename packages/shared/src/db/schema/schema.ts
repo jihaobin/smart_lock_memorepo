@@ -57,7 +57,7 @@ export const devices = pgTable(
         // 设备电量
         batteryLevel: number;
         // 设备固件版本
-        firmwareVersion: string;
+        firmwareVersion: number;
       }>()
       .notNull(), // 设备状态
     hasCamera: boolean('has_camera').default(false),

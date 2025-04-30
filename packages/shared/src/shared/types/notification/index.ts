@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { Device } from '../device';
+
 export const NOTIFICATION_ENUM = {
   DOORBELL: 'doorbell', // 门铃
   DOOR_OPEN_ALERT: 'device_open_alert', // 长时间没有关门
@@ -28,62 +30,184 @@ export const OPEN_TYPE_ENUM = {
 export type OPEN_TYPE_ENUM = typeof OPEN_TYPE_ENUM;
 
 export const IMPORTANCE_LEVEL = {
-  LOW: 'low', MEDIUM: 'medium', HIGH:'high', CRITICAL: 'critical' // // 低，中，高，紧急
-} as const
+  LOW: 'low',
+  MEDIUM: 'medium',
+  HIGH: 'high',
+  CRITICAL: 'critical', // // 低，中，高，紧急
+} as const;
 
-export type IMPORTANCE_LEVEL = typeof IMPORTANCE_LEVEL
+export type IMPORTANCE_LEVEL = typeof IMPORTANCE_LEVEL;
 
 export const baseNotificationDataSchema = z.object({
   userId: z.string().min(1, { message: '用户ID不能为空' }),
   deviceId: z.string().min(1, { message: '设备ID不能为空' }),
   message: z.string().min(1, { message: '消息不能为空' }),
-  type: z.enum([NOTIFICATION_ENUM.DOORBELL, // 门铃
-    NOTIFICATION_ENUM.DOOR_OPEN_ALERT, // 长时间没有关门
-    NOTIFICATION_ENUM.DEVICE_LOW_BATTERY, // 电量低
-    NOTIFICATION_ENUM.DEVICE_BROKEN, // 门被破坏
-    NOTIFICATION_ENUM.DEVICE_OPEN, // 开门
-    NOTIFICATION_ENUM.DEVICE_CLOSE, // 关门
-    NOTIFICATION_ENUM.DEVICE_OFFLINE, // 设备离线
-    NOTIFICATION_ENUM.DEVICE_ONLINE, // 设备上线
-    NOTIFICATION_ENUM.FIRMWARE_UPDATE, // 固件更新
-  ], { message: '消息类型不符合要求' }),
+  type: z.enum(
+    [
+      NOTIFICATION_ENUM.DOORBELL, // 门铃
+      NOTIFICATION_ENUM.DOOR_OPEN_ALERT, // 长时间没有关门
+      NOTIFICATION_ENUM.DEVICE_LOW_BATTERY, // 电量低
+      NOTIFICATION_ENUM.DEVICE_BROKEN, // 门被破坏
+      NOTIFICATION_ENUM.DEVICE_OPEN, // 开门
+      NOTIFICATION_ENUM.DEVICE_CLOSE, // 关门
+      NOTIFICATION_ENUM.DEVICE_OFFLINE, // 设备离线
+      NOTIFICATION_ENUM.DEVICE_ONLINE, // 设备上线
+      NOTIFICATION_ENUM.FIRMWARE_UPDATE, // 固件更新
+    ],
+    { message: '消息类型不符合要求' }
+  ),
+});
+
+// 创建通知的基础DTO
+export const CreateNotificationSchema = baseNotificationDataSchema.extend({
+  data: z.record(z.unknown()).optional(),
+  importanceLevel: z
+    .enum(
+      [
+        IMPORTANCE_LEVEL.LOW,
+        IMPORTANCE_LEVEL.MEDIUM,
+        IMPORTANCE_LEVEL.HIGH,
+        IMPORTANCE_LEVEL.CRITICAL,
+      ],
+      { message: '重要级别不符合要求' }
+    )
+    .default(IMPORTANCE_LEVEL.MEDIUM),
+  notificationMethod: z.enum(['app', 'sms', 'call']).default('app'),
+});
+
+export const GetNotificationsSchema = z.object({
+  page: z.number().int().min(1).default(1),
+  limit: z.number().int().min(1).max(100).default(10),
+  type: z
+    .enum([
+      NOTIFICATION_ENUM.DOORBELL,
+      NOTIFICATION_ENUM.DOOR_OPEN_ALERT,
+      NOTIFICATION_ENUM.DEVICE_LOW_BATTERY,
+      NOTIFICATION_ENUM.DEVICE_BROKEN,
+      NOTIFICATION_ENUM.DEVICE_OPEN,
+      NOTIFICATION_ENUM.DEVICE_CLOSE,
+      NOTIFICATION_ENUM.DEVICE_OFFLINE,
+      NOTIFICATION_ENUM.DEVICE_ONLINE,
+      NOTIFICATION_ENUM.FIRMWARE_UPDATE,
+    ])
+    .optional(),
+  deviceId: z.string().optional(),
+  importanceLevel: z
+    .enum([
+      IMPORTANCE_LEVEL.LOW,
+      IMPORTANCE_LEVEL.MEDIUM,
+      IMPORTANCE_LEVEL.HIGH,
+      IMPORTANCE_LEVEL.CRITICAL,
+    ])
+    .optional(),
+  fromDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
+  toDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
 });
 
 export const deviceOpenNotificationDataSchema = baseNotificationDataSchema.extend({
-  openType: z.enum([OPEN_TYPE_ENUM.REMOTE, OPEN_TYPE_ENUM.TEMPORARY_PASSWORD, OPEN_TYPE_ENUM.DIRECT, OPEN_TYPE_ENUM.NFC, OPEN_TYPE_ENUM.PERMANENT_PASSWORD, OPEN_TYPE_ENUM.FACE, OPEN_TYPE_ENUM.EYE, OPEN_TYPE_ENUM.FINGERPRINT]),
-})
+  openType: z.enum([
+    OPEN_TYPE_ENUM.REMOTE,
+    OPEN_TYPE_ENUM.TEMPORARY_PASSWORD,
+    OPEN_TYPE_ENUM.DIRECT,
+    OPEN_TYPE_ENUM.NFC,
+    OPEN_TYPE_ENUM.PERMANENT_PASSWORD,
+    OPEN_TYPE_ENUM.FACE,
+    OPEN_TYPE_ENUM.EYE,
+    OPEN_TYPE_ENUM.FINGERPRINT,
+  ]),
+});
 
 export const tempPasswordOpenNOtificationDataScheam = deviceOpenNotificationDataSchema.extend({
   type: z.literal(OPEN_TYPE_ENUM.TEMPORARY_PASSWORD),
-  tempPassword: z.string()
-})
+  tempPassword: z.string(),
+});
 
 export const deviceBatteryNotificationDataSchema = baseNotificationDataSchema.extend({
-  type: z.literal(NOTIFICATION_ENUM.DEVICE_LOW_BATTERY, { message: `消息类型不符合要求(${NOTIFICATION_ENUM.DEVICE_LOW_BATTERY})` }),
+  type: z.literal(NOTIFICATION_ENUM.DEVICE_LOW_BATTERY, {
+    message: `消息类型不符合要求(${NOTIFICATION_ENUM.DEVICE_LOW_BATTERY})`,
+  }),
   device_battery: z.number(),
 });
 
 export const deviceFirmwareUpdateNotificationDataSchema = baseNotificationDataSchema.extend({
-  type: z.literal(NOTIFICATION_ENUM.FIRMWARE_UPDATE, { message:  `消息类型不符合要求(${NOTIFICATION_ENUM.FIRMWARE_UPDATE})` }),
+  type: z.literal(NOTIFICATION_ENUM.FIRMWARE_UPDATE, {
+    message: `消息类型不符合要求(${NOTIFICATION_ENUM.FIRMWARE_UPDATE})`,
+  }),
   device_firmware_version: z.string(),
 });
 
 export const deviceOpenAlertNotificationDataSchema = baseNotificationDataSchema.extend({
-  type: z.literal(NOTIFICATION_ENUM.DOOR_OPEN_ALERT, { message: `消息类型不符合要求(${NOTIFICATION_ENUM.DOOR_OPEN_ALERT})` }),
+  type: z.literal(NOTIFICATION_ENUM.DOOR_OPEN_ALERT, {
+    message: `消息类型不符合要求(${NOTIFICATION_ENUM.DOOR_OPEN_ALERT})`,
+  }),
   noOpenTime: z.number(),
 });
 
 export const deviceBrokenNotificationDataSchema = baseNotificationDataSchema.extend({
-  type: z.literal(NOTIFICATION_ENUM.DEVICE_BROKEN, { message: `消息类型不符合要求(${NOTIFICATION_ENUM.DEVICE_BROKEN})` }),
+  type: z.literal(NOTIFICATION_ENUM.DEVICE_BROKEN, {
+    message: `消息类型不符合要求(${NOTIFICATION_ENUM.DEVICE_BROKEN})`,
+  }),
   door_broken: z.string(),
 });
 
-export type notificationDataSchema = z.infer<typeof deviceOpenNotificationDataSchema> | z.infer<typeof tempPasswordOpenNOtificationDataScheam> | z.infer<typeof deviceBatteryNotificationDataSchema> | z.infer<typeof deviceFirmwareUpdateNotificationDataSchema> | z.infer<typeof deviceOpenAlertNotificationDataSchema> | z.infer<typeof deviceBrokenNotificationDataSchema>
+export type notificationDataSchema =
+  | z.infer<typeof deviceOpenNotificationDataSchema>
+  | z.infer<typeof tempPasswordOpenNOtificationDataScheam>
+  | z.infer<typeof deviceBatteryNotificationDataSchema>
+  | z.infer<typeof deviceFirmwareUpdateNotificationDataSchema>
+  | z.infer<typeof deviceOpenAlertNotificationDataSchema>
+  | z.infer<typeof deviceBrokenNotificationDataSchema>;
 
-export interface IAppNotificationMessage{
+export interface IAppNotificationMessage {
   notificationId: string;
   userId: string;
   type: string;
   message: string;
   data?: Record<string, unknown>;
+}
+
+export interface NotiFIcationListItem {
+  data: ItemData;
+  deliveryStatus: string;
+  device: Device;
+  deviceId: string;
+  id: string;
+  importanceLevel: 'low' | 'medium' | 'high' | 'critical';
+  message: string;
+  notificationMethod: 'app' | 'sms' | 'call';
+  timestamp: string;
+  type:
+    | 'doorbell' // 门铃
+    | 'device_open_alert' // 长时间没有关门
+    | 'device_low_battery' // 电量低
+    | 'device_broken' // 门被破坏
+    | 'device_open' // 开门
+    | 'device_close' // 关门
+    | 'device_offline' // 设备离线
+    | 'device_online' // 设备上线
+    | 'firmware_update'; // 固件更新
+  userId: string;
+}
+
+export interface ItemData {
+  temp_password?: string; // 临时密码
+  device_battery?: number; // 设备电量
+  device_firmware_version?: string; // 设备固件版本
+  openType?:
+    | 'remote'
+    | 'temporary_password'
+    | 'direct'
+    | 'nfc'
+    | 'permanent_password'
+    | 'face'
+    | 'eye'
+    | 'fingerprint'; // 开门方式
+  openFriend?: string; // 开门好友
+  noOpenTime?: number; // 未开门时长
 }

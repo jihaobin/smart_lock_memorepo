@@ -11,11 +11,24 @@ import { ValidationException } from '../exceptions';
  * @returns 格式化后的验证错误列表
  */
 export function formatZodError(error: ZodError) {
-  return error.errors.map((issue: ZodIssue) => ({
-    code: issue.code,
-    path: issue.path.join('.'),
-    message: issue.message,
-  }));
+  return error.errors.map((issue: ZodIssue) => {
+    const friendlyPath = issue.path
+      .map((p, i) => (i === 0 ? `字段'${p}'` : `的子字段'${p}'`))
+      .join('');
+
+    let friendlyMessage = issue.message;
+    if (issue.code === 'invalid_type') {
+      friendlyMessage = `期望类型为 ${issue.expected}, 但实际为 ${issue.received}`;
+    }
+
+    return {
+      code: issue.code,
+      path: issue.path.join('.'),
+      message: `${friendlyPath} ${friendlyMessage}`,
+      friendlyPath,
+      friendlyMessage,
+    };
+  });
 }
 
 /**
@@ -31,7 +44,12 @@ export function createValidationException(
 ): ValidationException {
   const formattedErrors = formatZodError(error);
 
-  return new ValidationException(message, ErrorCode.VALIDATION_ERROR, {
+  const detailedMessage =
+    formattedErrors.length > 0
+      ? `${message}: ${formattedErrors[0].friendlyPath} ${formattedErrors[0].friendlyMessage}`
+      : message;
+
+  return new ValidationException(detailedMessage, ErrorCode.VALIDATION_ERROR, {
     errors: formattedErrors,
   });
 }

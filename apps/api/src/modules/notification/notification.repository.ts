@@ -1,16 +1,37 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { NOTIFICATION_ENUM, IMPORTANCE_LEVEL } from '@smart-lock/shared';
 import { DbType, schema } from '@smart-lock/shared/server';
 import { sql, eq } from 'drizzle-orm';
 import { AppLoggerService } from 'src/common';
 import { DB } from 'src/database/database.provider';
 
+// 定义通知方法枚举
+const NOTIFICATION_METHOD = {
+  APP: 'app',
+  SMS: 'sms',
+  CALL: 'call',
+} as const;
+
+type NotificationMethod =
+  (typeof NOTIFICATION_METHOD)[keyof typeof NOTIFICATION_METHOD];
+
+// 定义通知状态枚举
+const DELIVERY_STATUS = {
+  PENDING: 'pending',
+  SENT: 'sent',
+  DELIVERED: 'delivered',
+  FAILED: 'failed',
+} as const;
+
+type DeliveryStatus = (typeof DELIVERY_STATUS)[keyof typeof DELIVERY_STATUS];
+
 @Injectable()
 export class NotificationRepository {
   constructor(
     @Inject(DB) private readonly db: DbType,
-    private readonly logger: AppLoggerService
+    private readonly logger: AppLoggerService,
   ) {
-    this.logger.setContext(NotificationRepository.name)
+    this.logger.setContext(NotificationRepository.name);
   }
 
   /**
@@ -18,13 +39,12 @@ export class NotificationRepository {
    */
   async createNotification(data: {
     userId: string;
-    type: 'doorbell' | 'device_open_alert' | 'device_low_battery' | 'device_broken' |
-          'device_open' | 'device_close' | 'device_offline' | 'device_online' | 'firmware_update';
+    type: (typeof NOTIFICATION_ENUM)[keyof typeof NOTIFICATION_ENUM];
     message: string;
     data?: Record<string, unknown>;
     deviceId?: string;
-    importanceLevel?: 'low' | 'medium' | 'high' | 'critical';
-    notificationMethod?: 'app' | 'sms' | 'call';
+    importanceLevel?: (typeof IMPORTANCE_LEVEL)[keyof typeof IMPORTANCE_LEVEL];
+    notificationMethod?: NotificationMethod;
   }) {
     try {
       const notificationData = {
@@ -33,9 +53,9 @@ export class NotificationRepository {
         message: data.message,
         data: data.data || {},
         deviceId: data.deviceId,
-        importanceLevel: data.importanceLevel || 'medium',
-        notificationMethod: data.notificationMethod || 'app',
-        deliveryStatus: 'pending' as const,
+        importanceLevel: data.importanceLevel || IMPORTANCE_LEVEL.MEDIUM,
+        notificationMethod: data.notificationMethod || NOTIFICATION_METHOD.APP,
+        deliveryStatus: DELIVERY_STATUS.PENDING,
       };
 
       const [notification] = await this.db
@@ -55,16 +75,16 @@ export class NotificationRepository {
    */
   async createDeliveryLog(data: {
     notificationId: string;
-    deliveryMethod: 'app' | 'sms' | 'call';
+    deliveryMethod: NotificationMethod;
     targetNumber?: string;
-    status?: 'pending' | 'sent' | 'delivered' | 'failed';
+    status?: DeliveryStatus;
   }) {
     try {
       const deliveryLogData = {
         notificationId: data.notificationId,
         deliveryMethod: data.deliveryMethod,
         targetNumber: data.targetNumber || '',
-        status: data.status || 'pending',
+        status: data.status || DELIVERY_STATUS.PENDING,
       };
 
       const [log] = await this.db
@@ -84,7 +104,7 @@ export class NotificationRepository {
    */
   async updateNotificationStatus(
     notificationId: string,
-    status: 'pending' | 'sent' | 'delivered' | 'failed'
+    status: DeliveryStatus,
   ) {
     try {
       await this.db
@@ -102,13 +122,13 @@ export class NotificationRepository {
    */
   async updateDeliveryLogStatus(
     logId: string,
-    status: 'pending' | 'sent' | 'delivered' | 'failed',
+    status: DeliveryStatus,
     errorMessage?: string,
     retryCount?: number,
     additionalData?: {
       aliYunMsgId?: string;
       maxDeliveryTime?: Date;
-    }
+    },
   ): Promise<void> {
     try {
       const updateData: Record<string, unknown> = {
@@ -119,7 +139,10 @@ export class NotificationRepository {
         updateData.errorMessage = errorMessage;
       }
 
-      if (status === 'delivered' || status === 'failed') {
+      if (
+        status === DELIVERY_STATUS.DELIVERED ||
+        status === DELIVERY_STATUS.FAILED
+      ) {
         updateData.completionTime = sql`NOW()`;
       }
 
@@ -142,7 +165,10 @@ export class NotificationRepository {
         .set(updateData)
         .where(eq(schema.notificationDeliveryLogs.id, logId));
     } catch (error) {
-      this.logger.error(`更新通知发送记录状态失败: ${error.message}`, error.stack);
+      this.logger.error(
+        `更新通知发送记录状态失败: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -156,15 +182,18 @@ export class NotificationRepository {
       const logs = await this.db.query.notificationDeliveryLogs.findMany({
         where: (notificationLogs, { eq, and, isNotNull }) =>
           and(
-            eq(notificationLogs.status, 'sent'),
-            eq(notificationLogs.deliveryMethod, 'sms'),
-            isNotNull(notificationLogs.aliYunMsgId)
+            eq(notificationLogs.status, DELIVERY_STATUS.SENT),
+            eq(notificationLogs.deliveryMethod, NOTIFICATION_METHOD.SMS),
+            isNotNull(notificationLogs.aliYunMsgId),
           ),
       });
 
       return logs;
     } catch (error) {
-      this.logger.error(`查找待处理的短信发送记录失败: ${error.message}`, error.stack);
+      this.logger.error(
+        `查找待处理的短信发送记录失败: ${error.message}`,
+        error.stack,
+      );
       return [];
     }
   }
@@ -181,7 +210,10 @@ export class NotificationRepository {
 
       return logs;
     } catch (error) {
-      this.logger.error(`根据阿里云消息ID查找发送记录失败: ${error.message}`, error.stack);
+      this.logger.error(
+        `根据阿里云消息ID查找发送记录失败: ${error.message}`,
+        error.stack,
+      );
       return [];
     }
   }
@@ -192,7 +224,10 @@ export class NotificationRepository {
   async findDeliveryLogsByNotificationId(notificationId: string) {
     try {
       const logs = await this.db.query.notificationDeliveryLogs.findMany({
-        where: eq(schema.notificationDeliveryLogs.notificationId, notificationId),
+        where: eq(
+          schema.notificationDeliveryLogs.notificationId,
+          notificationId,
+        ),
         orderBy: schema.notificationDeliveryLogs.attemptTime,
       });
 
@@ -235,6 +270,146 @@ export class NotificationRepository {
     } catch (error) {
       this.logger.error(`获取用户手机号失败: ${error.message}`, error.stack);
       throw error;
+    }
+  }
+
+  /**
+   * 获取通知列表
+   * 根据用户ID和过滤条件查询通知列表，支持分页
+   */
+  async findNotificationsByUserId(
+    userId: string,
+    page: number,
+    pageSize: number,
+    filters?: {
+      type?: (typeof NOTIFICATION_ENUM)[keyof typeof NOTIFICATION_ENUM];
+      deviceId?: string;
+      importanceLevel?: (typeof IMPORTANCE_LEVEL)[keyof typeof IMPORTANCE_LEVEL];
+      fromDate?: string;
+      toDate?: string;
+    },
+  ) {
+    try {
+      // 使用函数式查询构建器，更符合Drizzle最佳实践
+      const query = await this.db.query.notifications.findMany({
+        where: (notifications, { and, eq, between, gte, lte }) => {
+          const conditions = [eq(notifications.userId, userId)];
+
+          if (filters) {
+            // 添加类型过滤
+            if (filters.type) {
+              conditions.push(eq(notifications.type, filters.type));
+            }
+
+            // 添加设备ID过滤
+            if (filters.deviceId) {
+              conditions.push(eq(notifications.deviceId, filters.deviceId));
+            }
+
+            // 添加重要性级别过滤
+            if (filters.importanceLevel) {
+              conditions.push(
+                eq(notifications.importanceLevel, filters.importanceLevel),
+              );
+            }
+
+            // 处理日期范围过滤
+            if (filters.fromDate || filters.toDate) {
+              // 如果同时有开始和结束日期，使用between操作符
+              if (filters.fromDate && filters.toDate) {
+                const fromDate = new Date(filters.fromDate);
+                const toDate = new Date(filters.toDate);
+                // 设置为当天的结束时间
+                toDate.setHours(23, 59, 59, 999);
+
+                conditions.push(
+                  between(notifications.timestamp, fromDate, toDate),
+                );
+              } else if (filters.fromDate) {
+                // 只有开始日期
+                const fromDate = new Date(filters.fromDate);
+                conditions.push(gte(notifications.timestamp, fromDate));
+              } else if (filters.toDate) {
+                // 只有结束日期
+                const toDate = new Date(filters.toDate);
+                // 设置为当天的结束时间
+                toDate.setHours(23, 59, 59, 999);
+                conditions.push(lte(notifications.timestamp, toDate));
+              }
+            }
+          }
+          return and(...conditions);
+        },
+        orderBy: (notifications, { desc }) => [desc(notifications.timestamp)],
+        with: {
+          device: true,
+        },
+        limit: pageSize,
+        offset: (page - 1) * pageSize,
+      });
+
+      // 获取总记录数 - 使用更简洁的count查询
+      const countQuery = await this.db.query.notifications.findMany({
+        where: (notifications, { and, eq, between, gte, lte }) => {
+          const conditions = [eq(notifications.userId, userId)];
+
+          if (filters) {
+            if (filters.type) {
+              conditions.push(eq(notifications.type, filters.type));
+            }
+            if (filters.deviceId) {
+              conditions.push(eq(notifications.deviceId, filters.deviceId));
+            }
+            if (filters.importanceLevel) {
+              conditions.push(
+                eq(notifications.importanceLevel, filters.importanceLevel),
+              );
+            }
+
+            // 处理日期范围过滤
+            if (filters.fromDate || filters.toDate) {
+              if (filters.fromDate && filters.toDate) {
+                const fromDate = new Date(filters.fromDate);
+                const toDate = new Date(filters.toDate);
+                toDate.setHours(23, 59, 59, 999);
+                conditions.push(
+                  between(notifications.timestamp, fromDate, toDate),
+                );
+              } else if (filters.fromDate) {
+                conditions.push(
+                  gte(notifications.timestamp, new Date(filters.fromDate)),
+                );
+              } else if (filters.toDate) {
+                const toDate = new Date(filters.toDate);
+                toDate.setHours(23, 59, 59, 999);
+                conditions.push(lte(notifications.timestamp, toDate));
+              }
+            }
+          }
+
+          return and(...conditions);
+        },
+        columns: {
+          id: true,
+        },
+      });
+
+      const total = countQuery.length;
+
+      return {
+        items: query,
+        total,
+        page,
+        limit: Number(pageSize),
+      };
+    } catch (error) {
+      this.logger.error(`查找通知列表失败: ${error.message}`, error.stack);
+      return {
+        items: [],
+        total: 0,
+        page: 0,
+        limit: 0,
+      };
     }
   }
 }
