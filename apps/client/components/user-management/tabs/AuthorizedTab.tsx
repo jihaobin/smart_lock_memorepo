@@ -6,7 +6,6 @@ import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
-import { Image } from '@/components/ui/image';
 import { Input, InputField, InputIcon } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
@@ -153,21 +152,10 @@ export function AuthorizedTab({
                 className="p-4 rounded-lg bg-white shadow-sm border border-gray-100"
               >
                 <HStack className="items-center">
-                  <Box className="h-12 w-12 rounded-full bg-gray-100 items-center justify-center mr-3 overflow-hidden">
-                    {user.avatar ? (
-                      <Image
-                        source={{ uri: user.avatar }}
-                        alt={user.name}
-                        className="w-full h-full"
-                      />
-                    ) : (
-                      <Icon as={Users} className="h-6 w-6 text-gray-400" />
-                    )}
-                  </Box>
                   <VStack className="flex-1 min-w-0">
                     <HStack className="items-center justify-between">
                       <Text className="font-medium" numberOfLines={1}>
-                        {user.name}
+                        {user.remarkName}
                       </Text>
                       <Button
                         size="sm"
@@ -179,30 +167,8 @@ export function AuthorizedTab({
                     </HStack>
                     <HStack className="items-center mt-1">
                       <Text className="text-sm text-gray-500" numberOfLines={1}>
-                        {groups.find(g => g.id === user.group)?.groupName}
+                        {groups.find(g => g.id === user.friendGroupId)?.groupName}
                       </Text>
-                      <Text className="mx-2 text-gray-500">•</Text>
-                      <Text className="text-sm text-gray-500" numberOfLines={1}>
-                        最后访问: {user.lastAccess}
-                      </Text>
-                    </HStack>
-                    <HStack className="mt-2 space-x-2">
-                      {user.permissions.map(permission => (
-                        <Box
-                          key={permission.doorId}
-                          className={`px-2 py-1 rounded-full ${
-                            permission.type === 'permanent' ? 'bg-green-50' : 'bg-yellow-50'
-                          }`}
-                        >
-                          <Text
-                            className={`text-xs ${
-                              permission.type === 'permanent' ? 'text-green-700' : 'text-yellow-700'
-                            }`}
-                          >
-                            {permission.type === 'permanent' ? '永久' : '临时'}
-                          </Text>
-                        </Box>
-                      ))}
                     </HStack>
                   </VStack>
                 </HStack>

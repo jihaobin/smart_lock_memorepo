@@ -52,7 +52,7 @@ export function DirectEditUserModal() {
     resolver: zodResolver(editUserSchema),
     defaultValues: {
       name: editingUser?.remarkName || '',
-      group: editingUser?.friendGroupId || '',
+      group: groups.find(g => g.id === editingUser?.friendGroupId)?.groupName || '',
       lock_password: editingUser?.linkedPasswords || '',
     },
   });
@@ -87,7 +87,7 @@ export function DirectEditUserModal() {
     } else {
       reset({
         name: editingUser.remarkName || '',
-        group: editingUser.friendGroupId || '',
+        group: groups.find(g => g.id === editingUser.friendGroupId)?.groupName || '',
         lock_password: editingUser.linkedPasswords || '',
       });
     }
@@ -156,8 +156,8 @@ export function DirectEditUserModal() {
             name="group"
             render={({ field: { onChange, value } }) => (
               <Select selectedValue={value} onValueChange={onChange}>
-                <SelectTrigger>
-                  <SelectInput placeholder="选择分组" />
+                <SelectTrigger className="w-full">
+                  <SelectInput placeholder="选择分组" className="flex-1 text-ellipsis" />
                   <SelectIcon />
                 </SelectTrigger>
                 <SelectPortal>
@@ -170,7 +170,7 @@ export function DirectEditUserModal() {
                       <SelectItem
                         key={group.id}
                         label={group.groupName}
-                        value={group.id}
+                        value={group.groupName}
                         className="p-3"
                       />
                     ))}

@@ -3,7 +3,7 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "set DARK_MODE=media && expo start",
+    "start": "set DARK_MODE=media && expo start --clear",
     "android": "set DARK_MODE=media && expo start --android",
     "ios": "set DARK_MODE=media && expo start --ios",
     "web": "set DARK_MODE=media && expo start --web",

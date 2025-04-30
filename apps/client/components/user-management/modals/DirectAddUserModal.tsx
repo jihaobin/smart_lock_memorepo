@@ -14,6 +14,7 @@ import {
   SelectContent,
   SelectDragIndicator,
   SelectDragIndicatorWrapper,
+  SelectIcon,
   SelectInput,
   SelectItem,
   SelectPortal,
@@ -41,7 +42,6 @@ export function DirectAddUserModal() {
     ui: { showAddUserDialog, setShowAddUserDialog, newUser },
   } = useUserManagement();
 
-  // 初始化 react-hook-form
   const {
     control,
     handleSubmit,
@@ -58,11 +58,10 @@ export function DirectAddUserModal() {
 
   // 处理表单提交
   const onSubmit = async (data: AddUserFormData) => {
-    console.log(data);
     try {
       await createUser({
         remarkName: data.name,
-        linkedPasswords: data.lock_password,
+        linkedPasswords: data.lock_password as string,
         friendGroupId: data.group,
       });
       setShowAddUserDialog(false);
@@ -152,9 +151,9 @@ export function DirectAddUserModal() {
             name="group"
             render={({ field: { onChange, value } }) => (
               <Select selectedValue={value} onValueChange={onChange} className="mt-1">
-                <SelectTrigger>
-                  <SelectInput placeholder="选择分组" />
-                  {/* <SelectIcon /> */}
+                <SelectTrigger className="w-full">
+                  <SelectInput placeholder="选择分组" className="flex-1 text-ellipsis" />
+                  <SelectIcon />
                 </SelectTrigger>
                 <SelectPortal>
                   <SelectBackdrop />

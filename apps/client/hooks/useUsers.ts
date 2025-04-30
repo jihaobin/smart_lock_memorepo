@@ -52,12 +52,12 @@ export function useUsers() {
   /**
    * 创建新用户
    */
-  const createUser = async (userData: AuthorizedUser) => {
+  const createUser = async (userData: Omit<AuthorizedUser, 'userId' | 'id'>) => {
     try {
       const result = await createUserMutation.mutateAsync(userData);
       toast({
         title: '用户已创建',
-        description: `用户 "${result.remarkName}" 已成功创建。`,
+        description: `用户 "${userData.remarkName}" 已成功创建。`,
       });
       return result;
     } catch (error) {
@@ -78,7 +78,7 @@ export function useUsers() {
       const result = await updateUserMutation.mutateAsync({ id, userData });
       toast({
         title: '用户已更新',
-        description: `用户 "${result.remarkName}" 的信息已成功更新。`,
+        description: `用户 "${userData.remarkName}" 的信息已成功更新。`,
       });
       return result;
     } catch (error) {

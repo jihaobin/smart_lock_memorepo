@@ -68,7 +68,7 @@ export function AddDeviceModal({
               <Text className="text-gray-700">设备分组</Text>
               <Select onValueChange={value => setNewDevice({ ...newDevice, groupId: value })}>
                 <SelectTrigger>
-                  <SelectInput placeholder="选择分组" />
+                  <SelectInput placeholder="选择分组" className="flex-1 text-ellipsis" />
                   <SelectIcon />
                 </SelectTrigger>
                 <SelectPortal>

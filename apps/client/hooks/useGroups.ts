@@ -43,10 +43,10 @@ export function useGroups() {
   const createGroup = async (groupData: Partial<Group>) => {
     try {
       const result = createGroupMutation.mutate(groupData, {
-        onSuccess: data => {
+        onSuccess: () => {
           toast({
             title: '用户组已创建',
-            description: `用户组 "${data.groupName}" 已成功创建。`,
+            description: `用户组 "${groupData.groupName}" 已成功创建。`,
           });
         },
       });

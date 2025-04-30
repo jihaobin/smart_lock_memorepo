@@ -1,4 +1,4 @@
-import { Edit, Trash, Users } from 'lucide-react-native';
+import { Edit, Group, Trash, Users } from 'lucide-react-native';
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
 
@@ -46,15 +46,15 @@ export function DirectGroupActionModal() {
     <ModalBase
       isOpen={showGroupActionDialog}
       onClose={() => setShowGroupActionDialog(false)}
-      title=""
+      title="分组操作"
       maxWidth="xs"
-      showCloseButton={false}
+      showCloseButton={true}
     >
       <VStack className="bg-white rounded-xl overflow-hidden -m-4">
         <Box className="p-4 border-b border-gray-200">
-          <HStack className="items-center space-x-3">
+          <HStack className="items-center space-x-3 gap-2">
             <Box className="h-10 w-10 rounded-full bg-gray-100 items-center justify-center">
-              <Icon as={Users} size="sm" color="#4B5563" />
+              <Icon as={Group} size="sm" color="#4B5563" />
             </Box>
             <Text className="text-base font-bold">{selectedActionGroup.groupName}</Text>
           </HStack>

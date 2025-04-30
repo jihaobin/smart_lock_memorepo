@@ -4,14 +4,13 @@ import { useRouter } from 'expo-router';
 import { Lock, Mail } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { TouchableOpacity, ScrollView } from 'react-native';
+import { ScrollView } from 'react-native';
 
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText, ButtonIcon } from '@/components/ui/button';
-import { Checkbox, CheckboxIcon, CheckboxIndicator, CheckboxLabel } from '@/components/ui/checkbox';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
-import { EyeIcon, EyeOffIcon, CheckIcon, Icon } from '@/components/ui/icon';
+import { EyeIcon, EyeOffIcon, Icon } from '@/components/ui/icon';
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
@@ -39,7 +38,6 @@ export default function Login() {
     defaultValues: {
       phone: '',
       password: '',
-      rememberMe: false,
     },
   });
 
@@ -50,7 +48,7 @@ export default function Login() {
   const onSubmit = async (data: LoginSchemaType) => {
     setIsLoading(true);
 
-    try{
+    try {
       const res = await login({
         phone: data.phone,
         password: data.password,
@@ -135,26 +133,6 @@ export default function Login() {
             )}
           </VStack>
 
-          <HStack className="justify-between items-center">
-            <Controller
-              control={control}
-              name="rememberMe"
-              render={({ field: { onChange, value } }) => (
-                <Checkbox value="rememberMe" isChecked={value} onChange={onChange} size="md">
-                  <CheckboxIndicator>
-                    <CheckboxIcon as={CheckIcon} />
-                  </CheckboxIndicator>
-                  <CheckboxLabel className="text-gray-600">
-                    <Text>记住我</Text>
-                  </CheckboxLabel>
-                </Checkbox>
-              )}
-            />
-            <TouchableOpacity onPress={() => router.push('/forgot-password')}>
-              <Text className="text-primary">忘记密码?</Text>
-            </TouchableOpacity>
-          </HStack>
-
           <Button onPress={handleSubmit(onSubmit)} disabled={isLoading} className="w-full mt-4">
             <ButtonText>{isLoading ? '登录中...' : '登录'}</ButtonText>
           </Button>
@@ -167,39 +145,6 @@ export default function Login() {
               </Text>
             </Text>
           </Box>
-        </VStack>
-
-        <VStack className="mt-8 space-y-6">
-          <Box className="relative py-4">
-            <Box className="absolute inset-y-1/2 w-full h-px bg-gray-300" />
-            <Box className="relative flex justify-center items-center">
-              <Text className="bg-white px-4 text-gray-500">其他登录方式</Text>
-            </Box>
-          </Box>
-
-          <HStack className="justify-between space-x-4">
-            <Button variant="outline" className="flex-1">
-              <ButtonIcon>
-                <svg className="h-5 w-5 text-[#07C160]" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M8.69 13.09c-.4 0-.72-.32-.72-.72s.32-.72.72-.72.72.32.72.72-.32.72-.72.72zm4.8-2.16c.4 0 .72.32.72.72s-.32.72-.72.72-.72-.32-.72-.72.32-.72.72-.72zm-4.8-2.16c-.4 0-.72-.32-.72-.72s.32-.72.72-.72.72.32.72.72-.32.72-.72.72zm4.8-2.16c.4 0 .72.32.72.72s-.32.72-.72.72-.72-.32-.72-.72.32-.72.72-.72zM12 22.5C6.201 22.5 1.5 17.799 1.5 12S6.201 1.5 12 1.5 22.5 6.201 22.5 12 17.799 22.5 12 22.5zm-.96-15.12c-3.36 0-6.24 2.16-6.24 4.92 0 1.44.72 2.76 1.92 3.6l-.48 1.56 1.8-.96c.48.12 1.08.24 1.56.24.12 0 .24 0 .36-.12-.12-.36-.12-.72-.12-1.08 0-2.52 2.4-4.56 5.52-4.56.12 0 .36 0 .48.12-.84-2.04-3-3.72-5.76-3.72h-.04zm8.4 6.12c0-2.04-2.04-3.72-4.44-3.72-2.52 0-4.44 1.68-4.44 3.72s1.92 3.72 4.44 3.72c.48 0 1.08-.12 1.56-.24l1.44.84-.36-1.2c.96-.72 1.8-1.8 1.8-3.12z" />
-                </svg>
-              </ButtonIcon>
-            </Button>
-            <Button variant="outline" className="flex-1">
-              <ButtonIcon>
-                <svg className="h-5 w-5 text-[#1677FF]" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 22.5c-5.799 0-10.5-4.701-10.5-10.5S6.201 1.5 12 1.5 22.5 6.201 22.5 12 17.799 22.5 12 22.5zm4.56-8.88v.12c-.48 2.04-3.36 3.48-5.52 3.48-1.2 0-2.16-.36-2.4-.96-.12-.36 0-.72.36-1.08.24-.24.6-.36.96-.36h.12c.24 0 .48.12.6.24.24.24.48.36.84.36.96 0 2.04-.84 2.64-1.56-1.08-.48-2.28-.96-3.6-1.44-1.32.6-3.12 1.32-3.12 2.88 0 1.08 1.2 1.8 2.4 1.8 1.08 0 2.04-.36 2.88-.96l.12.12c-.24.36-.6.72-1.08.96-.48.24-1.08.36-1.8.36-1.8 0-3.24-1.08-3.24-2.64 0-1.8 2.04-2.88 3.84-3.6-1.8-.84-3-2.4-3-4.32 0-2.4 2.16-4.44 5.04-4.44 2.88 0 5.04 2.04 5.04 4.44 0 1.92-1.2 3.48-3 4.32 1.8.72 3.84 1.8 3.84 3.6zm-5.52-7.92c-1.44 0-2.64 1.2-2.64 2.64s1.2 2.64 2.64 2.64 2.64-1.2 2.64-2.64-1.2-2.64-2.64-2.64z" />
-                </svg>
-              </ButtonIcon>
-            </Button>
-            <Button variant="outline" className="flex-1">
-              <ButtonIcon>
-                <svg className="h-5 w-5 text-[#00A4FF]" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 22.5c-5.799 0-10.5-4.701-10.5-10.5S6.201 1.5 12 1.5 22.5 6.201 22.5 12 17.799 22.5 12 22.5zm0-18.75c-4.549 0-8.25 3.701-8.25 8.25s3.701 8.25 8.25 8.25 8.25-3.701 8.25-8.25S16.549 3.75 12 3.75zm-1.5 12.75v-7.5h3v7.5h-3zm0-9v-1.5h3V7.5h-3z" />
-                </svg>
-              </ButtonIcon>
-            </Button>
-          </HStack>
         </VStack>
       </VStack>
     </ScrollView>

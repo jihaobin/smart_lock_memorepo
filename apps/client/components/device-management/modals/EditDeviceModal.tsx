@@ -80,6 +80,7 @@ export function EditDeviceModal({
                   <SelectInput
                     placeholder="选择分组"
                     value={deviceGroups.find(g => g.id === editingDevice?.groupId)?.name || ''}
+                    className="flex-1 text-ellipsis"
                   />
                   <SelectIcon />
                 </SelectTrigger>

@@ -28,7 +28,7 @@ export function useUserManagementApi() {
 
   const useCreateUser = () => {
     return useMutation({
-      mutationFn: (data: AuthorizedUser) => {
+      mutationFn: (data: Omit<AuthorizedUser, 'userId' | 'id'>) => {
         return apiClient.post<AuthorizedUser>('/friend', data);
       },
       onSuccess: () => {

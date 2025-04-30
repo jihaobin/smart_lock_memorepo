@@ -7,7 +7,7 @@ import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Input, InputField, InputIcon } from '@/components/ui/input';
-import { Spinner } from '@/components/ui/spinner';
+import { Skeleton, SkeletonText } from '@/components/ui/skeleton';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import type { AuthorizedUser, Group } from '@/types/user-management';
@@ -87,32 +87,33 @@ export function AuthorizedTab({
           </HStack>
 
           {isLoadingGroups ? (
-            <HStack className="justify-center py-4">
-              <Spinner />
-              <Text className="ml-2 text-gray-500">加载分组中...</Text>
-            </HStack>
+            <Box className="space-y-4 py-4">
+              <HStack className="space-x-2">
+                <Skeleton className="h-8 w-20 rounded-full" />
+                <Skeleton className="h-8 w-20 rounded-full" />
+                <Skeleton className="h-8 w-20 rounded-full" />
+              </HStack>
+              <HStack className="space-x-2">
+                <Skeleton className="h-8 w-20 rounded-full" />
+                <Skeleton className="h-8 w-20 rounded-full" />
+              </HStack>
+            </Box>
           ) : (
-            <Box className="relative">
+            <HStack className="relative">
               <TouchableOpacity
-                className="absolute left-0 top-1/2 z-10 w-8 h-8 items-center justify-center bg-white/90 rounded-full shadow border"
+                className="left-0 top-1/2 z-10 w-8 h-8 items-center justify-center bg-white/90 rounded-full shadow border"
                 style={{ transform: [{ translateY: -16 }] }}
                 onPress={() => handleScroll('left')}
               >
                 <Icon as={ChevronLeft} className="h-4 w-4 text-gray-600" />
-              </TouchableOpacity>
-              <TouchableOpacity
-                className="absolute right-0 top-1/2 z-10 w-8 h-8 items-center justify-center bg-white/90 rounded-full shadow border"
-                style={{ transform: [{ translateY: -16 }] }}
-                onPress={() => handleScroll('right')}
-              >
-                <Icon as={ChevronRight} className="h-4 w-4 text-gray-600" />
               </TouchableOpacity>
 
               <ScrollView
                 ref={scrollViewRef}
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                className="py-2 px-8"
+                className="py-2 px-2"
+                contentContainerStyle={{ paddingRight: 16 }}
               >
                 <HStack className="space-x-2 items-center gap-4">
                   <Button
@@ -153,21 +154,37 @@ export function AuthorizedTab({
                         className="h-8 w-8 rounded-full p-0 ml-1"
                         onPress={() => handleGroupAction(group)}
                       >
-                        <Icon as={MoreVertical} className="h-4 w-4 text-gray-500" />
+                        <Icon as={MoreVertical} className="h-4 w-4 text-white" />
                       </Button>
                     </Box>
                   ))}
                 </HStack>
               </ScrollView>
-            </Box>
+
+              <TouchableOpacity
+                className=" right-0 top-1/2 z-10 w-8 h-8 items-center justify-center bg-white/90 rounded-full shadow border"
+                style={{ transform: [{ translateY: -16 }] }}
+                onPress={() => handleScroll('right')}
+              >
+                <Icon as={ChevronRight} className="h-4 w-4 text-gray-600" />
+              </TouchableOpacity>
+            </HStack>
           )}
         </Box>
 
         {isLoadingUsers ? (
-          <HStack className="justify-center py-8">
-            <Spinner />
-            <Text className="ml-2 text-gray-500">加载用户中...</Text>
-          </HStack>
+          <VStack className="gap-4 py-4">
+            {[...Array(3)].map((_, i) => (
+              <Box key={i} className="p-4 rounded-lg bg-white shadow-sm border border-gray-100">
+                <HStack className="items-center">
+                  <VStack className="flex-1 min-w-0 space-y-2">
+                    <SkeletonText className="h-5 w-3/4" />
+                    <SkeletonText className="h-4 w-1/2" />
+                  </VStack>
+                </HStack>
+              </Box>
+            ))}
+          </VStack>
         ) : filteredUsers.length > 0 ? (
           <VStack className="gap-4">
             {filteredUsers.map(user => (
@@ -186,16 +203,13 @@ export function AuthorizedTab({
                         className="h-8 w-8 rounded-full p-0"
                         onPress={() => handleUserAction(user)}
                       >
-                        <Icon as={MoreVertical} className="h-4 w-4" />
+                        <Icon as={MoreVertical} className="h-4 w-4 text-white" />
                       </Button>
                     </HStack>
                     <HStack className="items-center mt-1">
                       <Text className="text-sm text-gray-500" numberOfLines={1}>
                         分组：{groups.find(groups => groups.id === user.friendGroupId)?.groupName}
                       </Text>
-                      {/* <Text className="text-sm text-gray-500" numberOfLines={1}>
-                        最后访问: {user.lastAccess}
-                      </Text> */}
                     </HStack>
                   </VStack>
                 </HStack>

@@ -70,7 +70,7 @@ const selectTriggerStyle = tva({
 });
 
 const selectInputStyle = tva({
-  base: 'py-auto px-3 placeholder:text-typography-500 web:w-full h-full text-typography-900 pointer-events-none web:outline-none ios:leading-[0px]',
+  base: 'py-auto px-3 placeholder:text-typography-500 web:w-full h-full text-typography-900 pointer-events-none web:outline-none ios:leading-[0px] text-ellipsis overflow-hidden whitespace-nowrap',
   parentVariants: {
     size: {
       xl: 'text-xl',
@@ -182,6 +182,8 @@ const SelectInput = React.forwardRef<React.ElementRef<typeof UISelect.Input>, IS
           },
         })}
         ref={ref}
+        numberOfLines={1}
+        ellipsizeMode="tail"
         {...props}
       />
     );

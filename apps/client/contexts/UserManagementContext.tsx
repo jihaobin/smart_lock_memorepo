@@ -10,7 +10,7 @@ interface UserManagementContextType {
   // 用户数据和方法
   users: AuthorizedUser[];
   filteredUsers: AuthorizedUser[];
-  createUser: (userData: AuthorizedUser) => Promise<AuthorizedUser>;
+  createUser: (userData: Omit<AuthorizedUser, 'userId' | 'id'>) => Promise<AuthorizedUser>;
   updateUser: (id: string, userData: Partial<AuthorizedUser>) => Promise<AuthorizedUser>;
   deleteUser: (id: string, userName: string) => Promise<void>;
   isLoadingUsers: boolean;

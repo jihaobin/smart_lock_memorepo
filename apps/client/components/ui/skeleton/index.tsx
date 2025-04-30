@@ -1,9 +1,7 @@
-import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 import React, { forwardRef } from 'react';
+import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 import { Animated, Easing, Platform, View } from 'react-native';
-
 import { skeletonStyle, skeletonTextStyle } from './styles';
-import { Box } from '../box';
 
 type ISkeletonProps = React.ComponentProps<typeof View> &
   VariantProps<typeof skeletonStyle> & {
@@ -18,8 +16,8 @@ type ISkeletonTextProps = React.ComponentProps<typeof View> &
     startColor?: string;
   };
 
-const Skeleton = forwardRef<React.ElementRef<typeof Animated.View>, ISkeletonProps>(
-  (
+const Skeleton = forwardRef<React.ComponentRef<typeof Animated.View>, ISkeletonProps>(
+  function Skeleton(
     {
       className,
       variant,
@@ -30,7 +28,7 @@ const Skeleton = forwardRef<React.ElementRef<typeof Animated.View>, ISkeletonPro
       ...props
     },
     ref
-  ) => {
+  ) {
     const pulseAnim = new Animated.Value(1);
     const customTimingFunction = Easing.bezier(0.4, 0, 0.6, 1);
     const fadeDuration = 0.6;
@@ -78,11 +76,11 @@ const Skeleton = forwardRef<React.ElementRef<typeof Animated.View>, ISkeletonPro
   }
 );
 
-const SkeletonText = forwardRef<React.ElementRef<typeof View>, ISkeletonTextProps>(
-  (
+const SkeletonText = forwardRef<React.ComponentRef<typeof View>, ISkeletonTextProps>(
+  function SkeletonText(
     {
       className,
-      _lines = 0,
+      _lines,
       isLoaded = false,
       startColor = 'bg-background-200',
       gap = 2,
@@ -90,26 +88,26 @@ const SkeletonText = forwardRef<React.ElementRef<typeof View>, ISkeletonTextProp
       ...props
     },
     ref
-  ) => {
+  ) {
     if (!isLoaded) {
       if (_lines) {
         return (
-          <Box
+          <View
             className={`${skeletonTextStyle({
               gap,
             })}`}
             ref={ref}
           >
-            {Array.from({ length: _lines }).map(value => (
+            {Array.from({ length: _lines }).map((_, index) => (
               <Skeleton
-                key={value as number}
+                key={index}
                 className={`${startColor} ${skeletonTextStyle({
                   class: className,
                 })}`}
                 {...props}
               />
             ))}
-          </Box>
+          </View>
         );
       } else {
         return (

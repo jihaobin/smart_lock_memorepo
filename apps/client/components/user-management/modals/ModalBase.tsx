@@ -41,7 +41,7 @@ export function ModalBase({
           <Text className="text-lg font-bold">{title}</Text>
           {showCloseButton && (
             <ModalCloseButton>
-              <Icon as={X} />
+              <Icon as={X} className="text-black" />
             </ModalCloseButton>
           )}
         </ModalHeader>

@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { QueryClientProvider } from '@tanstack/react-query';
 import * as Clipboard from 'expo-clipboard';
 import * as Notifications from 'expo-notifications';
