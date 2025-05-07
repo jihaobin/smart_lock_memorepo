@@ -1,11 +1,21 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody, ConnectedSocket, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
-import { IAppNotificationMessage, SOCKET_JOIN_ROOM_KEY, SOCKET_NOTIFICATION_KEY } from '@smart-lock/shared';
+import {
+  WebSocketGateway,
+  SubscribeMessage,
+  MessageBody,
+  ConnectedSocket,
+  WebSocketServer,
+} from '@nestjs/websockets';
+import {
+  IAppNotificationMessage,
+  SOCKET_JOIN_ROOM_KEY,
+  SOCKET_NOTIFICATION_KEY,
+} from '@smart-lock/shared';
 import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway(3001,{
+@WebSocketGateway(3001, {
   cors: {
     origin: '*',
-    credentials: true
+    credentials: true,
   },
 })
 export class AppNotificationGateway {
@@ -13,7 +23,7 @@ export class AppNotificationGateway {
   private server: Server;
 
   @SubscribeMessage(SOCKET_JOIN_ROOM_KEY)
-  create(@MessageBody() roomName: string, @ConnectedSocket() client: Socket,) {
+  create(@MessageBody() roomName: string, @ConnectedSocket() client: Socket) {
     client.join(roomName);
 
     // 使用 this.server.to() 向整个房间发送消息，包括发送者
@@ -21,7 +31,7 @@ export class AppNotificationGateway {
     return roomName;
   }
 
-  sendNotification(roomId: string, message: IAppNotificationMessage){
+  sendNotification(roomId: string, message: IAppNotificationMessage) {
     this.server.to(roomId).emit(SOCKET_NOTIFICATION_KEY, message);
   }
 }

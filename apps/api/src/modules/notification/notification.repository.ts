@@ -5,6 +5,12 @@ import { sql, eq } from 'drizzle-orm';
 import { AppLoggerService } from 'src/common';
 import { DB } from 'src/database/database.provider';
 
+import {
+  determineImportanceLevel,
+  determineNotificationMethod,
+  generateNotificationMessage,
+} from './utils/notification-mapper';
+
 // 定义通知方法枚举
 const NOTIFICATION_METHOD = {
   APP: 'app',
@@ -40,21 +46,31 @@ export class NotificationRepository {
   async createNotification(data: {
     userId: string;
     type: (typeof NOTIFICATION_ENUM)[keyof typeof NOTIFICATION_ENUM];
-    message: string;
+    message?: string; // 消息字段改为可选
     data?: Record<string, unknown>;
     deviceId?: string;
     importanceLevel?: (typeof IMPORTANCE_LEVEL)[keyof typeof IMPORTANCE_LEVEL];
-    notificationMethod?: NotificationMethod;
   }) {
     try {
+      // 根据通知类型自动确定重要性级别（如果未指定）
+      const importanceLevel =
+        data.importanceLevel || determineImportanceLevel(data.type);
+
+      // 根据重要性级别自动确定通知方法
+      let notificationMethod = determineNotificationMethod(importanceLevel);
+
+      // 如果没有提供message，则根据type和data自动生成
+      const message =
+        data.message || generateNotificationMessage(data.type, data.data || {});
+
       const notificationData = {
         userId: data.userId,
         type: data.type,
-        message: data.message,
+        message: message,
         data: data.data || {},
         deviceId: data.deviceId,
-        importanceLevel: data.importanceLevel || IMPORTANCE_LEVEL.MEDIUM,
-        notificationMethod: data.notificationMethod || NOTIFICATION_METHOD.APP,
+        importanceLevel: importanceLevel,
+        notificationMethod: notificationMethod,
         deliveryStatus: DELIVERY_STATUS.PENDING,
       };
 

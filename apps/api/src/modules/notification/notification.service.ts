@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { NOTIFICATION_ENUM, IMPORTANCE_LEVEL } from '@smart-lock/shared';
 import { AppLoggerService } from 'src/common';
 
-import { notificationLevel, retryConfig } from './config';
+import { retryConfig } from './config';
 import { CreateNotificationDto } from './dto/notification.dto';
 import { NotificationRepository } from './notification.repository';
 import { NotificationQueueService } from './queues/notification-queue.service';
@@ -24,23 +24,24 @@ export class NotificationService {
     try {
       this.logger.log(`创建通知: ${JSON.stringify(createDto)}`);
 
-      // 确定通知重要性级别（如果未指定，则从配置中获取）
-      const importanceLevel = (createDto.importanceLevel ||
-        notificationLevel[createDto.type as keyof typeof notificationLevel] ||
-        'medium') as 'low' | 'medium' | 'high' | 'critical';
-
-      // 1. 创建通知记录到数据库
+      // 1. 创建通知记录到数据库 - 不再需要在这里确定importanceLevel，由repository自动处理
       const notification = await this.notificationRepository.createNotification(
         {
           userId: createDto.userId!,
           type: createDto.type as (typeof NOTIFICATION_ENUM)[keyof typeof NOTIFICATION_ENUM],
-          message: createDto.message!,
+          message: createDto.message, // message现在是可选的，由repository根据type自动生成
           data: createDto.data || {},
           deviceId: createDto.deviceId,
-          importanceLevel: importanceLevel,
-          notificationMethod: createDto.notificationMethod,
+          importanceLevel: createDto.importanceLevel, // 如果未提供，repository会自动根据type确定
         },
       );
+
+      // 获取通知的重要性级别（已由repository设置）
+      const importanceLevel = notification.importanceLevel as
+        | 'low'
+        | 'medium'
+        | 'high'
+        | 'critical';
 
       // 获取此重要性级别的重试配置
       const retryOptions = retryConfig[importanceLevel];
@@ -51,7 +52,7 @@ export class NotificationService {
           notificationId: notification.id,
           userId: notification.userId,
           type: notification.type,
-          message: notification.message,
+          message: notification.message, // 这里使用的是已经生成或用户提供的消息
           data: notification.data || {},
           deviceId: notification.deviceId || undefined,
           importanceLevel: importanceLevel,
@@ -131,8 +132,8 @@ export class NotificationService {
    */
   async getUserNotifications(params: {
     userId: string;
-    page: number;
-    limit: number;
+    page: string;
+    limit: string;
     type?: (typeof NOTIFICATION_ENUM)[keyof typeof NOTIFICATION_ENUM];
     deviceId?: string;
     importanceLevel?: (typeof IMPORTANCE_LEVEL)[keyof typeof IMPORTANCE_LEVEL];
@@ -146,8 +147,8 @@ export class NotificationService {
       const result =
         await this.notificationRepository.findNotificationsByUserId(
           params.userId,
-          params.page,
-          params.limit,
+          Number.parseInt(params.page),
+          Number.parseInt(params.limit),
           {
             type: params.type,
             deviceId: params.deviceId,

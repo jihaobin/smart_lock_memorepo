@@ -41,7 +41,7 @@ export type IMPORTANCE_LEVEL = typeof IMPORTANCE_LEVEL;
 export const baseNotificationDataSchema = z.object({
   userId: z.string().min(1, { message: '用户ID不能为空' }),
   deviceId: z.string().min(1, { message: '设备ID不能为空' }),
-  message: z.string().min(1, { message: '消息不能为空' }),
+  message: z.string().min(1, { message: '消息不能为空' }).optional(), // 消息字段改为可选，将由系统根据type自动生成
   type: z.enum(
     [
       NOTIFICATION_ENUM.DOORBELL, // 门铃
@@ -71,13 +71,18 @@ export const CreateNotificationSchema = baseNotificationDataSchema.extend({
       ],
       { message: '重要级别不符合要求' }
     )
-    .default(IMPORTANCE_LEVEL.MEDIUM),
-  notificationMethod: z.enum(['app', 'sms', 'call']).default('app'),
+    .optional(), // 改为可选，将由系统根据type自动确定
 });
 
 export const GetNotificationsSchema = z.object({
-  page: z.number().int().min(1).default(1),
-  limit: z.number().int().min(1).max(100).default(10),
+  page: z
+    .string()
+    .default('1')
+    .transform(value => String(value)),
+  limit: z
+    .string()
+    .default('10')
+    .transform(value => String(value)),
   type: z
     .enum([
       NOTIFICATION_ENUM.DOORBELL,

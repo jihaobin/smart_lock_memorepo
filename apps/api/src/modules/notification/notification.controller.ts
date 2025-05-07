@@ -62,8 +62,8 @@ export class NotificationController {
     const userId = request.user.userId;
     return this.notificationService.getUserNotifications({
       userId,
-      page: 1,
-      limit: 10,
+      page: query.page ?? '1',
+      limit: query.limit ?? '10',
       ...query,
     });
   }
