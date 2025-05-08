@@ -1,8 +1,8 @@
 import { AlertTriangle } from 'lucide-react-native';
 import React from 'react';
 
-import { ModalBase } from './ModalBase';
-import { ModalFooter } from './ModalFooter';
+import { ModalBase } from '../../ModalBase';
+import { ModalFooter } from '../../ModalFooter';
 
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';

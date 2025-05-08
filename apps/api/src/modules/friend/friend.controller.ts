@@ -149,7 +149,6 @@ export class FriendController {
   @Get('/Allfriends')
   async getFriendsByUserId(@Req() req: Request) {
     const userId = req.user.userId;
-    console.log('这是userId', userId);
     return this.friendService.getFriendsByUserId(userId, false);
   }
 

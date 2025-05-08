@@ -83,14 +83,6 @@ function UserManagementContent() {
           <HStack className="space-x-2 gap-4">
             <Button
               size="sm"
-              variant="outline"
-              className="h-10 w-10 rounded-full"
-              onPress={() => setShowQRCode(true)}
-            >
-              <Icon as={QrCode} className="h-5 w-5" />
-            </Button>
-            <Button
-              size="sm"
               variant="solid"
               className="h-10 w-10 rounded-full"
               onPress={() => setShowAddUserDialog(true)}

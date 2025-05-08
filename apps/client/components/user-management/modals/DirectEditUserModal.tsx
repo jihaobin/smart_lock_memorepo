@@ -3,8 +3,8 @@ import React from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
 
-import { ModalBase } from './ModalBase';
-import { ModalFooter } from './ModalFooter';
+import { ModalBase } from '../../ModalBase';
+import { ModalFooter } from '../../ModalFooter';
 
 import CreatePassword from '@/components/create_password';
 import { Input, InputField } from '@/components/ui/input';

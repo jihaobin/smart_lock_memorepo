@@ -16,29 +16,48 @@ import {
 } from '@/components/ui/modal';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import type { DeviceGroup } from '@/types/device-management';
+import { useDeviceManagement } from '@/contexts/DeviceManagementContext';
+import type { Device } from '@/types/device-management';
 
-interface GroupActionModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  selectedActionGroup: DeviceGroup | null;
-  onEdit: (group: DeviceGroup) => void;
-  onDelete: (group: DeviceGroup) => void;
-}
+/**
+ * 直接从上下文获取数据的DeviceActionModal组件
+ */
+export function DirectDeviceActionModal() {
+  // 从上下文中获取状态和方法
+  const { ui } = useDeviceManagement();
 
-export function GroupActionModal({
-  isOpen,
-  onClose,
-  selectedActionGroup,
-  onEdit,
-  onDelete,
-}: GroupActionModalProps) {
+  const showDeviceActionDialog = ui.showDeviceActionDialog || false;
+  const setShowDeviceActionDialog = ui.setShowDeviceActionDialog || (() => {});
+  const selectedActionDevice = ui.selectedActionDevice as Device | null;
+  const deviceActions = ui.deviceActions || {};
+
+  // 处理编辑设备
+  const handleEditDevice = () => {
+    if (selectedActionDevice) {
+      deviceActions.handleEdit?.(selectedActionDevice);
+    }
+  };
+
+  // 处理删除设备
+  const handleDeleteDevice = () => {
+    if (selectedActionDevice) {
+      deviceActions.handleDelete?.(selectedActionDevice);
+    }
+  };
+
+  // 关闭对话框
+  const handleClose = () => {
+    setShowDeviceActionDialog(false);
+  };
+
+  if (!selectedActionDevice) return null;
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={showDeviceActionDialog} onClose={handleClose}>
       <ModalBackdrop />
       <ModalContent className="max-w-md">
         <ModalHeader>
-          <Text className="text-lg font-bold">分组操作</Text>
+          <Text className="text-lg font-bold">设备操作</Text>
           <ModalCloseButton>
             <Icon as={X} />
           </ModalCloseButton>
@@ -48,14 +67,12 @@ export function GroupActionModal({
             <TouchableOpacity
               className="px-4 py-3 flex-row items-center"
               onPress={() => {
-                if (selectedActionGroup) {
-                  onEdit(selectedActionGroup);
-                  onClose();
-                }
+                handleEditDevice();
+                handleClose();
               }}
             >
               <Icon as={Edit2} className="h-5 w-5 mr-3 text-gray-700" />
-              <Text className="text-gray-700">编辑分组</Text>
+              <Text className="text-gray-700">编辑设备</Text>
             </TouchableOpacity>
 
             <Box className="h-px bg-gray-100 mx-4" />
@@ -63,19 +80,17 @@ export function GroupActionModal({
             <TouchableOpacity
               className="px-4 py-3 flex-row items-center"
               onPress={() => {
-                if (selectedActionGroup) {
-                  onDelete(selectedActionGroup);
-                  onClose();
-                }
+                handleDeleteDevice();
+                handleClose();
               }}
             >
               <Icon as={Trash2} className="h-5 w-5 mr-3 text-red-600" />
-              <Text className="text-red-600">删除分组</Text>
+              <Text className="text-red-600">删除设备</Text>
             </TouchableOpacity>
           </VStack>
         </ModalBody>
         <ModalFooter>
-          <Button variant="outline" onPress={onClose} className="w-full">
+          <Button variant="outline" onPress={handleClose} className="w-full">
             <ButtonText>取消</ButtonText>
           </Button>
         </ModalFooter>

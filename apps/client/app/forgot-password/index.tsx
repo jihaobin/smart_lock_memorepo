@@ -189,10 +189,7 @@ export default function ForgotPassword() {
               <Text>验证码已发送</Text>
             </Heading>
             <Text className="text-gray-600 text-center mb-6">
-              我们已向 {email} 发送了一条包含验证码的邮件。请输入验证码以重置您的密码。
-            </Text>
-            <Text className="text-sm text-gray-500 text-center mb-6">
-              如果您没有收到邮件，请检查垃圾邮件或尝试重新发送。
+              我们已向 {email} 发送了一条包含验证码的短信。请输入短信中的验证码以重置您的密码。
             </Text>
             <VStack space="md" className="w-full">
               <Button variant="outline" onPress={() => setIsSubmitted(false)} className="w-full">

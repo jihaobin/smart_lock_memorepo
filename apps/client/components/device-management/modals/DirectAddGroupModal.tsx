@@ -9,45 +9,46 @@ import { ModalFooter } from '../../ModalFooter';
 import { Input, InputField } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useUserManagement } from '@/contexts/UserManagementContext';
+import { useDeviceManagement } from '@/contexts/DeviceManagementContext';
 
 // 定义表单验证模式
-const groupSchema = z.object({
-  groupName: z.string().min(1, '分组名称不能为空'),
+const addGroupSchema = z.object({
+  name: z.string().min(1, '分组名称不能为空'),
 });
 
 // 推导表单数据类型
-type GroupFormData = z.infer<typeof groupSchema>;
+type AddGroupFormData = z.infer<typeof addGroupSchema>;
 
+/**
+ * 直接从上下文获取数据的AddGroupModal组件
+ */
 export function DirectAddGroupModal() {
-  // 从上下文中获取状态和方法
-  const {
-    createGroup,
-    ui: { showAddGroupDialog, setShowAddGroupDialog, newGroup },
-  } = useUserManagement();
+  const { createDeviceGroup, ui } = useDeviceManagement();
 
-  // 初始化 react-hook-form
+  const showAddGroupDialog = ui.showAddGroupDialog || false;
+  const setShowAddGroupDialog = ui.setShowAddGroupDialog || (() => {});
+  const newGroup = ui.newGroup || {};
+
   const {
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm<GroupFormData>({
-    resolver: zodResolver(groupSchema),
+  } = useForm<AddGroupFormData>({
+    resolver: zodResolver(addGroupSchema),
     defaultValues: {
-      groupName: newGroup.groupName || '',
+      name: newGroup.name || '',
     },
   });
 
   // 处理表单提交
-  const onSubmit = async (data: GroupFormData) => {
+  const onSubmit = async (data: AddGroupFormData) => {
     try {
-      const groupData = {
-        ...newGroup,
-        groupName: data.groupName,
-      };
+      await createDeviceGroup({
+        name: data.name,
+        devices: [],
+      });
 
-      await createGroup(groupData);
       setShowAddGroupDialog(false);
       reset();
     } catch (error) {
@@ -61,13 +62,14 @@ export function DirectAddGroupModal() {
     reset();
   };
 
-  // 当对话框关闭或打开时同步表单数据
+  // 当对话框关闭时重置表单
   React.useEffect(() => {
     if (!showAddGroupDialog) {
       reset();
     } else {
+      // 当对话框打开时，使用当前的 newGroup 值重置表单
       reset({
-        groupName: newGroup.groupName || '',
+        name: newGroup.name || '',
       });
     }
   }, [showAddGroupDialog, newGroup, reset]);
@@ -76,7 +78,7 @@ export function DirectAddGroupModal() {
     <ModalBase
       isOpen={showAddGroupDialog}
       onClose={handleClose}
-      title="添加新分组"
+      title="添加设备分组"
       footer={
         <ModalFooter
           onCancel={handleClose}
@@ -87,14 +89,14 @@ export function DirectAddGroupModal() {
         />
       }
     >
-      <VStack className="py-4">
-        <VStack className="space-y-2">
-          <Text className="text-gray-700">分组名称</Text>
+      <VStack className="space-y-6">
+        <VStack className="space-y-3 gap-2">
+          <Text className="text-gray-700 font-medium">分组名称</Text>
           <Controller
             control={control}
-            name="groupName"
+            name="name"
             render={({ field: { onChange, onBlur, value } }) => (
-              <Input isInvalid={!!errors.groupName}>
+              <Input isInvalid={!!errors.name} className="mt-1">
                 <InputField
                   value={value}
                   onChangeText={onChange}
@@ -104,9 +106,7 @@ export function DirectAddGroupModal() {
               </Input>
             )}
           />
-          {errors.groupName && (
-            <Text className="text-sm text-red-500">{errors.groupName.message}</Text>
-          )}
+          {errors.name && <Text className="text-sm text-red-500 mt-1">{errors.name.message}</Text>}
         </VStack>
       </VStack>
     </ModalBase>

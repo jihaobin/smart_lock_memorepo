@@ -2,7 +2,7 @@ import { Edit, Trash, UserCircle2 } from 'lucide-react-native';
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
 
-import { ModalBase } from './ModalBase';
+import { ModalBase } from '../../ModalBase';
 
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';

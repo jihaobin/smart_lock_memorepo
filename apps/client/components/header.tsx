@@ -7,10 +7,18 @@ import { Icon } from './ui/icon';
 import { Box } from '@/components/ui/box';
 import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
+import { useApi } from '@/contexts/ApiContext';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function Header() {
   const { user, logout } = useAuth();
+  const { clearApiState } = useApi();
+
+  const handleLogout = async () => {
+    await logout({
+      onLogout: clearApiState,
+    });
+  };
 
   return (
     <Box>
@@ -24,7 +32,7 @@ export default function Header() {
               <Link href="/user-management" className="text-sm text-gray-600 hover:text-primary">
                 {user.nikeName}
               </Link>
-              <Button variant="link" size="sm" onPress={logout}>
+              <Button variant="link" size="sm" onPress={handleLogout}>
                 <HStack className="items-center justify-center">
                   <Icon as={LogOut} className="h-4 w-4 mr-2r" />
                   <Text>退出登录</Text>

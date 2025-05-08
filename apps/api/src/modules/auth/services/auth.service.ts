@@ -32,11 +32,10 @@ export class AuthService {
     private readonly smsService: SmsService,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
   ) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     this.expires_in =
       new Date().getTime() + ms(this.config.JWT_EXPIRES_IN as StringValue);
     // 刷新令牌的过期时间，默认设置为访问令牌的10倍
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
     this.refresh_expires_in =
       new Date().getTime() + ms(this.config.JWT_EXPIRES_IN as StringValue) * 10;
   }

@@ -1,56 +1,36 @@
-// 设备管理模块的类型定义
-export interface Device {
-  id: string;
-  name: string;
-  status: "locked" | "unlocked";
-  batteryLevel: number;
-  isOnline: boolean;
-}
+import type {
+  Device as BackendDevice,
+  DeviceGroup as BackendDeviceGroup,
+} from '@smart-lock/shared';
 
-export interface DeviceGroup {
-  id: string;
-  name: string;
-  devices: Device[];
-}
+// 重新导出共享库中的类型，使其作为前端的标准类型
+export type { BackendDevice as Device, BackendDeviceGroup as DeviceGroup };
 
-// 额外类型定义
+// 前端特有的类型定义
 export interface Tab {
   key: string;
   title: string;
 }
 
-export interface DeviceManagementState {
-  // 状态变量
-  searchText: string;
-  selectedGroup: string | null;
-  deviceGroups: DeviceGroup[];
-  
-  // 模态框状态
-  showAddDeviceDialog: boolean;
-  showAddGroupDialog: boolean;
-  showEditDeviceDialog: boolean;
-  showEditGroupDialog: boolean;
-  showDeleteDeviceDialog: boolean;
-  showDeleteGroupDialog: boolean;
-  
-  // 新建和编辑状态
-  newDevice: {
-    name: string;
-    groupId: string;
-  };
-  newGroup: {
-    name: string;
-  };
-  editingDevice: {
-    id: string;
-    name: string;
-    groupId: string;
-  } | null;
-  editingGroup: DeviceGroup | null;
-  deviceToDelete: {
-    id: string;
-    name: string;
-    groupId: string;
-  } | null;
-  groupToDelete: DeviceGroup | null;
+// 前端设备视图模型，用于UI显示
+export interface DeviceViewModel {
+  id: string;
+  name: string; // 已处理的显示名称（优先使用nikeName）
+  status: 'locked' | 'unlocked';
+  batteryLevel: number;
+  isOnline: boolean;
+  groupId: string | null;
+  deviceType: string;
+  hasCamera: boolean;
+}
+
+// 包含UI状态的设备类型
+export interface DeviceWithUIState extends DeviceViewModel {
+  isSelected?: boolean;
+  isExpanded?: boolean;
+}
+
+// 带有设备的设备组
+export interface DeviceGroupWithDevices extends BackendDeviceGroup {
+  devices: DeviceViewModel[];
 }

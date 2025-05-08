@@ -9,32 +9,37 @@ import { ModalFooter } from '../../ModalFooter';
 import { Input, InputField } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useUserManagement } from '@/contexts/UserManagementContext';
+import { useDeviceManagement } from '@/contexts/DeviceManagementContext';
+import type { DeviceGroup } from '@/types/device-management';
 
 // 定义表单验证模式
-const groupSchema = z.object({
-  groupName: z.string().min(1, '分组名称不能为空'),
+const editGroupSchema = z.object({
+  name: z.string().min(1, '分组名称不能为空'),
 });
 
 // 推导表单数据类型
-type GroupFormData = z.infer<typeof groupSchema>;
+type EditGroupFormData = z.infer<typeof editGroupSchema>;
 
+/**
+ * 直接从上下文获取数据的EditGroupModal组件
+ */
 export function DirectEditGroupModal() {
   // 从上下文中获取状态和方法
-  const {
-    updateGroup,
-    ui: { showEditGroupDialog, setShowEditGroupDialog, editingGroup, setEditingGroup },
-  } = useUserManagement();
+  const { updateDeviceGroup, ui } = useDeviceManagement();
+
+  const showEditGroupDialog = ui.showEditGroupDialog || false;
+  const setShowEditGroupDialog = ui.setShowEditGroupDialog || (() => {});
+  const editingGroup = ui.editingGroup as DeviceGroup | null;
 
   const {
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm<GroupFormData>({
-    resolver: zodResolver(groupSchema),
+  } = useForm<EditGroupFormData>({
+    resolver: zodResolver(editGroupSchema),
     defaultValues: {
-      groupName: '',
+      name: '',
     },
   });
 
@@ -42,7 +47,7 @@ export function DirectEditGroupModal() {
   React.useEffect(() => {
     if (editingGroup) {
       reset({
-        groupName: editingGroup.groupName || '',
+        name: editingGroup.name || '',
       });
     }
   }, [editingGroup, reset]);
@@ -55,12 +60,12 @@ export function DirectEditGroupModal() {
   }, [showEditGroupDialog, reset]);
 
   // 处理表单提交
-  const onSubmit = async (data: GroupFormData) => {
+  const onSubmit = async (data: EditGroupFormData) => {
     if (editingGroup) {
       try {
-        updateGroup({
-          id: editingGroup.id,
-          groupName: data.groupName,
+        await updateDeviceGroup({
+          ...editingGroup,
+          name: data.name,
         });
         setShowEditGroupDialog(false);
         reset();
@@ -93,14 +98,14 @@ export function DirectEditGroupModal() {
         />
       }
     >
-      <VStack className="py-4">
-        <VStack className="space-y-2">
-          <Text className="text-gray-700">分组名称</Text>
+      <VStack className="space-y-6">
+        <VStack className="space-y-3 gap-2">
+          <Text className="text-gray-700 font-medium">分组名称</Text>
           <Controller
             control={control}
-            name="groupName"
+            name="name"
             render={({ field: { onChange, onBlur, value } }) => (
-              <Input>
+              <Input isInvalid={!!errors.name} className="mt-1">
                 <InputField
                   placeholder="请输入分组名称"
                   value={value}
@@ -110,9 +115,7 @@ export function DirectEditGroupModal() {
               </Input>
             )}
           />
-          {errors.groupName && (
-            <Text className="text-red-500 text-xs mt-1">{errors.groupName.message}</Text>
-          )}
+          {errors.name && <Text className="text-sm text-red-500 mt-1">{errors.name.message}</Text>}
         </VStack>
       </VStack>
     </ModalBase>

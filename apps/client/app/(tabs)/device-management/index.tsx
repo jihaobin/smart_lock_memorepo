@@ -4,14 +4,14 @@ import React from 'react';
 import { TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 
 // 导入模态框组件
-import { AddDeviceModal } from '@/components/device-management/modals/AddDeviceModal';
-import { AddGroupModal } from '@/components/device-management/modals/AddGroupModal';
-import { DeleteDeviceModal } from '@/components/device-management/modals/DeleteDeviceModal';
-import { DeleteGroupModal } from '@/components/device-management/modals/DeleteGroupModal';
-import { DeviceActionModal } from '@/components/device-management/modals/DeviceActionModal';
-import { EditDeviceModal } from '@/components/device-management/modals/EditDeviceModal';
-import { EditGroupModal } from '@/components/device-management/modals/EditGroupModal';
-import { GroupActionModal } from '@/components/device-management/modals/GroupActionModal';
+import { DirectAddDeviceModal } from '@/components/device-management/modals/DirectAddDeviceModal';
+import { DirectAddGroupModal } from '@/components/device-management/modals/DirectAddGroupModal';
+import { DirectDeleteDeviceModal } from '@/components/device-management/modals/DirectDeleteDeviceModal';
+import { DirectDeleteGroupModal } from '@/components/device-management/modals/DirectDeleteGroupModal';
+import { DirectDeviceActionModal } from '@/components/device-management/modals/DirectDeviceActionModal';
+import { DirectEditDeviceModal } from '@/components/device-management/modals/DirectEditDeviceModal';
+import { DirectEditGroupModal } from '@/components/device-management/modals/DirectEditGroupModal';
+import { DirectGroupActionModal } from '@/components/device-management/modals/DirectGroupActionModal';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
@@ -19,69 +19,66 @@ import { Icon } from '@/components/ui/icon';
 import { Input, InputField, InputIcon } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-// 导入自定义钩子
-import { useDeviceManagement } from '@/hooks/device-management/useDeviceManagement';
+// 导入上下文提供者
+import { DeviceManagementProvider, useDeviceManagement } from '@/contexts/DeviceManagementContext';
+import { DeviceViewModel } from '@/types/device-management';
+import {
+  getDeviceDisplayName,
+  getOnlineStatusText,
+  getFormattedBatteryLevel,
+} from '@/utils/device-utils';
 
-export default function DeviceManagement() {
-  // 使用自定义钩子管理状态和逻辑
+// 设备组与设备类型，用于页面渲染
+interface DeviceGroupWithDevices {
+  id: string;
+  name: string;
+  devices: DeviceViewModel[];
+}
+
+// 主页面内容组件
+function DeviceManagementContent() {
+  // 使用useDeviceManagementApi的useDevicesWithGroups获取带设备的分组数据
+  const {
+    // 直接从上下文获取数据
+    deviceGroups,
+    devices,
+    // 从UI对象获取属性和方法
+    ui,
+  } = useDeviceManagement();
+
+  // 从ui对象中解构出需要的属性和方法
   const {
     // 状态
     searchText,
     setSearchText,
     selectedGroup,
     setSelectedGroup,
-    deviceGroups,
-    filteredGroups,
 
-    // 模态框状态
-    showAddDeviceDialog,
-    setShowAddDeviceDialog,
-    showAddGroupDialog,
-    setShowAddGroupDialog,
-    showEditDeviceDialog,
-    setShowEditDeviceDialog,
-    showEditGroupDialog,
-    setShowEditGroupDialog,
-    showDeleteDeviceDialog,
-    setShowDeleteDeviceDialog,
-    showDeleteGroupDialog,
-    setShowDeleteGroupDialog,
-    showDeviceActionDialog,
-    setShowDeviceActionDialog,
-    showGroupActionDialog,
-    setShowGroupActionDialog,
-
-    // 编辑状态
-    newDevice,
-    setNewDevice,
-    newGroup,
-    setNewGroup,
-    editingDevice,
-    setEditingDevice,
-    editingGroup,
-    setEditingGroup,
-    deviceToDelete,
-    groupToDelete,
-    selectedActionDevice,
-    selectedActionGroup,
-
-    // Refs
+    // 引用
     scrollViewRef,
 
-    // 方法
-    handleDeviceAction,
-    handleGroupAction,
-    handleAddGroup,
-    handleAddDevice,
-    handleDeleteGroup,
-    confirmDeleteGroup,
-    handleDeleteDevice,
-    confirmDeleteDevice,
-    handleEditDevice,
-    handleSaveEditedDevice,
-    handleEditGroup,
-    handleSaveEditedGroup,
-  } = useDeviceManagement();
+    // 操作方法
+    deviceActions,
+    groupActions,
+  } = ui;
+
+  // 构建带设备的分组数据
+  const groupsWithDevices: DeviceGroupWithDevices[] = React.useMemo(() => {
+    return deviceGroups.map(group => ({
+      id: group.id,
+      name: group.name,
+      devices: devices.filter(device => device.groupId === group.id),
+    }));
+  }, [deviceGroups, devices]);
+
+  // 获取过滤后的设备组
+  const filteredGroups = groupsWithDevices.filter(group =>
+    selectedGroup === null || selectedGroup === group.id
+      ? group.devices.some(device =>
+          getDeviceDisplayName(device).toLowerCase().includes(searchText.toLowerCase())
+        )
+      : false
+  );
 
   return (
     <ScrollView className="flex-1 bg-white">
@@ -90,10 +87,10 @@ export default function DeviceManagement() {
           <Text className="text-xl font-bold">设备管理</Text>
         </HStack>
         <VStack className="space-y-4 px-4 py-6 gap-4">
-          <Button className="w-full" onPress={() => setShowAddDeviceDialog(true)}>
+          <Button className="w-full" onPress={() => ui.setShowAddDeviceDialog(true)}>
             <HStack className="items-center space-x-2 gap-2">
               <Icon as={Plus} className="h-4 w-4 text-white" />
-              <ButtonText>添加新设备</ButtonText>
+              <ButtonText>绑定新设备</ButtonText>
             </HStack>
           </Button>
           <Button
@@ -132,7 +129,7 @@ export default function DeviceManagement() {
                 size="sm"
                 variant="solid"
                 action="default"
-                onPress={() => setShowAddGroupDialog(true)}
+                onPress={() => ui.setShowAddGroupDialog(true)}
                 className="bg-gray-50"
               >
                 <HStack className="items-center space-x-1">
@@ -195,7 +192,7 @@ export default function DeviceManagement() {
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                          onPress={() => handleGroupAction(group)}
+                          onPress={() => groupActions.handleAction(group)}
                           className={`px-2 items-center justify-center ${
                             selectedGroup === group.id ? 'bg-primary-700' : 'bg-gray-200'
                           }`}
@@ -224,7 +221,9 @@ export default function DeviceManagement() {
 
               <VStack className="space-y-3">
                 {group.devices
-                  .filter(device => device.name.toLowerCase().includes(searchText.toLowerCase()))
+                  .filter(device =>
+                    getDeviceDisplayName(device).toLowerCase().includes(searchText.toLowerCase())
+                  )
                   .map(device => (
                     <Box
                       key={device.id}
@@ -232,7 +231,7 @@ export default function DeviceManagement() {
                     >
                       <HStack className="justify-between">
                         <VStack>
-                          <Text className="font-medium">{device.name}</Text>
+                          <Text className="font-medium">{getDeviceDisplayName(device)}</Text>
                           <HStack className="items-center mt-1">
                             <Box
                               className={`w-2 h-2 rounded-full mr-2 ${
@@ -240,11 +239,11 @@ export default function DeviceManagement() {
                               }`}
                             />
                             <Text className="text-sm text-gray-500">
-                              {device.isOnline ? '在线' : '离线'}
+                              {getOnlineStatusText(device)}
                             </Text>
                             <Text className="text-sm text-gray-500 mx-2">•</Text>
                             <Text className="text-sm text-gray-500">
-                              电量 {device.batteryLevel}%
+                              电量 {getFormattedBatteryLevel(device)}
                             </Text>
                           </HStack>
                         </VStack>
@@ -268,7 +267,7 @@ export default function DeviceManagement() {
                             variant="outline"
                             size="sm"
                             className="h-9 w-9 rounded-full p-0"
-                            onPress={() => handleDeviceAction(group.id, device)}
+                            onPress={() => deviceActions.handleAction(device)}
                           >
                             <Icon as={MoreVertical} className="h-4 w-4 text-red-500" />
                           </Button>
@@ -278,7 +277,7 @@ export default function DeviceManagement() {
                   ))}
 
                 {group.devices.filter(device =>
-                  device.name.toLowerCase().includes(searchText.toLowerCase())
+                  getDeviceDisplayName(device).toLowerCase().includes(searchText.toLowerCase())
                 ).length === 0 && (
                   <VStack className="items-center justify-center py-4">
                     <Text className="text-gray-500 text-center">
@@ -312,71 +311,25 @@ export default function DeviceManagement() {
         </VStack>
       </VStack>
 
-      {/* 模态框组件 */}
-      <AddDeviceModal
-        showAddDeviceDialog={showAddDeviceDialog}
-        setShowAddDeviceDialog={setShowAddDeviceDialog}
-        newDevice={newDevice}
-        setNewDevice={setNewDevice}
-        deviceGroups={deviceGroups}
-        handleAddDevice={handleAddDevice}
-      />
-
-      <AddGroupModal
-        showAddGroupDialog={showAddGroupDialog}
-        setShowAddGroupDialog={setShowAddGroupDialog}
-        newGroup={newGroup}
-        setNewGroup={setNewGroup}
-        handleAddGroup={handleAddGroup}
-      />
-
-      <EditDeviceModal
-        showEditDeviceDialog={showEditDeviceDialog}
-        setShowEditDeviceDialog={setShowEditDeviceDialog}
-        editingDevice={editingDevice}
-        setEditingDevice={setEditingDevice}
-        deviceGroups={deviceGroups}
-        handleSaveEditedDevice={handleSaveEditedDevice}
-      />
-
-      <EditGroupModal
-        showEditGroupDialog={showEditGroupDialog}
-        setShowEditGroupDialog={setShowEditGroupDialog}
-        editingGroup={editingGroup}
-        setEditingGroup={setEditingGroup}
-        handleSaveEditedGroup={handleSaveEditedGroup}
-      />
-
-      <DeleteDeviceModal
-        showDeleteDeviceDialog={showDeleteDeviceDialog}
-        setShowDeleteDeviceDialog={setShowDeleteDeviceDialog}
-        deviceToDelete={deviceToDelete}
-        confirmDeleteDevice={confirmDeleteDevice}
-      />
-
-      <DeleteGroupModal
-        showDeleteGroupDialog={showDeleteGroupDialog}
-        setShowDeleteGroupDialog={setShowDeleteGroupDialog}
-        groupToDelete={groupToDelete}
-        confirmDeleteGroup={confirmDeleteGroup}
-      />
-
-      <DeviceActionModal
-        isOpen={showDeviceActionDialog}
-        onClose={() => setShowDeviceActionDialog(false)}
-        selectedActionDevice={selectedActionDevice}
-        handleEditDevice={handleEditDevice}
-        handleDeleteDevice={handleDeleteDevice}
-      />
-
-      <GroupActionModal
-        isOpen={showGroupActionDialog}
-        onClose={() => setShowGroupActionDialog(false)}
-        selectedActionGroup={selectedActionGroup}
-        onEdit={handleEditGroup}
-        onDelete={handleDeleteGroup}
-      />
+      {/* 模态框组件 - 使用从上下文获取数据的模态框 */}
+      <DirectAddDeviceModal />
+      <DirectAddGroupModal />
+      <DirectEditDeviceModal />
+      <DirectEditGroupModal />
+      <DirectDeleteDeviceModal />
+      <DirectDeleteGroupModal />
+      <DirectDeviceActionModal />
+      <DirectGroupActionModal />
     </ScrollView>
+  );
+}
+
+// 导出包含上下文提供者的页面组件
+export default function DeviceManagement() {
+  return (
+    <DeviceManagementProvider>
+      <DeviceManagementContent />
+    </DeviceManagementProvider>
   );
 }
 

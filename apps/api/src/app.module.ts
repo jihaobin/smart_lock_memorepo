@@ -16,6 +16,7 @@ import ConfigModule from './config/config.module';
 import DatabaseModule from './database/database.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { DeviceModule } from './modules/device/device.module';
 import { FriendModule } from './modules/friend/friend.module';
 import { NotificationModule } from './modules/notification/notification.module';
 
@@ -57,6 +58,7 @@ import { NotificationModule } from './modules/notification/notification.module';
     AuthModule,
     NotificationModule,
     FriendModule,
+    DeviceModule,
     AdminModule, // 添加管理员模块
 
     // 缓存模块 - 使用redis

@@ -2,7 +2,7 @@ import { Edit, Group, Trash, Users } from 'lucide-react-native';
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
 
-import { ModalBase } from './ModalBase';
+import { ModalBase } from '../../ModalBase';
 
 import { Box } from '@/components/ui/box';
 import { HStack } from '@/components/ui/hstack';

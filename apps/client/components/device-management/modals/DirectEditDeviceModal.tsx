@@ -6,7 +6,6 @@ import { z } from 'zod';
 import { ModalBase } from '../../ModalBase';
 import { ModalFooter } from '../../ModalFooter';
 
-import CreatePassword from '@/components/create_password';
 import { Input, InputField } from '@/components/ui/input';
 import {
   Select,
@@ -22,85 +21,87 @@ import {
 } from '@/components/ui/select';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useUserManagement } from '@/contexts/UserManagementContext';
+import { useDeviceManagement } from '@/contexts/DeviceManagementContext';
+import type { Device } from '@/types/device-management';
 
 // 定义表单验证模式
-const addUserSchema = z.object({
-  name: z.string().min(1, '姓名不能为空'),
-  lock_password: z.string().length(6, '密码必须是6位数字').optional(),
-  group: z.string().min(1, '请选择分组'),
+const editDeviceSchema = z.object({
+  name: z.string().min(1, '设备名称不能为空'),
+  groupId: z.string().min(1, '请选择分组'),
 });
 
 // 推导表单数据类型
-type AddUserFormData = z.infer<typeof addUserSchema>;
+type EditDeviceFormData = z.infer<typeof editDeviceSchema>;
 
-export function DirectAddUserModal() {
-  // 从上下文中获取状态和方法
-  const {
-    createUser,
-    groups,
-    ui: { showAddUserDialog, setShowAddUserDialog, newUser },
-  } = useUserManagement();
+/**
+ * 直接从上下文获取数据的EditDeviceModal组件
+ */
+export function DirectEditDeviceModal() {
+  const { deviceGroups, updateDevice, ui } = useDeviceManagement();
+
+  const showEditDeviceDialog = ui.showEditDeviceDialog || false;
+  const setShowEditDeviceDialog = ui.setShowEditDeviceDialog || (() => {});
+  const editingDevice = ui.editingDevice || null;
 
   const {
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm<AddUserFormData>({
-    resolver: zodResolver(addUserSchema),
+  } = useForm<EditDeviceFormData>({
+    resolver: zodResolver(editDeviceSchema),
     defaultValues: {
-      name: newUser.remarkName || '',
-      group: newUser.friendGroupId || '',
-      lock_password: newUser.linkedPasswords || '',
+      name: editingDevice?.name || '',
+      groupId: (editingDevice as any)?.groupId || '',
     },
   });
 
   // 处理表单提交
-  const onSubmit = async (data: AddUserFormData) => {
+  const onSubmit = async (data: EditDeviceFormData) => {
+    if (!editingDevice) return;
+
     try {
-      await createUser({
-        remarkName: data.name,
-        linkedPasswords: data.lock_password as string,
-        friendGroupId: data.group,
+      await updateDevice(editingDevice.id, {
+        name: data.name,
+        // 注意：这里应该根据实际情况更新其他需要的字段
       });
-      setShowAddUserDialog(false);
-      reset();
+
+      setShowEditDeviceDialog(false);
     } catch (error) {
-      console.error('添加用户失败:', error);
+      console.error('更新设备失败:', error);
     }
   };
 
   // 关闭对话框时的处理函数
   const handleClose = () => {
-    setShowAddUserDialog(false);
-    reset();
+    setShowEditDeviceDialog(false);
   };
 
-  // 当对话框关闭时重置表单
+  // 当编辑设备改变或对话框打开时重置表单
   React.useEffect(() => {
-    if (!showAddUserDialog) {
-      reset();
-    } else {
-      // 当对话框打开时，使用当前的 newUser 值重置表单
+    if (editingDevice) {
       reset({
-        name: newUser.remarkName || '',
-        group: newUser.friendGroupId || '',
-        lock_password: newUser.linkedPasswords || '',
+        name: editingDevice.name || '',
+        groupId: (editingDevice as any)?.groupId || '',
       });
     }
-  }, [showAddUserDialog, newUser, reset]);
+  }, [editingDevice, reset]);
+
+  // 如果没有选择设备，不显示模态框
+  if (!editingDevice) {
+    return null;
+  }
 
   return (
     <ModalBase
-      isOpen={showAddUserDialog}
+      isOpen={showEditDeviceDialog}
       onClose={handleClose}
-      title="添加新用户"
+      title="编辑设备"
       footer={
         <ModalFooter
           onCancel={handleClose}
           onConfirm={handleSubmit(onSubmit)}
-          confirmText="添加用户"
+          confirmText="保存"
           isLoading={isSubmitting}
           isConfirmDisabled={Object.keys(errors).length > 0}
         />
@@ -108,7 +109,7 @@ export function DirectAddUserModal() {
     >
       <VStack className="space-y-6">
         <VStack className="space-y-3 gap-2">
-          <Text className="text-gray-700 font-medium">姓名</Text>
+          <Text className="text-gray-700 font-medium">设备名称</Text>
           <Controller
             control={control}
             name="name"
@@ -118,7 +119,7 @@ export function DirectAddUserModal() {
                   value={value}
                   onChangeText={onChange}
                   onBlur={onBlur}
-                  placeholder="请输入姓名"
+                  placeholder="请输入设备名称"
                 />
               </Input>
             )}
@@ -126,29 +127,11 @@ export function DirectAddUserModal() {
           {errors.name && <Text className="text-sm text-red-500 mt-1">{errors.name.message}</Text>}
         </VStack>
 
-        <VStack className="space-y-3 gap2">
-          <Controller
-            control={control}
-            name="lock_password"
-            render={({ field: { onChange, value } }) => (
-              <CreatePassword
-                value={value || ''}
-                onChange={onChange}
-                refreshPassword={genPassword => {
-                  onChange(genPassword);
-                }}
-                errors={{ code: errors.lock_password }}
-                placeholder="设置6位数字密码"
-              />
-            )}
-          />
-        </VStack>
-
         <VStack className="space-y-3 gap-2 mt-2">
-          <Text className="text-gray-700 font-medium">用户分组</Text>
+          <Text className="text-gray-700 font-medium">所属分组</Text>
           <Controller
             control={control}
-            name="group"
+            name="groupId"
             render={({ field: { onChange, value } }) => (
               <Select selectedValue={value} onValueChange={onChange} className="mt-1">
                 <SelectTrigger className="w-full">
@@ -161,10 +144,10 @@ export function DirectAddUserModal() {
                     <SelectDragIndicatorWrapper>
                       <SelectDragIndicator />
                     </SelectDragIndicatorWrapper>
-                    {groups.map(group => (
+                    {deviceGroups.map(group => (
                       <SelectItem
                         key={group.id}
-                        label={group.groupName}
+                        label={group.name}
                         value={group.id}
                         className="p-3"
                       />
@@ -174,8 +157,8 @@ export function DirectAddUserModal() {
               </Select>
             )}
           />
-          {errors.group && (
-            <Text className="text-sm text-red-500 mt-1">{errors.group.message}</Text>
+          {errors.groupId && (
+            <Text className="text-sm text-red-500 mt-1">{errors.groupId.message}</Text>
           )}
         </VStack>
       </VStack>
