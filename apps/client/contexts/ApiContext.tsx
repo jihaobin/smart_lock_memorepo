@@ -13,11 +13,13 @@ import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 
 import { useToast } from '@/hooks/use-toast';
+import queryClient from '@/lib/queryClient';
 
 // 定义API上下文类型
 interface ApiContextType {
   apiClient: ApiClient;
   queryHooks: ReturnType<typeof createQueryHooks>;
+  clearApiState: () => Promise<void>;
 }
 
 // 创建上下文
@@ -126,9 +128,42 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // 使用ApiClient提供的公开方法设置认证令牌
     if (apiClient && token) {
-      void apiClient.setAuthToken(token);
+      void apiClient.setAuthToken(token).then(() => {
+        queryClient.invalidateQueries();
+      });
+    } else if (apiClient && token === null) {
+      console.log('清楚用户登录');
+      // 当token变为null时清除认证状态
+      void apiClient.clearAuth();
+      // 取消所有正在进行的查询
+      queryClient.cancelQueries();
+      // 重置查询缓存
+      queryClient.clear();
     }
   }, [token, apiClient]);
+
+  // 清除API状态的方法
+  const clearApiState = React.useCallback(async (): Promise<void> => {
+    if (apiClient) {
+      // 清除API客户端的认证状态
+      await apiClient.clearAuth();
+    }
+
+    // 取消所有正在进行的查询
+    queryClient.cancelQueries();
+
+    // 使所有查询失效（标记为 stale）
+    queryClient.invalidateQueries();
+
+    // 重置所有查询到初始状态
+    queryClient.resetQueries();
+
+    // 清除React Query缓存
+    queryClient.clear();
+
+    // 重定向到登录页面
+    router.replace('/login');
+  }, [apiClient, router]);
 
   // 创建查询hooks
   const queryHooks = React.useMemo(() => {
@@ -136,7 +171,10 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
   }, [apiClient]);
 
   // 创建上下文值
-  const contextValue = React.useMemo(() => ({ apiClient, queryHooks }), [apiClient, queryHooks]);
+  const contextValue = React.useMemo(
+    () => ({ apiClient, queryHooks, clearApiState }),
+    [apiClient, queryHooks, clearApiState]
+  );
 
   return <ApiContext.Provider value={contextValue}>{children}</ApiContext.Provider>;
 }

@@ -78,11 +78,13 @@ export function useAuthApi() {
     try {
       setLoading(true);
 
-      // 清除ApiClient中的认证信息
-      await apiClient.clearAuth();
-
-      // 清除AuthContext中的用户信息
-      contextLogout();
+      // 使用AuthContext的logout方法，传入clearApiState回调
+      await contextLogout({
+        onLogout: async () => {
+          // 清除ApiClient中的认证信息
+          await apiClient.clearAuth();
+        },
+      });
 
       // 重定向到登录页面
       router.replace('/login');

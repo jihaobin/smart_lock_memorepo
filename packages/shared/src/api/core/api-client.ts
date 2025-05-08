@@ -1,3 +1,4 @@
+import { authManager } from 'api/utils/auth-manager';
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 
 import { BaseErrorHandler } from './base-error-handler';
@@ -114,8 +115,14 @@ export class ApiClient {
       },
       ...axiosConfig,
     });
-
+    // 设置AuthManager的token检查器
+    authManager.setTokenChecker(this.hasToken.bind(this));
     this.setupInterceptors();
+  }
+
+  public async hasToken(): Promise<boolean> {
+    const token = await this.platformAdapter.getStorage().getItem(this.config.tokenKey!);
+    return !!token;
   }
 
   /**
@@ -326,11 +333,15 @@ export class ApiClient {
         await this.platformAdapter.getStorage().setItem(this.config.tokenKey!, token);
         // 设置认证头
         this.axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        // 更新认证状态
+        authManager.setLoggedIn(true);
       } else {
         // 移除令牌
         await this.platformAdapter.getStorage().removeItem(this.config.tokenKey!);
         // 移除认证头
         delete this.axiosInstance.defaults.headers.common['Authorization'];
+        // 更新认证状态
+        authManager.setLoggedIn(false);
       }
     } catch (error) {
       console.error('设置认证令牌失败:', error);
@@ -380,6 +391,8 @@ export class ApiClient {
     await this.platformAdapter.getStorage().removeItem(this.config.tokenKey!);
     await this.platformAdapter.getStorage().removeItem(this.config.refreshTokenKey!);
     delete this.axiosInstance.defaults.headers.common['Authorization'];
+    // 更新AuthManager状态
+    authManager.setLoggedIn(false);
   }
 
   /**
@@ -388,6 +401,26 @@ export class ApiClient {
    * @returns 响应数据
    */
   public async request<T>(config: AxiosRequestConfig): Promise<T> {
+    // 获取请求URL
+    const url = config.url || '';
+
+    // 检查是否需要认证
+    if (authManager.isProtectedPath(url)) {
+      // 判断是否允许请求
+      const isAllowed = await authManager.shouldAllowRequest(url);
+      if (!isAllowed) {
+        const authError: ApiResponse<null> = {
+          code: ErrorCode.UNAUTHORIZED,
+          message: '请先登录',
+          data: null,
+          timestamp: Date.now(),
+          path: url,
+        };
+
+        this.handleApiError(authError, new Error('Unauthorized'), url, config.method);
+        throw authError;
+      }
+    }
     try {
       const response: AxiosResponse<ApiResponse<T>> = await this.axiosInstance(config);
       // 返回data字段中的实际数据

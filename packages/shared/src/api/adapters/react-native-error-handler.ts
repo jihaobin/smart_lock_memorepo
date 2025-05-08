@@ -59,6 +59,11 @@ export interface ReactNativeErrorHandlerConfig {
    * 是否显示错误代码
    */
   showErrorCodes?: boolean;
+
+  /**
+   * UI错误提示过期时间（毫秒）
+   */
+  uiErrorExpirationTime?: number;
 }
 
 /**
@@ -89,6 +94,16 @@ export class ReactNativeErrorHandler extends BaseErrorHandler {
     [ErrorCode.SERVICE_UNAVAILABLE]: '服务暂时不可用，请稍后重试',
   };
 
+  /**
+   * 最近显示的UI错误提示（用于UI提示去重）
+   */
+  private recentUIErrors: Set<string> = new Set();
+
+  /**
+   * UI错误提示过期时间（毫秒）
+   */
+  private uiErrorExpirationTime: number = 3000;
+
   constructor(config: ReactNativeErrorHandlerConfig = {}) {
     super();
 
@@ -98,8 +113,12 @@ export class ReactNativeErrorHandler extends BaseErrorHandler {
     this.config = {
       logErrors: true,
       showErrorCodes: isDev, // 开发环境下显示错误代码
-      ...config
+      uiErrorExpirationTime: 3000, // 默认3秒UI错误提示过期时间
+      ...config,
     };
+
+    // 设置UI错误提示过期时间
+    this.uiErrorExpirationTime = this.config.uiErrorExpirationTime || 3000;
 
     this.toaster = config.toaster;
 
@@ -107,12 +126,17 @@ export class ReactNativeErrorHandler extends BaseErrorHandler {
     if (config.errorMessages) {
       this.errorMessages = {
         ...this.errorMessages,
-        ...config.errorMessages
+        ...config.errorMessages,
       };
     }
 
     // 注册全局错误处理
     this.registerErrorListener(this.handleGlobalError.bind(this));
+
+    // 设置定期清理UI错误的任务
+    setInterval(() => {
+      this.clearExpiredUIErrors();
+    }, this.uiErrorExpirationTime);
   }
 
   /**
@@ -148,7 +172,37 @@ export class ReactNativeErrorHandler extends BaseErrorHandler {
         message = `[${errorCode}] ${message}`;
       }
 
-      this.toaster.showError(message);
+      // 检查是否已经显示过相同的UI错误提示
+      const errorKey = this.getUIErrorKey(errorCode, message);
+      if (!this.recentUIErrors.has(errorKey)) {
+        this.recentUIErrors.add(errorKey);
+
+        // 设置过期时间
+        setTimeout(() => {
+          this.recentUIErrors.delete(errorKey);
+        }, this.uiErrorExpirationTime);
+
+        // 显示错误提示
+        this.toaster.showError(message);
+      }
     }
+  }
+
+  /**
+   * 获取UI错误的唯一键
+   * @param errorCode 错误代码
+   * @param message 错误消息
+   * @returns UI错误键
+   */
+  private getUIErrorKey(errorCode: number, message: string): string {
+    return `${errorCode}:${message}`;
+  }
+
+  /**
+   * 清理过期的UI错误记录
+   */
+  private clearExpiredUIErrors(): void {
+    // 这个方法用于彻底清理所有UI错误记录，防止内存泄漏
+    this.recentUIErrors.clear();
   }
 }

@@ -8,7 +8,6 @@ import {
   integer,
   jsonb,
   boolean,
-  primaryKey,
   char,
   uniqueIndex,
   index,
@@ -33,7 +32,9 @@ export const users = pgTable(
     nikeName: varchar('nike_name', { length: 255 }).notNull(),
     passwordHash: text('password_hash').notNull(),
     createdAt: timestamp('created_at').defaultNow(),
-    updatedAt: timestamp('updated_at').defaultNow(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date()),
   },
   table => [
     uniqueIndex('users_phone_idx').on(table.phone),
@@ -49,7 +50,7 @@ export const devices = pgTable(
       .primaryKey()
       .$default(() => createId())
       .unique(),
-    ownerId: char('owner_id', { length: 5 }).notNull(), // 关联用户
+    ownerId: char('owner_id', { length: 5 }), // 关联用户
     name: varchar('name', { length: 255 }).notNull(),
     type: varchar('type', { length: 50 }).notNull(), // 设备类型（如门锁型号）
     status: jsonb('status')
@@ -58,16 +59,44 @@ export const devices = pgTable(
         batteryLevel: number;
         // 设备固件版本
         firmwareVersion: number;
+        // 是否在线
+        isOnline: boolean;
+        // 门是否开启
+        isOpen: boolean;
       }>()
       .notNull(), // 设备状态
     hasCamera: boolean('has_camera').default(false),
+    deviceGroupId: char('device_group_id', { length: 5 }), // 新增字段：所属分组，可为 null
+    nikeName: varchar('nike_name', { length: 255 }), // 新增字段：设备昵称
   },
   table => [
     index('devices_owner_type_idx').on(table.ownerId, table.type), // 复合索引优化按所有者查询设备列表
     index('devices_status_idx').on(table.status),
+    index('devices_group_idx').on(table.deviceGroupId), // 新增索引，优化分组查询
   ]
 );
 
+/**设备类型表 */
+export const deviceTypes = pgTable(
+  'device_types',
+  {
+    id: char('id', { length: 5 }).primaryKey().unique(),
+    name: varchar('name', { length: 255 }).notNull(),
+    description: text('description'),
+    hasCamera: boolean('has_camera').default(false),
+    hasFingerprint: boolean('has_fingerprint').default(false),
+    hasFace: boolean('has_face').default(false),
+    hasEye: boolean('has_eye').default(false),
+    hasNFC: boolean('has_nfc').default(false),
+    hasWifi: boolean('has_wifi').default(false),
+    hasBluetooth: boolean('has_bluetooth').default(false),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  table => [index('device_types_name_idx').on(table.name)]
+);
 /** 设备分组表 */
 export const deviceGroups = pgTable(
   'device_groups',
@@ -78,6 +107,10 @@ export const deviceGroups = pgTable(
       .unique(),
     userId: char('user_id', { length: 5 }).notNull(), // 所属用户
     name: varchar('name', { length: 255 }).notNull(),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date()),
   },
   table => [
     index('device_groups_user_name_idx').on(table.userId, table.name), // 优化用户分组查询
@@ -94,6 +127,10 @@ export const friendGroups = pgTable(
       .unique(),
     userId: char('user_id', { length: 5 }).notNull(), // 所属用户
     groupName: varchar('group_name', { length: 255 }).notNull(),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date()),
   },
   table => [uniqueIndex('friend_groups_user_name_idx').on(table.userId, table.groupName)]
 );
@@ -110,6 +147,10 @@ export const friends = pgTable(
     remarkName: varchar('remark_name', { length: 255 }).notNull(),
     linkedPasswords: varchar('linked_passwords', { length: 6 }), // 关联的密码
     friendGroupId: char('friend_group_id', { length: 5 }).notNull(), // 新增分组外键字段
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date()),
   },
   table => [
     index('friends_user_idx').on(table.userId),
@@ -265,31 +306,6 @@ export const notificationDeliveryLogs = pgTable(
 );
 
 // --------------------------
-// 关系映射表定义
-// --------------------------
-
-/** 设备-设备分组关系映射表 */
-export const deviceToDeviceGroup = pgTable(
-  'device_to_device_group',
-  {
-    deviceId: char('device_id', { length: 5 }).notNull(),
-    deviceGroupId: char('device_group_id', { length: 5 }).notNull(),
-  },
-  table => [primaryKey({ columns: [table.deviceId, table.deviceGroupId] })]
-);
-
-export const deviceToDeviceGroupRelations = relations(deviceToDeviceGroup, ({ one }) => ({
-  device: one(devices, {
-    fields: [deviceToDeviceGroup.deviceId],
-    references: [devices.id],
-  }),
-  deviceGroup: one(deviceGroups, {
-    fields: [deviceToDeviceGroup.deviceGroupId],
-    references: [deviceGroups.id],
-  }),
-}));
-
-// --------------------------
 // Drizzle 关系定义（类型安全）
 // --------------------------
 
@@ -319,9 +335,23 @@ export const devicesRelations = relations(devices, ({ one, many }) => ({
     fields: [devices.ownerId],
     references: [users.id],
   }),
-  groups: many(deviceToDeviceGroup),
+  deviceGroup: one(deviceGroups, {
+    fields: [devices.deviceGroupId],
+    references: [deviceGroups.id],
+  }),
   passwords: many(temporaryPasswords),
   unlockRecords: many(unlockRecords),
+  deviceType: one(deviceTypes, {
+    fields: [devices.type],
+    references: [deviceTypes.id],
+  }),
+}));
+
+/** 设备类型关系
+ * 一个设备类型可以有多个设备
+ */
+export const deviceTypesRelations = relations(deviceTypes, ({ many }) => ({
+  devices: many(devices),
 }));
 
 /** 设备分组关系
@@ -333,7 +363,7 @@ export const deviceGroupsRelations = relations(deviceGroups, ({ one, many }) => 
     fields: [deviceGroups.userId],
     references: [users.id],
   }),
-  devices: many(deviceToDeviceGroup), // 一个设备分组有多个设备
+  devices: many(devices), // 一个设备分组有多个设备
 }));
 
 /** 好友分组关系

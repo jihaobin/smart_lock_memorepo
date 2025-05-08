@@ -3,8 +3,9 @@ import {
   ErrorHandlerContext,
   ErrorHandlingResult,
   ErrorHandlingStrategy,
-  IErrorHandler
+  IErrorHandler,
 } from '../types/error-handler';
+import { ErrorState } from '../utils/error-state';
 
 /**
  * 基础错误处理器
@@ -26,6 +27,16 @@ export class BaseErrorHandler implements IErrorHandler {
    */
   protected defaultStrategy: ErrorHandlingStrategy = ErrorHandlingStrategy.THROW;
 
+  /**
+   * 错误状态管理器
+   */
+  protected errorState: ErrorState = ErrorState.getInstance();
+
+  /**
+   * 错误消息过期时间（毫秒）
+   */
+  protected errorExpirationTime: number = 5000;
+
   constructor() {
     // 设置一些常见错误的默认处理策略
     this.errorStrategies.set(ErrorCode.UNAUTHORIZED, ErrorHandlingStrategy.THROW);
@@ -33,14 +44,31 @@ export class BaseErrorHandler implements IErrorHandler {
     this.errorStrategies.set(ErrorCode.NOT_FOUND, ErrorHandlingStrategy.THROW);
     this.errorStrategies.set(ErrorCode.TIMEOUT_ERROR, ErrorHandlingStrategy.RETRY);
     this.errorStrategies.set(ErrorCode.NETWORK_ERROR, ErrorHandlingStrategy.RETRY);
+
+    // 设置定期清理过期错误的任务
+    setInterval(() => {
+      this.errorState.cleanExpiredErrors(this.errorExpirationTime);
+    }, this.errorExpirationTime);
   }
 
   /**
-   * 处理API错误
+   * 处理API错误（增强版，支持节流和去重）
    * @param context 错误上下文
    * @returns 处理结果
    */
   public handleError(context: ErrorHandlerContext): ErrorHandlingResult {
+    // 生成错误的唯一键，使用错误代码和消息组合
+    const errorKey = this.getErrorKey(context);
+
+    // 检查是否需要忽略（节流和去重）
+    if (!this.shouldProcessError(errorKey, context)) {
+      return {
+        strategy: ErrorHandlingStrategy.IGNORE,
+        handled: true,
+        throttled: true,
+      };
+    }
+
     // 通知所有错误监听器
     this.notifyListeners(context);
 
@@ -53,14 +81,14 @@ export class BaseErrorHandler implements IErrorHandler {
       case ErrorHandlingStrategy.IGNORE:
         return {
           strategy,
-          handled: true
+          handled: true,
         };
 
       case ErrorHandlingStrategy.RETRY:
         return {
           strategy,
           handled: false,
-          retryCount: 1
+          retryCount: 1,
         };
 
       case ErrorHandlingStrategy.THROW:
@@ -68,7 +96,7 @@ export class BaseErrorHandler implements IErrorHandler {
       default:
         return {
           strategy,
-          handled: false
+          handled: false,
         };
     }
   }
@@ -104,9 +132,7 @@ export class BaseErrorHandler implements IErrorHandler {
    * @param listener 错误监听函数
    * @returns 用于取消监听的函数
    */
-  public registerErrorListener(
-    listener: (context: ErrorHandlerContext) => void
-  ): () => void {
+  public registerErrorListener(listener: (context: ErrorHandlerContext) => void): () => void {
     this.listeners.push(listener);
 
     // 返回取消监听的函数
@@ -130,5 +156,24 @@ export class BaseErrorHandler implements IErrorHandler {
         console.error('Error in error handler listener:', error);
       }
     }
+  }
+
+  /**
+   * 获取错误的唯一键
+   * @param context 错误上下文
+   * @returns 错误键
+   */
+  protected getErrorKey(context: ErrorHandlerContext): string {
+    return `${context.errorCode || 0}:${context.message || ''}`;
+  }
+
+  /**
+   * 检查是否应该处理此错误（节流和去重逻辑）
+   * @param errorKey 错误键
+   * @param context 错误上下文
+   * @returns 是否应该处理
+   */
+  protected shouldProcessError(errorKey: string, context: ErrorHandlerContext): boolean {
+    return this.errorState.addError(errorKey, context.message || '');
   }
 }

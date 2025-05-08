@@ -39,6 +39,21 @@ export interface ErrorHandlerContext {
    * 错误时间戳
    */
   timestamp: number;
+
+  /**
+   * 请求参数
+   */
+  params?: unknown;
+
+  /**
+   * 请求体
+   */
+  body?: unknown;
+
+  /**
+   * 已重试次数
+   */
+  retryCount?: number;
 }
 
 /**
@@ -63,7 +78,7 @@ export enum ErrorHandlingStrategy {
   /**
    * 自定义处理，由处理器决定
    */
-  CUSTOM = 'custom'
+  CUSTOM = 'custom',
 }
 
 /**
@@ -86,6 +101,11 @@ export interface ErrorHandlingResult {
   retryCount?: number;
 
   /**
+   * 是否被节流（新增）
+   */
+  throttled?: boolean;
+
+  /**
    * 自定义数据
    */
   data?: unknown;
@@ -101,7 +121,7 @@ export interface IErrorHandler {
    * @param context 错误上下文
    * @returns 处理结果
    */
-  handleError(context: ErrorHandlerContext): Promise<ErrorHandlingResult> | ErrorHandlingResult;
+  handleError(context: ErrorHandlerContext): ErrorHandlingResult;
 
   /**
    * 设置错误处理策略
@@ -111,11 +131,15 @@ export interface IErrorHandler {
   setStrategyForError(errorCode: ErrorCode | number, strategy: ErrorHandlingStrategy): void;
 
   /**
+   * 设置默认错误处理策略
+   * @param strategy 处理策略
+   */
+  setDefaultStrategy(strategy: ErrorHandlingStrategy): void;
+
+  /**
    * 注册全局错误监听器
    * @param listener 错误监听函数
    * @returns 用于取消监听的函数
    */
-  registerErrorListener(
-    listener: (context: ErrorHandlerContext) => void
-  ): () => void;
+  registerErrorListener(listener: (context: ErrorHandlerContext) => void): () => void;
 }

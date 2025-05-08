@@ -1,4 +1,4 @@
-import { IAdminAuthUser, RouteItem } from '@smart-lock/shared/shared';
+import { AdminAuthUser, RouteItem } from '@smart-lock/shared/shared';
 import type React from 'react';
 import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 
@@ -11,9 +11,9 @@ import {
 } from './authUtils';
 
 interface AuthContextType {
-  user: IAdminAuthUser | null;
+  user: AdminAuthUser | null;
   token: string | null;
-  login: (user: IAdminAuthUser) => void;
+  login: (user: AdminAuthUser) => void;
   logout: () => void;
   isLoading: boolean;
   setToken: (token: string | null) => void;
@@ -26,7 +26,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<IAdminAuthUser | null>(null);
+  const [user, setUser] = useState<AdminAuthUser | null>(null);
   const [accessibleRoutes, setAccessibleRoutes] = useState<RouteItem[]>([]);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loadAuth();
   }, []);
 
-  const login = async (userData: IAdminAuthUser) => {
+  const login = async (userData: AdminAuthUser) => {
     setUser(userData);
     setAccessibleRoutes(userData.accessibleRoutes);
     saveUserToStorage(userData);

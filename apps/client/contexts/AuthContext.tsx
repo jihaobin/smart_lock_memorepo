@@ -1,5 +1,3 @@
-'use client';
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { IUser } from '@smart-lock/shared/shared';
 import type React from 'react';
@@ -11,7 +9,7 @@ interface AuthContextType {
   user: IUser | null;
   token: string | null;
   login: (user: IUser) => void;
-  logout: () => void;
+  logout: (options?: { onLogout?: () => Promise<void> }) => Promise<boolean>;
   isLoading: boolean;
   setToken: (token: string | null) => void;
 }
@@ -38,6 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         ]);
 
         if (savedUser) {
+          console.log(`user: ${user}`);
           setUser(JSON.parse(savedUser));
         }
 
@@ -66,17 +65,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const logout = async () => {
-    setUser(null);
-    setToken(null);
+  const logout = async (options?: { onLogout?: () => Promise<void> }): Promise<boolean> => {
     try {
-      await AsyncStorage.removeItem(AUTH_USER_KEY);
-      // 令牌的清除由ApiClient.clearAuth处理，这里只清除用户信息
-    } catch (error) {
-      console.error('清除用户信息失败:', error);
-    }
+      setIsLoading(true);
 
-    // ApiClient的clearAuth方法会在logout后被调用
+      // 清除内存中的状态
+      setUser(null);
+      setToken(null);
+      // 清楚持久化的用户数据
+      AsyncStorage.removeItem(AUTH_USER_KEY);
+
+      // 执行外部传入的清理函数（如清除ApiClient认证和React Query缓存）
+      if (options?.onLogout) {
+        await options.onLogout();
+      }
+
+      return true;
+    } catch (error) {
+      console.error('登出失败:', error);
+      // 可以考虑添加错误上报机制
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

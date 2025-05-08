@@ -1,4 +1,4 @@
-import { IAdminAuthUser, RouteItem } from '@smart-lock/shared/shared';
+import { AdminAuthUser, RouteItem } from '@smart-lock/shared/shared';
 
 // 存储键常量
 export const AUTH_USER_KEY = 'user';
@@ -27,7 +27,7 @@ export function flattenRoutes(routes: RouteItem[]): RouteItem[] {
  * @returns 是否有权限
  */
 export function checkPermission(
-  user: IAdminAuthUser | null,
+  user: AdminAuthUser | null,
   routePath: string,
   flattenedRoutes: RouteItem[]
 ): boolean {
@@ -39,14 +39,14 @@ export function checkPermission(
  * 从localStorage加载认证信息
  * @returns 包含用户数据和token的对象
  */
-export function loadAuthFromStorage(): { userData: IAdminAuthUser | null; token: string | null } {
+export function loadAuthFromStorage(): { userData: AdminAuthUser | null; token: string | null } {
   try {
     const savedToken = localStorage.getItem(AUTH_TOKEN_KEY);
     const savedUser = localStorage.getItem(AUTH_USER_KEY);
 
     let userData = null;
     if (savedUser) {
-      userData = JSON.parse(savedUser) as IAdminAuthUser;
+      userData = JSON.parse(savedUser) as AdminAuthUser;
     }
 
     return {
@@ -63,7 +63,7 @@ export function loadAuthFromStorage(): { userData: IAdminAuthUser | null; token:
  * 保存用户信息到localStorage
  * @param userData 用户数据
  */
-export function saveUserToStorage(userData: IAdminAuthUser): void {
+export function saveUserToStorage(userData: AdminAuthUser): void {
   try {
     localStorage.setItem(AUTH_USER_KEY, JSON.stringify(userData));
   } catch (error) {

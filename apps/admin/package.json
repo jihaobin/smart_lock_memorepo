@@ -1,5 +1,5 @@
 {
-  "name": "admin",
+  "name": "@smart-lock/admin",
   "private": true,
   "type": "module",
   "scripts": {
