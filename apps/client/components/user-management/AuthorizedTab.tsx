@@ -1,4 +1,4 @@
-import { ChevronLeft, Plus, ChevronRight, Search, MoreVertical } from 'lucide-react-native';
+import { Plus, Search, MoreVertical } from 'lucide-react-native';
 import React from 'react';
 import { ScrollView, TouchableOpacity } from 'react-native';
 
@@ -43,7 +43,6 @@ export function AuthorizedTab({
   groups,
   filteredUsers,
   scrollViewRef,
-  handleScroll,
   handleUserAction,
   handleGroupAction,
   setShowAddGroupDialog,
@@ -99,76 +98,72 @@ export function AuthorizedTab({
               </HStack>
             </Box>
           ) : (
-            <HStack className="relative">
-              <TouchableOpacity
-                className="left-0 top-1/2 z-10 w-8 h-8 items-center justify-center bg-white/90 rounded-full shadow border"
-                style={{ transform: [{ translateY: -16 }] }}
-                onPress={() => handleScroll('left')}
-              >
-                <Icon as={ChevronLeft} className="h-4 w-4 text-gray-600" />
-              </TouchableOpacity>
-
-              <ScrollView
-                ref={scrollViewRef}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                className="py-2 px-2"
-                contentContainerStyle={{ paddingRight: 16 }}
-              >
-                <HStack className="space-x-2 items-center gap-4">
-                  <Button
-                    variant={selectedGroup === null ? 'solid' : 'outline'}
-                    size="sm"
-                    onPress={() => setSelectedGroup(null)}
-                    className={`rounded-full px-4 ${
-                      selectedGroup === null ? 'bg-primary/10 border-primary' : 'bg-transparent'
-                    }`}
+            <ScrollView
+              ref={scrollViewRef}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              className="py-2"
+              contentContainerStyle={{ paddingVertical: 8 }}
+            >
+              <HStack className="items-center space-x-3 gap-2">
+                <TouchableOpacity
+                  onPress={() => setSelectedGroup(null)}
+                  className={`rounded-lg overflow-hidden ${
+                    selectedGroup === null ? 'shadow-sm' : ''
+                  }`}
+                  activeOpacity={0.8}
+                >
+                  <Box
+                    className={`px-4 py-2 ${selectedGroup === null ? 'bg-primary' : 'bg-gray-100'}`}
                   >
-                    <ButtonText
-                      className={selectedGroup === null ? 'text-primary' : 'text-gray-600'}
+                    <Text
+                      className={`text-sm font-medium ${
+                        selectedGroup === null ? 'text-white' : 'text-gray-700'
+                      }`}
                     >
                       全部
-                    </ButtonText>
-                  </Button>
-                  {groups.map(group => (
-                    <Box key={group.id} className="flex-row items-center">
-                      <Button
-                        variant={selectedGroup === group.id ? 'solid' : 'outline'}
-                        size="sm"
+                    </Text>
+                  </Box>
+                </TouchableOpacity>
+
+                {groups.map(group => (
+                  <Box key={group.id} className="rounded-lg overflow-hidden shadow-sm">
+                    <HStack className="items-stretch">
+                      <TouchableOpacity
                         onPress={() => setSelectedGroup(group.id)}
-                        className={`rounded-full px-4 ${
-                          selectedGroup === group.id
-                            ? 'bg-primary/10 border-primary'
-                            : 'bg-transparent'
+                        className={`px-4 py-2 ${
+                          selectedGroup === group.id ? 'bg-primary' : 'bg-gray-100'
                         }`}
-                        action={selectedGroup === group.id ? 'primary' : 'secondary'}
+                        activeOpacity={0.8}
                       >
-                        <ButtonText
-                          className={selectedGroup === group.id ? 'text-primary' : 'text-gray-600'}
+                        <Text
+                          className={`text-sm font-medium ${
+                            selectedGroup === group.id ? 'text-white' : 'text-gray-700'
+                          }`}
                         >
                           {group.groupName}
-                        </ButtonText>
-                      </Button>
-                      <Button
-                        size="sm"
-                        className="h-8 w-8 rounded-full p-0 ml-1"
-                        onPress={() => handleGroupAction(group)}
-                      >
-                        <Icon as={MoreVertical} className="h-4 w-4 text-white" />
-                      </Button>
-                    </Box>
-                  ))}
-                </HStack>
-              </ScrollView>
+                        </Text>
+                      </TouchableOpacity>
 
-              <TouchableOpacity
-                className=" right-0 top-1/2 z-10 w-8 h-8 items-center justify-center bg-white/90 rounded-full shadow border"
-                style={{ transform: [{ translateY: -16 }] }}
-                onPress={() => handleScroll('right')}
-              >
-                <Icon as={ChevronRight} className="h-4 w-4 text-gray-600" />
-              </TouchableOpacity>
-            </HStack>
+                      <TouchableOpacity
+                        onPress={() => handleGroupAction(group)}
+                        className={`px-2 items-center justify-center ${
+                          selectedGroup === group.id ? 'bg-primary-700' : 'bg-gray-200'
+                        }`}
+                        activeOpacity={0.8}
+                      >
+                        <Icon
+                          as={MoreVertical}
+                          className={`h-4 w-4 ${
+                            selectedGroup === group.id ? 'text-white' : 'text-gray-600'
+                          }`}
+                        />
+                      </TouchableOpacity>
+                    </HStack>
+                  </Box>
+                ))}
+              </HStack>
+            </ScrollView>
           )}
         </Box>
 
@@ -192,26 +187,25 @@ export function AuthorizedTab({
                 key={user.id}
                 className="p-4 rounded-lg bg-white shadow-sm border border-gray-100"
               >
-                <HStack className="items-center">
-                  <VStack className="flex-1 min-w-0">
-                    <HStack className="items-center justify-between">
-                      <Text className="font-medium" numberOfLines={1}>
-                        {user.remarkName}
-                      </Text>
-                      <Button
-                        size="sm"
-                        className="h-8 w-8 rounded-full p-0"
-                        onPress={() => handleUserAction(user)}
-                      >
-                        <Icon as={MoreVertical} className="h-4 w-4 text-white" />
-                      </Button>
-                    </HStack>
+                <HStack className="justify-between">
+                  <VStack>
+                    <Text className="font-medium">{user.remarkName}</Text>
                     <HStack className="items-center mt-1">
-                      <Text className="text-sm text-gray-500" numberOfLines={1}>
-                        分组：{groups.find(groups => groups.id === user.friendGroupId)?.groupName}
+                      <Text className="text-sm text-gray-500">
+                        分组：{groups.find(g => g.id === user.friendGroupId)?.groupName}
                       </Text>
                     </HStack>
                   </VStack>
+                  <HStack className="space-x-2 gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-9 w-9 rounded-full p-0"
+                      onPress={() => handleUserAction(user)}
+                    >
+                      <Icon as={MoreVertical} className="h-4 w-4 text-red-500" />
+                    </Button>
+                  </HStack>
                 </HStack>
               </Box>
             ))}

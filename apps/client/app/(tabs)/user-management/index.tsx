@@ -3,7 +3,7 @@ import React from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
 
 import { Box } from '@/components/ui/box';
-import { Button } from '@/components/ui/button';
+import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
@@ -21,6 +21,27 @@ import { ProfileTab } from '@/components/user-management/ProfileTab';
 /* 导入上下文提供者 */
 import { UserManagementProvider, useUserManagement } from '@/contexts/UserManagementContext';
 import { AuthorizedUser } from '@/types/user-management';
+
+// 定义样式
+const styles = StyleSheet.create({
+  firstTab: {
+    borderTopLeftRadius: 8,
+    borderBottomLeftRadius: 8,
+  },
+  lastTab: {
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 8,
+  },
+  tabContent: {
+    flex: 1,
+  },
+  activeTab: {
+    display: 'flex',
+  },
+  inactiveTab: {
+    display: 'none',
+  },
+});
 
 // 主页面内容组件
 function UserManagementContent() {
@@ -77,20 +98,16 @@ function UserManagementContent() {
     <Box className="flex-1 bg-white">
       <VStack className="flex-1">
         <HStack className="items-center justify-between px-4 py-6">
-          <HStack className="items-center">
-            <Text className="text-xl font-bold">用户管理</Text>
-          </HStack>
-          <HStack className="space-x-2 gap-4">
-            <Button
-              size="sm"
-              variant="solid"
-              className="h-10 w-10 rounded-full"
-              onPress={() => setShowAddUserDialog(true)}
-            >
-              <Icon as={Plus} className="h-5 w-5 text-white" />
-            </Button>
-          </HStack>
+          <Text className="text-xl font-bold">用户管理</Text>
         </HStack>
+        <VStack className="space-y-4 px-4 py-6 gap-4">
+          <Button className="w-full" onPress={() => setShowAddUserDialog(true)}>
+            <HStack className="items-center space-x-2 gap-2">
+              <Icon as={Plus} className="h-4 w-4 text-white" />
+              <ButtonText>添加新用户</ButtonText>
+            </HStack>
+          </Button>
+        </VStack>
 
         {/* 自定义Tab栏 */}
         <Box className="bg-gray-100 mx-4 rounded-lg overflow-hidden p-2">
@@ -174,23 +191,3 @@ export default function UserManagement() {
     </UserManagementProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  firstTab: {
-    borderTopLeftRadius: 8,
-    borderBottomLeftRadius: 8,
-  },
-  lastTab: {
-    borderTopRightRadius: 8,
-    borderBottomRightRadius: 8,
-  },
-  tabContent: {
-    flex: 1,
-  },
-  activeTab: {
-    display: 'flex',
-  },
-  inactiveTab: {
-    display: 'none',
-  },
-});

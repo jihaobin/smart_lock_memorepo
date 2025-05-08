@@ -8,9 +8,7 @@ import {
   ReactNativeErrorHandler,
 } from '@smart-lock/shared/api';
 import { RelativePathString, useRouter } from 'expo-router';
-import React, { createContext, useContext, useEffect, useMemo } from 'react';
-
-import { useAuth } from './AuthContext';
+import React, { createContext, useContext, useMemo } from 'react';
 
 import { useToast } from '@/hooks/use-toast';
 import queryClient from '@/lib/queryClient';
@@ -65,7 +63,6 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
   }
 
   const router = useRouter();
-  const { token } = useAuth();
 
   // 创建React Native适配器
   const adapter = useMemo(
@@ -123,24 +120,6 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
       errorHandler,
     });
   }, [adapter, errorHandler]);
-
-  // 当token改变时更新Authorization头
-  useEffect(() => {
-    // 使用ApiClient提供的公开方法设置认证令牌
-    if (apiClient && token) {
-      void apiClient.setAuthToken(token).then(() => {
-        queryClient.invalidateQueries();
-      });
-    } else if (apiClient && token === null) {
-      console.log('清楚用户登录');
-      // 当token变为null时清除认证状态
-      void apiClient.clearAuth();
-      // 取消所有正在进行的查询
-      queryClient.cancelQueries();
-      // 重置查询缓存
-      queryClient.clear();
-    }
-  }, [token, apiClient]);
 
   // 清除API状态的方法
   const clearApiState = React.useCallback(async (): Promise<void> => {
