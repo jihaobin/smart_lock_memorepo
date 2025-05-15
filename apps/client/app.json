@@ -12,7 +12,10 @@
       "supportsTablet": true,
       "bundleIdentifier": "y",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSBluetoothAlwaysUsageDescription": "此应用需要使用蓝牙来连接智能门锁设备",
+        "NSBluetoothPeripheralUsageDescription": "此应用需要使用蓝牙来连接智能门锁设备",
+        "NSLocationWhenInUseUsageDescription": "此应用需要使用位置信息来扫描附近的蓝牙设备"
       }
     },
     "android": {
@@ -20,7 +23,15 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.zhang3.new_lock"
+      "package": "com.zhang3.new_lock",
+      "permissions": [
+        "android.permission.BLUETOOTH",
+        "android.permission.BLUETOOTH_ADMIN",
+        "android.permission.BLUETOOTH_SCAN",
+        "android.permission.BLUETOOTH_CONNECT",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -38,7 +49,18 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "./plugins/withAndroidSignature"
+      "./plugins/withAndroidSignature",
+      [
+        "react-native-ble-plx",
+        {
+          "isBackgroundEnabled": false,
+          "modes": ["peripheral", "central"],
+          "bluetoothAlwaysPermission": "允许应用使用蓝牙来连接智能门锁设备",
+          "locationAlwaysAndWhenInUsePermission": "需要位置权限以扫描附近的蓝牙设备",
+          "locationAlwaysPermission": "需要位置权限以扫描附近的蓝牙设备",
+          "locationWhenInUsePermission": "需要位置权限以扫描附近的蓝牙设备"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

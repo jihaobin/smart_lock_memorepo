@@ -1,6 +1,6 @@
 import { Link, router } from 'expo-router';
 import { Plus, Settings, Search, MoreVertical } from 'lucide-react-native';
-import React from 'react';
+import { useMemo } from 'react';
 import { TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 
 // 导入模态框组件
@@ -63,7 +63,7 @@ function DeviceManagementContent() {
   } = ui;
 
   // 构建带设备的分组数据
-  const groupsWithDevices: DeviceGroupWithDevices[] = React.useMemo(() => {
+  const groupsWithDevices: DeviceGroupWithDevices[] = useMemo(() => {
     return deviceGroups.map(group => ({
       id: group.id,
       name: group.name,
@@ -87,7 +87,7 @@ function DeviceManagementContent() {
           <Text className="text-xl font-bold">设备管理</Text>
         </HStack>
         <VStack className="space-y-4 px-4 py-6 gap-4">
-          <Button className="w-full" onPress={() => ui.setShowAddDeviceDialog(true)}>
+          <Button className="w-full" onPress={() => router.push('/device-management/add')}>
             <HStack className="items-center space-x-2 gap-2">
               <Icon as={Plus} className="h-4 w-4 text-white" />
               <ButtonText>绑定新设备</ButtonText>

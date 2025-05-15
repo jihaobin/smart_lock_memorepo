@@ -7,9 +7,8 @@ import { useForm, Controller } from 'react-hook-form';
 import { ScrollView } from 'react-native';
 
 import { Box } from '@/components/ui/box';
-import { Button, ButtonText, ButtonIcon } from '@/components/ui/button';
+import { Button, ButtonText } from '@/components/ui/button';
 import { Heading } from '@/components/ui/heading';
-import { HStack } from '@/components/ui/hstack';
 import { EyeIcon, EyeOffIcon, Icon } from '@/components/ui/icon';
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';

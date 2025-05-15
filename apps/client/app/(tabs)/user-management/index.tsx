@@ -1,4 +1,4 @@
-import { Plus, QrCode } from 'lucide-react-native';
+import { Plus } from 'lucide-react-native';
 import React from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
 
@@ -63,7 +63,6 @@ function UserManagementContent() {
     tabs,
     searchText,
     setSearchText,
-    setShowQRCode,
     isEditing,
     setIsEditing,
     selectedGroup,

@@ -6,6 +6,9 @@ import { useEffect } from 'react';
 import { Platform } from 'react-native';
 import { DevToolsBubble } from 'react-native-react-query-devtools';
 import '../global.css';
+import 'react-native-reanimated';
+import 'react-native-gesture-handler';
+import '@/lib/nativewind-interop';
 
 import Header from '@/components/header';
 import { ToastProvider } from '@/components/toast-provider';

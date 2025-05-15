@@ -1,5 +1,5 @@
 import { Camera, User, Clock, Check } from 'lucide-react-native';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ScrollView, TouchableOpacity, Image } from 'react-native';
 
 import { Box } from '@/components/ui/box';
