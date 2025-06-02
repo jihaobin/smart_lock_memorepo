@@ -5,7 +5,6 @@ import {
   CheckCircle2,
   AlertCircle,
   ArrowLeft,
-  Bluetooth,
   RefreshCw,
   XCircle,
 } from 'lucide-react-native';

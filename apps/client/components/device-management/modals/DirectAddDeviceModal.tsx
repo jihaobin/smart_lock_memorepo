@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/select';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useDeviceManagement } from '@/contexts/DeviceManagementContext';
+import { useDeviceManagement } from '@/contexts/cevice-management-context';
 
 // 定义表单验证模式
 const addDeviceSchema = z.object({

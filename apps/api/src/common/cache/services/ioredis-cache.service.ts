@@ -1,4 +1,4 @@
-import { Inject, Injectable, } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Redis, RedisOptions } from 'ioredis';
 import { AppLoggerService } from 'src/common/logger';
 import { v4 as uuidv4 } from 'uuid';
@@ -24,7 +24,10 @@ export class IoRedisCacheService implements IAdvancedCacheService {
    * 构造函数
    * @param options Redis连接选项
    */
-  constructor(options: IoRedisCacheOptions, @Inject(AppLoggerService) private readonly logger: AppLoggerService) {
+  constructor(
+    options: IoRedisCacheOptions,
+    @Inject(AppLoggerService) private readonly logger: AppLoggerService,
+  ) {
     this.logger.setContext(IoRedisCacheService.name);
 
     this.client = new Redis(options.redisOptions);
@@ -131,7 +134,15 @@ export class IoRedisCacheService implements IAdvancedCacheService {
       const data = await this.client.hget(key, field);
       if (!data) return undefined;
 
-      return JSON.parse(data) as T;
+      try {
+        return JSON.parse(data) as T;
+      } catch (parseError) {
+        this.logger.error(
+          `JSON解析失败: ${key}.${field} 数据内容: ${data}`,
+          parseError,
+        );
+        return data as T;
+      }
     } catch (error) {
       this.logger.warn(`获取哈希字段失败: ${key}.${field}`, error);
       return undefined;

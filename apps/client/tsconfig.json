@@ -5,10 +5,14 @@
     "jsx": "react-native",
     "baseUrl": ".",
     "moduleResolution": "node",
+    "skipLibCheck": true,
+    "incremental": true,
+    "tsBuildInfoFile": "./.tsbuildinfo",
     "paths": {
       "@/*": ["./*"],
       "tailwind.config": ["./tailwind.config.js"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts", "nativewind-env.d.ts"]
+  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts", "nativewind-env.d.ts"],
+  "exclude": ["node_modules", "**/*.test.*", "**/__tests__/**", ".expo", "android", "ios"]
 }

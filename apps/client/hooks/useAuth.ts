@@ -19,8 +19,8 @@ import { useState } from 'react';
 //   }
 // }
 
-import { useApi } from '../contexts/ApiContext';
-import { useAuth as useAuthContext } from '../contexts/AuthContext';
+import { useApi } from '../contexts/api-context';
+import { useAuth as useAuthContext } from '../contexts/auth-context';
 
 interface ResetResponse {
   success: boolean;

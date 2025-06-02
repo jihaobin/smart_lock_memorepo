@@ -140,7 +140,6 @@ export class ApiClient {
         try {
           // 获取认证令牌
           const token = await this.platformAdapter.getStorage().getItem(this.config.tokenKey!);
-          console.log('token', token);
           if (token) {
             config.headers.Authorization = `Bearer ${token}`;
           }

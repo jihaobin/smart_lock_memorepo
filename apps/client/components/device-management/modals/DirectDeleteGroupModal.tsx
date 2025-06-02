@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
-import { useDeviceManagement } from '@/contexts/DeviceManagementContext';
+import { useDeviceManagement } from '@/contexts/cevice-management-context';
 import type { DeviceGroup } from '@/types/device-management';
 
 /**

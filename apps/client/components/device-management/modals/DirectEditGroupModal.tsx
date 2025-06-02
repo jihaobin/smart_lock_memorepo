@@ -9,7 +9,7 @@ import { ModalFooter } from '../../ModalFooter';
 import { Input, InputField } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useDeviceManagement } from '@/contexts/DeviceManagementContext';
+import { useDeviceManagement } from '@/contexts/cevice-management-context';
 import type { DeviceGroup } from '@/types/device-management';
 
 // 定义表单验证模式

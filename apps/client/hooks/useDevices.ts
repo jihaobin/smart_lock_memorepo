@@ -27,6 +27,8 @@ export function useDevices() {
   const { mutateAsync: updateStatusMutation } = deviceManagementApi.useUpdateDeviceStatus();
   const { mutateAsync: updateNameMutation } = deviceManagementApi.useUpdateDeviceName();
   const { mutateAsync: assignToGroupMutation } = deviceManagementApi.useAssignDeviceToGroup();
+  const { mutateAsync: remoteUnlockMutation, isPending: isUnlocking } =
+    deviceManagementApi.useRemoteUnlock();
 
   // 过滤设备
   const filterDevices = useCallback(
@@ -101,6 +103,34 @@ export function useDevices() {
     }
   };
 
+  // 远程开锁
+  const remoteUnlock = async (deviceId: string) => {
+    try {
+      const result = await remoteUnlockMutation(deviceId);
+      if (result.success) {
+        toast({
+          title: '开锁命令已发送',
+          description: '请等待设备执行开锁操作',
+        });
+      } else {
+        toast({
+          title: '开锁操作失败',
+          description: result.message || '无法发送远程开锁命令，请稍后重试',
+          variant: 'destructive',
+        });
+      }
+      return result;
+    } catch (error) {
+      console.error('远程开锁失败:', error);
+      toast({
+        title: '发送开锁命令失败',
+        description: '远程开锁请求发送失败，请稍后重试',
+        variant: 'destructive',
+      });
+      throw error;
+    }
+  };
+
   // 设备操作方法
   const operations = {
     // 更新设备状态（锁定/解锁）
@@ -164,6 +194,17 @@ export function useDevices() {
     },
   };
 
+  // 根据设备ID获取设备名称
+  const getDeviceNameById = (id: string) => {
+    const findDevice = devices.find(item => {
+      return item.id === id;
+    });
+    if (!findDevice) {
+      return undefined;
+    }
+    return getDeviceDisplayName(findDevice);
+  };
+
   return {
     // 数据
     devices,
@@ -173,13 +214,16 @@ export function useDevices() {
     createDevice,
     updateDevice,
     deleteDevice,
+    remoteUnlock,
     operations,
     refetch,
+    getDeviceNameById,
 
     // 状态
     status: {
       isLoading,
-      isMutating: isBinding || isUpdating || isDeleting,
+      isUnlocking,
+      isMutating: isBinding || isUpdating || isDeleting || isUnlocking,
     },
   };
 }

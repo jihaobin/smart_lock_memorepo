@@ -2,6 +2,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { PassportModule } from '@nestjs/passport';
+import { ScheduleModule } from '@nestjs/schedule';
 
 import { STSModule } from './common';
 import { JwtAuthGuard } from './common/auth/jwt-auth.guard';
@@ -19,6 +20,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { DeviceModule } from './modules/device/device.module';
 import { FriendModule } from './modules/friend/friend.module';
 import { NotificationModule } from './modules/notification/notification.module';
+import { TemporaryPasswordModule } from './modules/temporary-password/temporary-password.module';
+import { UnLockRecordModule } from './modules/unLockRecord/unLockRecord.module';
 
 @Module({
   imports: [
@@ -43,6 +46,9 @@ import { NotificationModule } from './modules/notification/notification.module';
     ConfigModule,
     DatabaseModule,
 
+    // 定时任务模块
+    ScheduleModule.forRoot(),
+
     // JWT 模块
     JwtSharedModule,
 
@@ -59,6 +65,8 @@ import { NotificationModule } from './modules/notification/notification.module';
     NotificationModule,
     FriendModule,
     DeviceModule,
+    TemporaryPasswordModule,
+    UnLockRecordModule,
     AdminModule, // 添加管理员模块
 
     // 缓存模块 - 使用redis

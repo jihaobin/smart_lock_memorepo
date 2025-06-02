@@ -1,8 +1,8 @@
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
-import { ScheduleModule } from '@nestjs/schedule';
 import { SmsModule } from 'src/common/sms';
 
+import { UnLockRecordService } from '../unLockRecord/unLockRecord.service';
 // 导入通知服务
 import { AppNotificationModule } from './channels/app-notification/app-notification.module';
 import { AppNotificationService } from './channels/app-notification.service';
@@ -21,9 +21,6 @@ import { NotificationProcessor } from './queues/notification.processor';
 
 @Module({
   imports: [
-    // 添加ScheduleModule以支持定时任务
-    ScheduleModule.forRoot(),
-
     // 注册通知队列
     BullModule.registerQueue({
       name: 'notification-queue',
@@ -50,6 +47,7 @@ import { NotificationProcessor } from './queues/notification.processor';
     SmsNotificationService,
     CallNotificationService,
     CriticalNotificationService,
+    UnLockRecordService,
   ],
   exports: [NotificationService, NotificationQueueService],
 })

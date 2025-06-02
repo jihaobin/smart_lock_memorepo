@@ -1,5 +1,6 @@
 'use client';
 
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Wifi,
   RefreshCw,
@@ -13,6 +14,7 @@ import {
   EyeOff,
 } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import {
   View,
   Text,
@@ -23,8 +25,6 @@ import {
   Platform,
 } from 'react-native';
 import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 
 import { Button, ButtonText } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
@@ -180,6 +180,7 @@ export function WifiSetup({ onComplete, onBack, className = '' }: WifiSetupProps
     updateDeviceConfig,
     setCurrentStep,
     clearError,
+    configureDeviceWifiConnection,
   } = useAddDevice();
 
   // 本地状态
@@ -301,8 +302,11 @@ export function WifiSetup({ onComplete, onBack, className = '' }: WifiSetupProps
   };
 
   // 提交WiFi配置
-  const onSubmit = (data: WifiConfigFormData) => {
+  const onSubmit = async (data: WifiConfigFormData) => {
+    console.log('开始提交', data);
     updateDeviceConfig(data);
+    await configureDeviceWifiConnection(data);
+    console.log('配置完成');
 
     // 继续到下一步
     if (onComplete) {
@@ -453,7 +457,7 @@ export function WifiSetup({ onComplete, onBack, className = '' }: WifiSetupProps
             <TextInput
               className="bg-white border border-gray-300 rounded-lg px-4 py-3 text-base w-full pr-10"
               placeholder="输入WiFi密码"
-              secureTextEntry={!showPassword}
+              // secureTextEntry={!showPassword}
               value={watch('password')}
               onChangeText={value => setValue('password', value, { shouldValidate: true })}
             />

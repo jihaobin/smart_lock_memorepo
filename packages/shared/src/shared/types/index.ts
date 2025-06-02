@@ -20,3 +20,7 @@ export * from './user';
 export * from './notification';
 
 export * from './device';
+
+export * from './unlockRecord';
+
+export * from './temporaryPassword';

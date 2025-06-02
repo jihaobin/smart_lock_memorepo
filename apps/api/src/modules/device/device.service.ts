@@ -107,4 +107,23 @@ export class DeviceService {
   async getDevicesWithGroups(userId: string) {
     return this.deviceRepository.getDevicesWithGroups(userId);
   }
+
+  /**
+   * 更新设备在线状态
+   * @param deviceId 设备ID
+   * @param isOnline 是否在线
+   * @param socketId socket连接ID
+   * @returns 更新后的设备信息
+   */
+  async updateDeviceOnlineStatus(
+    deviceId: string,
+    isOnline: boolean,
+    socketId?: string,
+  ) {
+    return this.deviceRepository.updateDeviceOnlineStatus(
+      deviceId,
+      isOnline,
+      socketId,
+    );
+  }
 }

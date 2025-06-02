@@ -229,4 +229,45 @@ export class DeviceRepository {
       },
     });
   }
+
+  /**
+   * 更新设备在线状态
+   * @param deviceId 设备ID
+   * @param isOnline 是否在线
+   * @param socketId socket连接ID
+   * @returns 更新后的设备信息
+   */
+  async updateDeviceOnlineStatus(
+    deviceId: string,
+    isOnline: boolean,
+    socketId?: string,
+  ) {
+    const device = await this.db.query.devices.findFirst({
+      where: eq(schema.devices.id, deviceId),
+    });
+
+    if (!device) {
+      throw new Error(`设备${deviceId}不存在`);
+    }
+
+    // 获取现有状态
+    const currentStatus = device.status;
+    const newStatus = {
+      ...currentStatus,
+      isOnline,
+      lastConnectionTime: new Date().toISOString(),
+    };
+
+    if (socketId) {
+      newStatus.connectionId = socketId;
+    }
+
+    return await this.db
+      .update(schema.devices)
+      .set({
+        status: newStatus,
+      })
+      .where(eq(schema.devices.id, deviceId))
+      .returning();
+  }
 }

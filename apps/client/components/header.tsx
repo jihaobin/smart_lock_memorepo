@@ -7,8 +7,8 @@ import { Icon } from './ui/icon';
 import { Box } from '@/components/ui/box';
 import { HStack } from '@/components/ui/hstack';
 import { Text } from '@/components/ui/text';
-import { useApi } from '@/contexts/ApiContext';
-import { useAuth } from '@/contexts/AuthContext';
+import { useApi } from '@/contexts/api-context';
+import { useAuth } from '@/contexts/auth-context';
 
 export default function Header() {
   const { user, logout } = useAuth();

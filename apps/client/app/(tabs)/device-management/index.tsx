@@ -20,7 +20,10 @@ import { Input, InputField, InputIcon } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 // 导入上下文提供者
-import { DeviceManagementProvider, useDeviceManagement } from '@/contexts/DeviceManagementContext';
+import {
+  DeviceManagementProvider,
+  useDeviceManagement,
+} from '@/contexts/cevice-management-context';
 import { DeviceViewModel } from '@/types/device-management';
 import {
   getDeviceDisplayName,

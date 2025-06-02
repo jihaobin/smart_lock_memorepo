@@ -15,7 +15,8 @@
         "ITSAppUsesNonExemptEncryption": false,
         "NSBluetoothAlwaysUsageDescription": "此应用需要使用蓝牙来连接智能门锁设备",
         "NSBluetoothPeripheralUsageDescription": "此应用需要使用蓝牙来连接智能门锁设备",
-        "NSLocationWhenInUseUsageDescription": "此应用需要使用位置信息来扫描附近的蓝牙设备"
+        "NSLocationWhenInUseUsageDescription": "此应用需要使用位置信息来扫描附近的蓝牙设备",
+        "NSLocalNetworkUsageDescription": "此应用需要使用位置信息来扫描附近的wifi网络来给门锁配置wifi"
       }
     },
     "android": {
@@ -23,7 +24,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.zhang3.new_lock",
+      "package": "com.yxsz.smart_lock",
       "permissions": [
         "android.permission.BLUETOOTH",
         "android.permission.BLUETOOTH_ADMIN",
@@ -59,6 +60,13 @@
           "locationAlwaysAndWhenInUsePermission": "需要位置权限以扫描附近的蓝牙设备",
           "locationAlwaysPermission": "需要位置权限以扫描附近的蓝牙设备",
           "locationWhenInUsePermission": "需要位置权限以扫描附近的蓝牙设备"
+        }
+      ],
+      "react-native-wifi-reborn",
+      [
+        "expo-media-library",
+        {
+          "savePhotosPermission": "用于将设备摄像头拍摄的图片保存到相册中"
         }
       ]
     ],

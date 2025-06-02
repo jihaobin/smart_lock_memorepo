@@ -1,7 +1,7 @@
 import { NotiFIcationListItem, GetNotificationsSchema } from '@smart-lock/shared';
 import { z } from 'zod';
 
-import { useApi } from '@/contexts/ApiContext';
+import { useApi } from '@/contexts/api-context';
 
 /**
  * 获取通知列表的响应类型

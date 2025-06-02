@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/modal';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useDeviceManagement } from '@/contexts/DeviceManagementContext';
+import { useDeviceManagement } from '@/contexts/cevice-management-context';
 import type { Device } from '@/types/device-management';
 
 /**

@@ -12,6 +12,7 @@ import {
   uniqueIndex,
   index,
 } from 'drizzle-orm/pg-core';
+import { TemporaryPasswordInfo } from 'shared/types/temporaryPassword';
 
 import { createId } from '.';
 
@@ -63,8 +64,20 @@ export const devices = pgTable(
         isOnline: boolean;
         // 门是否开启
         isOpen: boolean;
+        // 最后一次连接时间
+        lastConnectionTime: string;
+        // 连接ID
+        connectionId: string;
       }>()
-      .notNull(), // 设备状态
+      .default({
+        batteryLevel: 0,
+        firmwareVersion: 0,
+        isOnline: false,
+        isOpen: false,
+        lastConnectionTime: '',
+        connectionId: '',
+      })
+      .notNull(),
     hasCamera: boolean('has_camera').default(false),
     deviceGroupId: char('device_group_id', { length: 5 }), // 新增字段：所属分组，可为 null
     nikeName: varchar('nike_name', { length: 255 }), // 新增字段：设备昵称
@@ -167,12 +180,16 @@ export const temporaryPasswords = pgTable(
       .primaryKey()
       .$default(() => createId())
       .unique(),
+    name: varchar('name', { length: 255 }).default('临时密码').notNull(), // 密码名称(备注)
     creatorId: char('creator_id', { length: 5 }).notNull(), // 创建者
     deviceId: char('device_id', { length: 5 }).notNull(), // 关联设备
     password: varchar('password', { length: 50 }).notNull(),
     expiresAt: timestamp('expires_at'), // 时间过期
     remainingUses: integer('remaining_uses'), // 剩余次数
-    recipients: jsonb('recipients').$type<string[]>().default([]), // 接收人列表
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date()),
   },
   table => [
     index('temp_pass_device_expires_idx').on(table.deviceId, table.expiresAt.desc()), // 优化密码过期查询，按过期时间倒序
@@ -189,26 +206,50 @@ export const unlockRecords = pgTable(
       .$default(() => createId())
       .unique(),
     deviceId: char('device_id', { length: 5 }).notNull(), // 关联设备
-    userId: char('user_id', { length: 5 }), // 可能为空（临时密码开门）
+    userId: char('user_id', { length: 5 }), // 可能为空（密码，钥匙开锁，NFC开锁）
     unlockType: varchar('unlock_type', {
       enum: [
         'remote',
-        'temporary_password',
-        'direct',
+        'key',
         'nfc',
+        'temporary_password',
         'permanent_password',
         'face',
         'eye',
         'fingerprint',
       ],
-    }).notNull(), // 开锁类型 (远程开锁、临时密码开锁、钥匙开锁，NFC开锁，永久密码开锁，人脸识别开锁，瞳孔识别开锁，指纹开锁，)
-    temporaryPasswordId: char('temporary_password_id', { length: 5 }), // 关联临时密码
+    }).notNull(), // 开锁类型 (临时密码开锁、永久密码开锁、远程开锁、钥匙开锁，NFC开锁，人脸识别开锁，瞳孔识别开锁，指纹开锁)
     timestamp: timestamp('timestamp').defaultNow(),
+    unlockData: jsonb('unlock_data')
+      .$type<{
+        // 密码开锁/临时密码开锁
+        password?: string;
+        temporaryInfo?: TemporaryPasswordInfo;
+        // 人脸开锁
+        faceFeatures?: string;
+        faceMatchScore?: number;
+        // 瞳孔开锁
+        eyeFeatures?: string;
+        eyeMatchScore?: number;
+        // 指纹开锁
+        fingerprintFeatures?: string;
+        fingerprintMatchScore?: number;
+        // 远程开锁是否成功
+        isRemoteSuccess?: boolean;
+        // 远程开锁时摄像头拍摄的图片
+        remoteImage?: string;
+        // 好友开锁
+        friendName?: string;
+        // NFC开锁
+        nfcId?: string;
+      }>()
+      .default({})
+      .notNull(),
   },
-  // 钥匙，临时密码，永久密码，NCF 人脸，瞳孔，指纹，远程开锁，
   table => [
     index('unlock_device_time_idx').on(table.deviceId, table.timestamp.desc()), // 优化设备解锁历史查询，按时间倒序
     index('unlock_user_time_idx').on(table.userId, table.timestamp.desc()), // 优化用户解锁历史查询，按时间倒序
+    index('unlock_type_idx').on(table.unlockType), // 新增索引，优化按开锁类型查询
   ]
 );
 
@@ -234,22 +275,31 @@ export const notifications = pgTable(
         'firmware_update', // 固件更新
       ],
     }).notNull(),
-    data: jsonb('data').$type<{
-      temp_password?: string; // 临时密码
-      device_battery?: number; // 设备电量
-      device_firmware_version?: string; // 设备固件版本
-      openType?:
-        | 'remote'
-        | 'temporary_password'
-        | 'direct'
-        | 'nfc'
-        | 'permanent_password'
-        | 'face'
-        | 'eye'
-        | 'fingerprint'; // 开门方式
-      openFriend?: string; // 开门好友
-      noOpenTime?: number; // 未开门时长
-    }>(),
+    data: jsonb('data')
+      .$type<{
+        temp_password?: string; // 临时密码
+        device_battery?: number; // 设备电量
+        device_firmware_version?: string; // 设备固件版本
+        openType?:
+          | 'remote'
+          | 'temporary_password'
+          | 'key'
+          | 'nfc'
+          | 'permanent_password'
+          | 'face'
+          | 'eye'
+          | 'fingerprint'; // 开门方式
+        openFriend?: string; // 开门好友
+        noOpenTime?: number; // 未开门时长
+      }>()
+      .default({
+        temp_password: '',
+        device_battery: 100,
+        device_firmware_version: '1.0.0',
+        openType: 'remote',
+        openFriend: '',
+        noOpenTime: 0,
+      }),
     message: text('message').notNull(),
     timestamp: timestamp('timestamp').defaultNow(),
     deviceId: char('device_id', { length: 5 }), // 关联设备
@@ -402,7 +452,7 @@ export const friendsRelations = relations(friends, ({ one }) => ({
  * 一个临时密码可以拥有多个开锁记录
  * 一个临时密码只能对应一个设备
  */
-export const temporaryPasswordsRelations = relations(temporaryPasswords, ({ one, many }) => ({
+export const temporaryPasswordsRelations = relations(temporaryPasswords, ({ one }) => ({
   device: one(devices, {
     fields: [temporaryPasswords.deviceId],
     references: [devices.id],
@@ -411,7 +461,6 @@ export const temporaryPasswordsRelations = relations(temporaryPasswords, ({ one,
     fields: [temporaryPasswords.creatorId],
     references: [users.id],
   }),
-  unlockRecords: many(unlockRecords), // 一个临时密码可以被多个开锁记录持有
 }));
 
 /** 开锁记录关系
@@ -428,10 +477,6 @@ export const unlockRecordsRelations = relations(unlockRecords, ({ one }) => ({
   user: one(users, {
     fields: [unlockRecords.userId],
     references: [users.id],
-  }),
-  temporaryPassword: one(temporaryPasswords, {
-    fields: [unlockRecords.temporaryPasswordId],
-    references: [temporaryPasswords.id],
   }),
 }));
 

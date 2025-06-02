@@ -1,16 +1,17 @@
 'use client';
 
+import { CheckCircle2 } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { View, Text } from 'react-native';
 
 import { BluetoothScanner } from './bluetooth-scanner';
 import { DeviceConnection } from './device-connection';
 import { WifiSetup } from './wifi-setup';
-import { useAddDevice } from '@/contexts/add-device-context';
-import { AddDeviceStep } from '@/types/add-device';
-import { CheckCircle2 } from 'lucide-react-native';
+
 import { Button, ButtonText } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
+import { useAddDevice } from '@/contexts/add-device-context';
+import { AddDeviceStep } from '@/types/add-device';
 
 interface AddDeviceStepperProps {
   initialStep?: AddDeviceStep;

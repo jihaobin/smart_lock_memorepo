@@ -1,8 +1,8 @@
 import {
-  ItemData,
   NOTIFICATION_ENUM,
   OPEN_TYPE_ENUM,
   IMPORTANCE_LEVEL,
+  NotificaitonItem,
 } from '@smart-lock/shared';
 
 /**
@@ -11,12 +11,12 @@ import {
  */
 export function generateNotificationMessage(
   type: string,
-  data: ItemData = {},
+  data: NotificaitonItem = {},
 ): string {
   // 开门通知
   if (type === NOTIFICATION_ENUM.DEVICE_OPEN) {
     if (data.openType === OPEN_TYPE_ENUM.TEMPORARY_PASSWORD) {
-      return `临时密码 #${data.temp_password || ''} 已被使用`;
+      return `临时密码 #${data.unlockData?.password || ''} 已被使用`;
     }
 
     if (data.openType === OPEN_TYPE_ENUM.FINGERPRINT) {

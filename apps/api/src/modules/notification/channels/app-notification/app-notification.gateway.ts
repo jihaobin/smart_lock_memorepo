@@ -17,6 +17,7 @@ import { Server, Socket } from 'socket.io';
     origin: '*',
     credentials: true,
   },
+  namespace: 'notification',
 })
 export class AppNotificationGateway {
   @WebSocketServer()

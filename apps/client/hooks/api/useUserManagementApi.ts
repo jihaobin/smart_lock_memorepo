@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 
-import { useApi } from '../../contexts/ApiContext';
+import { useApi } from '../../contexts/api-context';
 import { AuthorizedUser, Group } from '../../types/user-management';
 
 import queryClient from '@/lib/queryClient';

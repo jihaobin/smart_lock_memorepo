@@ -11,6 +11,8 @@ import {
 import { Request } from 'express';
 
 import { DeviceService } from './device.service';
+import { DeviceGateway } from './gateways/device.gateway';
+import { DeviceStatusService } from './services/device-status.service';
 
 /**
  * 设备管理控制器
@@ -18,7 +20,11 @@ import { DeviceService } from './device.service';
  */
 @Controller('device')
 export class DeviceController {
-  constructor(private readonly deviceService: DeviceService) {}
+  constructor(
+    private readonly deviceService: DeviceService,
+    private readonly deviceGateway: DeviceGateway,
+    private readonly deviceStatusService: DeviceStatusService,
+  ) {}
 
   // 设备分组管理接口
   /**
@@ -143,5 +149,40 @@ export class DeviceController {
   @Get('group/:groupId')
   async getDevicesByGroupId(@Param('groupId') groupId: string) {
     return this.deviceService.getDevicesByGroupId(groupId);
+  }
+
+  /**
+   * 远程开锁
+   * @route POST /device/unlock/:deviceId
+   * @param deviceId 设备ID
+   * @param body.requireImage 是否需要设备拍摄图片，默认为true
+   * @returns 开锁结果
+   * @description
+   * 该接口会立即返回开锁命令已发送的结果，实际的开锁操作由设备执行。
+   * 设备执行开锁后，会通过WebSocket将结果发送到服务器，服务器会将结果推送到手机端。
+   * 手机端需要通过WebSocket连接监听 'unlockResult' 事件来获取开锁结果。
+   * 如果requireImage为true，设备还会拍摄图片并发送回来，图片会保存到开锁记录中。
+   */
+  @Post('unlock/:deviceId')
+  async remoteUnlock(
+    @Param('deviceId') deviceId: string,
+    @Req() req: Request,
+    @Body() body: { requireImage?: boolean } = {},
+  ) {
+    const userId = req.user.userId;
+    const requireImage = body.requireImage !== false; // 默认为true
+
+    // 发送开锁命令
+    const unlockResult = await this.deviceGateway.sendUnlockCommand(
+      deviceId,
+      userId,
+      requireImage,
+    );
+
+    if (unlockResult) {
+      return { success: true, message: '开锁命令已发送，请等待设备反馈结果' };
+    } else {
+      return { success: false, message: '开锁命令发送失败，请稍后重试' };
+    }
   }
 }

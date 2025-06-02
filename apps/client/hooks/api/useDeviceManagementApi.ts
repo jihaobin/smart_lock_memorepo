@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 
-import { useApi } from '../../contexts/ApiContext';
+import { useApi } from '../../contexts/api-context';
 import type { Device, DeviceGroup } from '../../types/device-management';
 
 import queryClient from '@/lib/queryClient';
@@ -222,6 +222,25 @@ export function useDeviceManagementApi() {
     );
   };
 
+  /**
+   * 远程开锁API
+   * 使用POST /device/unlock/:deviceId
+   */
+  const useRemoteUnlock = () => {
+    const queryClient = useQueryClient();
+
+    return useApiMutation<{ success: boolean; message: string }, string>(`/device/unlock`, {
+      mutationFn: deviceId =>
+        apiClient.post<{ success: boolean; message: string }>(`/device/unlock/${deviceId}`),
+      onSuccess: (_, deviceId) => {
+        // 成功后刷新设备状态
+        queryClient.invalidateQueries({ queryKey: queryKeys.devices });
+        queryClient.invalidateQueries({ queryKey: queryKeys.devicesWithGroups });
+        queryClient.invalidateQueries({ queryKey: queryKeys.device(deviceId) });
+      },
+    });
+  };
+
   return {
     // 查询钩子
     useDevices,
@@ -242,5 +261,6 @@ export function useDeviceManagementApi() {
     useUpdateDeviceStatus,
     useUpdateDeviceName,
     useAssignDeviceToGroup,
+    useRemoteUnlock,
   };
 }

@@ -45,7 +45,7 @@ const AddDeviceContext = createContext<{
   scanWifiNetworks: () => Promise<void>;
   selectWifiNetwork: (network: WifiNetwork) => void;
   updateDeviceConfig: (config: Partial<DeviceConfig>) => void;
-  configureDeviceWifiConnection: () => Promise<void>;
+  configureDeviceWifiConnection: (data: Partial<DeviceConfig>) => Promise<void>;
   resetAddDeviceState: () => void;
   handleError: (error: AddDeviceError) => void;
   clearError: () => void;
@@ -60,7 +60,7 @@ const AddDeviceContext = createContext<{
   scanWifiNetworks: async () => {},
   selectWifiNetwork: () => {},
   updateDeviceConfig: () => {},
-  configureDeviceWifiConnection: async () => {},
+  configureDeviceWifiConnection: async (data: Partial<DeviceConfig>) => {},
   resetAddDeviceState: () => {},
   handleError: () => {},
   clearError: () => {},
@@ -219,7 +219,7 @@ export const AddDeviceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, []);
 
   // 更新设备配置
-  const updateDeviceConfig = useCallback((config: Partial<DeviceConfig>) => {
+  const updateDeviceConfig = (config: Partial<DeviceConfig>) => {
     setState(prev => ({
       ...prev,
       deviceConfig: {
@@ -227,10 +227,13 @@ export const AddDeviceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         ...config,
       },
     }));
-  }, []);
+  };
+
+  const { deviceConfig } = state;
 
   // 配置设备WiFi连接
-  const configureDeviceWifiConnection = useCallback(async () => {
+  const configureDeviceWifiConnection = async (data: Partial<DeviceConfig>) => {
+    console.log(1);
     if (!connectedDevice) {
       setState(prev => ({
         ...prev,
@@ -242,9 +245,7 @@ export const AddDeviceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       return;
     }
 
-    const { deviceConfig } = state;
-
-    if (!deviceConfig.ssid || !deviceConfig.password || !deviceConfig.deviceName) {
+    if (!deviceConfig.ssid || !data.password || !data.deviceName) {
       setState(prev => ({
         ...prev,
         error: {
@@ -255,16 +256,18 @@ export const AddDeviceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       return;
     }
 
+    console.log(2);
+
     setState(prev => ({ ...prev, error: null }));
 
     await configureDeviceWifi(
       connectedDevice,
       {
-        ssid: deviceConfig.ssid,
-        password: deviceConfig.password || '',
-        deviceName: deviceConfig.deviceName || '',
-        autoConnect: deviceConfig.autoConnect || false,
-        saveNetwork: deviceConfig.saveNetwork || false,
+        ssid: deviceConfig.ssid!,
+        password: data.password || '',
+        deviceName: data.deviceName || '',
+        autoConnect: data.autoConnect || false,
+        saveNetwork: data.saveNetwork || false,
       },
       () => {
         setState(prev => ({
@@ -273,10 +276,11 @@ export const AddDeviceProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         }));
       },
       error => {
+        console.log(error);
         setState(prev => ({ ...prev, error }));
       }
     );
-  }, [connectedDevice, state.deviceConfig]);
+  };
 
   // 重置状态
   const resetAddDeviceState = useCallback(() => {

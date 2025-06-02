@@ -1,12 +1,13 @@
 import { PermissionsAndroid, Platform } from 'react-native';
 import { BleManager, Device, State, Subscription, ScanMode } from 'react-native-ble-plx';
+import { btoa, atob } from 'react-native-quick-base64';
+import WifiManager from 'react-native-wifi-reborn';
 
 import { BluetoothDevice, WifiNetwork, WiFiSecurity, AddDeviceError } from '../types/add-device';
 
 // 蓝牙服务和特性UUID
-const SERVICE_UUID = '00001234-0000-1000-8000-00805f9b34fb'; // 示例UUID，需要替换为实际的门锁服务UUID
-const WIFI_LIST_CHARACTERISTIC = '00002345-0000-1000-8000-00805f9b34fb'; // 示例UUID，需要替换为实际的特性UUID
-const WIFI_CONFIG_CHARACTERISTIC = '00003456-0000-1000-8000-00805f9b34fb'; // 示例UUID，需要替换为实际的特性UUID
+const SERVICE_UUID = '1775244d-6b43-439b-877c-060f2d9bed07'; // 示例UUID，需要替换为实际的门锁服务UUID
+const WIFI_CONFIG_CHARACTERISTIC = 'prov-config'; // 示例UUID，需要替换为实际的特性UUID
 
 // 超时设置
 const SCAN_TIMEOUT = 10000; // 10秒
@@ -252,6 +253,16 @@ export const connectToDevice = async (
       discoveredDevices.set(deviceId, updatedDevice);
     }
 
+    console.log('Discovered services and characteristics');
+
+    // 获取所有服务
+    const services = await device.services();
+
+    // 遍历服务和特征
+    for (const service of services) {
+      console.log(`Service UUID: ${service.uuid}`);
+    }
+
     onConnected(deviceWithServices);
   } catch (error) {
     onError({
@@ -285,16 +296,124 @@ export const disconnectDevice = async (deviceId: string): Promise<void> => {
 };
 
 /**
- * WiFi网络数据接口，用于设备返回的原始数据
+ * 检查并请求WiFi扫描所需权限
  */
-interface WifiData {
-  ssid: string;
-  bssid: string;
-  rssi: number;
-  security: string;
-  frequency?: number;
-  channel?: number;
-}
+export const checkWifiPermissions = async (): Promise<boolean> => {
+  // iOS不需要额外权限
+  if (Platform.OS === 'ios') {
+    return true;
+  }
+
+  // Android需要ACCESS_FINE_LOCATION权限
+  const granted = await PermissionsAndroid.request(
+    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+    {
+      title: 'WiFi扫描需要位置权限',
+      message: '应用需要位置权限来扫描WiFi网络',
+      buttonNegative: '拒绝',
+      buttonPositive: '允许',
+    }
+  );
+
+  return granted === PermissionsAndroid.RESULTS.GRANTED;
+};
+
+/**
+ * 使用手机扫描WiFi网络
+ * @param onNetworksFound 发现网络的回调
+ * @param onError 错误回调
+ * @param timeoutMs 扫描超时时间
+ */
+export const scanPhoneWifiNetworks = async (
+  onNetworksFound: (networks: WifiNetwork[]) => void,
+  onError: (error: AddDeviceError) => void,
+  timeoutMs: number = SCAN_TIMEOUT
+): Promise<void> => {
+  try {
+    // 检查WiFi扫描权限
+    const hasPermission = await checkWifiPermissions();
+    if (!hasPermission) {
+      onError({
+        code: 'permission_denied',
+        message: '需要位置权限以扫描WiFi网络',
+      });
+      return;
+    }
+
+    // 设置超时
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('WiFi扫描超时')), timeoutMs);
+    });
+
+    // 定义从react-native-wifi-reborn获取的WiFi条目类型
+    interface WifiEntry {
+      SSID: string;
+      BSSID: string;
+      level: number; // level在react-native-wifi-reborn中是数字类型
+      capabilities: string;
+      frequency?: number;
+      timestamp?: number;
+    }
+
+    // 开始扫描WiFi
+    try {
+      const scanPromise = WifiManager.loadWifiList() as Promise<WifiEntry[]>;
+      const wifiList = await Promise.race([scanPromise, timeoutPromise]);
+
+      // 转换为应用内部WiFi网络类型
+      const networks: WifiNetwork[] = wifiList.map(wifi => ({
+        ssid: wifi.SSID,
+        bssid: wifi.BSSID,
+        rssi: wifi.level, // 直接使用level作为rssi，不需要parseInt
+        security: mapWifiSecurityType(wifi.capabilities || ''),
+        frequency: wifi.frequency,
+        requiresPassword: !wifi.capabilities?.includes('OPEN') && wifi.capabilities !== '',
+      }));
+
+      // 按信号强度排序
+      networks.sort((a, b) => b.rssi - a.rssi);
+
+      onNetworksFound(networks);
+    } catch (error) {
+      if (error instanceof Error && error.message === 'WiFi扫描超时') {
+        onError({
+          code: 'timeout',
+          message: 'WiFi扫描超时，请重试',
+          retry: () => scanPhoneWifiNetworks(onNetworksFound, onError, timeoutMs),
+        });
+      } else {
+        throw error;
+      }
+    }
+  } catch (error) {
+    onError({
+      code: 'wifi_scan_error',
+      message: '获取WiFi列表失败',
+      context: { error },
+      retry: () => scanPhoneWifiNetworks(onNetworksFound, onError, timeoutMs),
+    });
+  }
+};
+
+/**
+ * 将WiFi能力字符串映射到安全类型
+ */
+const mapWifiSecurityType = (capabilities: string): WiFiSecurity => {
+  const capsUpper = capabilities.toUpperCase();
+  if (capsUpper.includes('WPA3')) {
+    return WiFiSecurity.WPA3;
+  } else if (capsUpper.includes('WPA2')) {
+    return WiFiSecurity.WPA2;
+  } else if (capsUpper.includes('WPA')) {
+    return WiFiSecurity.WPA;
+  } else if (capsUpper.includes('WEP')) {
+    return WiFiSecurity.WEP;
+  } else if (capsUpper.includes('OPEN') || capsUpper === '') {
+    return WiFiSecurity.OPEN;
+  } else {
+    return WiFiSecurity.UNKNOWN;
+  }
+};
 
 /**
  * 获取WiFi网络列表
@@ -307,57 +426,8 @@ export const getWifiNetworks = async (
   onNetworksFound: (networks: WifiNetwork[]) => void,
   onError: (error: AddDeviceError) => void
 ): Promise<void> => {
-  try {
-    // 读取WiFi列表特性
-    const characteristic = await device.readCharacteristicForService(
-      SERVICE_UUID,
-      WIFI_LIST_CHARACTERISTIC
-    );
-
-    if (characteristic.value) {
-      // 解码Base64值
-      const value = Buffer.from(characteristic.value, 'base64').toString('utf8');
-
-      try {
-        // 假设设备返回JSON格式的WiFi列表
-        const wifiData = JSON.parse(value) as WifiData[];
-
-        // 转换为应用内部WiFi网络类型
-        const networks: WifiNetwork[] = wifiData.map(wifi => ({
-          ssid: wifi.ssid,
-          bssid: wifi.bssid,
-          rssi: wifi.rssi,
-          security: mapSecurityType(wifi.security),
-          frequency: wifi.frequency,
-          channel: wifi.channel,
-          requiresPassword: wifi.security !== 'OPEN',
-        }));
-
-        // 按信号强度排序
-        networks.sort((a, b) => b.rssi - a.rssi);
-
-        onNetworksFound(networks);
-      } catch (parseError) {
-        onError({
-          code: 'parse_error',
-          message: '解析WiFi列表失败',
-          context: { error: parseError },
-        });
-      }
-    } else {
-      onError({
-        code: 'empty_response',
-        message: '设备返回空的WiFi列表',
-      });
-    }
-  } catch (error) {
-    onError({
-      code: 'wifi_scan_error',
-      message: '获取WiFi列表失败',
-      context: { error },
-      retry: () => getWifiNetworks(device, onNetworksFound, onError),
-    });
-  }
+  // 不再从设备获取WiFi列表，而是使用手机扫描
+  return scanPhoneWifiNetworks(onNetworksFound, onError);
 };
 
 /**
@@ -379,10 +449,13 @@ export const configureDeviceWifi = async (
   onSuccess: () => void,
   onError: (error: AddDeviceError) => void
 ): Promise<void> => {
+  console.log('');
+
   try {
     // 准备配置数据
     const configData = JSON.stringify(config);
-    const base64Data = Buffer.from(configData).toString('base64');
+    const base64Data = btoa(configData);
+    console.log('device', JSON.stringify(device));
 
     // 写入配置
     await device.writeCharacteristicWithResponseForService(
@@ -398,7 +471,7 @@ export const configureDeviceWifi = async (
     );
 
     if (resultCharacteristic.value) {
-      const resultValue = Buffer.from(resultCharacteristic.value, 'base64').toString('utf8');
+      const resultValue = atob(resultCharacteristic.value);
 
       try {
         const result = JSON.parse(resultValue);
@@ -432,25 +505,5 @@ export const configureDeviceWifi = async (
       context: { error },
       retry: () => configureDeviceWifi(device, config, onSuccess, onError),
     });
-  }
-};
-
-/**
- * 将设备返回的安全类型映射到应用内部类型
- */
-const mapSecurityType = (securityType: string): WiFiSecurity => {
-  switch (securityType.toUpperCase()) {
-    case 'WPA':
-      return WiFiSecurity.WPA;
-    case 'WPA2':
-      return WiFiSecurity.WPA2;
-    case 'WPA3':
-      return WiFiSecurity.WPA3;
-    case 'WEP':
-      return WiFiSecurity.WEP;
-    case 'OPEN':
-      return WiFiSecurity.OPEN;
-    default:
-      return WiFiSecurity.UNKNOWN;
   }
 };

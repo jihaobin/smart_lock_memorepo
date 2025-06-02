@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { Device } from '../device';
+import { deviceUnlockRecordDataSchema } from '../unlockRecord';
 
 export const NOTIFICATION_ENUM = {
   DOORBELL: 'doorbell', // 门铃
@@ -19,7 +20,7 @@ export type NOTIFICATION_ENUM = typeof NOTIFICATION_ENUM;
 export const OPEN_TYPE_ENUM = {
   REMOTE: 'remote', // 远程
   TEMPORARY_PASSWORD: 'temporary_password', // 临时密码
-  DIRECT: 'direct', // 直接
+  KEY: 'key', // 钥匙
   NFC: 'nfc', // NFC
   PERMANENT_PASSWORD: 'permanent_password', // 永久密码
   FACE: 'face', // 人脸
@@ -37,6 +38,25 @@ export const IMPORTANCE_LEVEL = {
 } as const;
 
 export type IMPORTANCE_LEVEL = typeof IMPORTANCE_LEVEL;
+
+export const NotificaitonItemSchema = z.object({
+  device_battery: z.number().optional(),
+  device_firmware_version: z.string().optional(),
+  openType: z
+    .union([
+      z.literal('remote'),
+      z.literal('temporary_password'),
+      z.literal('key'),
+      z.literal('nfc'),
+      z.literal('permanent_password'),
+      z.literal('face'),
+      z.literal('eye'),
+      z.literal('fingerprint'),
+    ])
+    .optional(),
+  openFriend: z.string().optional(),
+  noOpenTime: z.number().optional(),
+});
 
 export const baseNotificationDataSchema = z.object({
   userId: z.string().min(1, { message: '用户ID不能为空' }),
@@ -60,7 +80,14 @@ export const baseNotificationDataSchema = z.object({
 
 // 创建通知的基础DTO
 export const CreateNotificationSchema = baseNotificationDataSchema.extend({
-  data: z.record(z.unknown()).optional(),
+  data: z.object({
+    ...NotificaitonItemSchema.shape,
+    unlockData: z
+      .object({
+        ...deviceUnlockRecordDataSchema.shape,
+      })
+      .optional(),
+  }),
   importanceLevel: z
     .enum(
       [
@@ -119,7 +146,7 @@ export const deviceOpenNotificationDataSchema = baseNotificationDataSchema.exten
   openType: z.enum([
     OPEN_TYPE_ENUM.REMOTE,
     OPEN_TYPE_ENUM.TEMPORARY_PASSWORD,
-    OPEN_TYPE_ENUM.DIRECT,
+    OPEN_TYPE_ENUM.KEY,
     OPEN_TYPE_ENUM.NFC,
     OPEN_TYPE_ENUM.PERMANENT_PASSWORD,
     OPEN_TYPE_ENUM.FACE,
@@ -178,7 +205,7 @@ export interface IAppNotificationMessage {
 }
 
 export interface NotiFIcationListItem {
-  data: ItemData;
+  data: NotificaitonItem;
   deliveryStatus: string;
   device: Device;
   deviceId: string;
@@ -200,19 +227,6 @@ export interface NotiFIcationListItem {
   userId: string;
 }
 
-export interface ItemData {
-  temp_password?: string; // 临时密码
-  device_battery?: number; // 设备电量
-  device_firmware_version?: string; // 设备固件版本
-  openType?:
-    | 'remote'
-    | 'temporary_password'
-    | 'direct'
-    | 'nfc'
-    | 'permanent_password'
-    | 'face'
-    | 'eye'
-    | 'fingerprint'; // 开门方式
-  openFriend?: string; // 开门好友
-  noOpenTime?: number; // 未开门时长
-}
+export type NotificaitonItem = z.infer<typeof NotificaitonItemSchema> & {
+  unlockData?: z.infer<typeof deviceUnlockRecordDataSchema>;
+};

@@ -8,13 +8,13 @@ import React, { createContext, useCallback, useContext, useEffect, useRef, useSt
 import { AppState } from 'react-native';
 import { io, Socket } from 'socket.io-client';
 
-import { useAuth } from './AuthContext';
+import { useAuth } from './auth-context';
 
 import { useToast } from '@/hooks/use-toast';
 
 const SocketContext = createContext<Socket | null>(null);
 
-export function SocketProvider({ children }: { children: React.ReactNode }) {
+export function NotificationProvider({ children }: { children: React.ReactNode }) {
   const socketRef = useRef<Socket | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -103,7 +103,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         // 显式指定完整的 WebSocket URL
         const socketUrl = process.env.EXPO_PUBLIC_NOTICATION || 'http://localhost:3001';
 
-        socketRef.current = io(socketUrl, {
+        socketRef.current = io(`${socketUrl}/notification`, {
           transports: ['websocket'],
           reconnection: true,
           reconnectionAttempts: 5,

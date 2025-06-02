@@ -19,7 +19,9 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "dependencies": {
     "@alicloud/dysmsapi20170525": "^3.1.2",
@@ -42,14 +44,18 @@
     "argon2": "^0.41.1",
     "bullmq": "^5.45.0",
     "date-fns": "^4.1.0",
+    "expo": "~52.0.46",
     "ioredis": "^5.6.0",
     "ms": "3.0.0-canary.1",
     "nestjs-zod": "^4.3.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
+    "react": "18.3.1",
+    "react-native": "0.76.9",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
+    "sharp": "^0.34.2",
     "swagger-ui-express": "^5.0.1",
     "winston-daily-rotate-file": "^5.0.0",
     "zod": "^3.24.2"
