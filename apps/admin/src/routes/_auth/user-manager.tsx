@@ -4,11 +4,10 @@ import { createFileRoute } from '@tanstack/react-router';
 import { ColumnDef } from '@tanstack/react-table';
 import { User2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { twMerge } from 'tailwind-merge';
 
 import { ConfigurableDataTable } from '@/components/configurable-data-table';
-import { Badge } from '@/components/ui/badge';
 import apiClient, { queryHooks } from '@/lib/aip-service';
+import RoleBadge from '@/components/role-badge';
 
 export const Route = createFileRoute('/_auth/user-manager')({
   component: UserManager,
@@ -42,35 +41,14 @@ const columns: ColumnDef<AdminUserItem>[] = [
     accessorKey: 'role',
     header: '角色',
     enableSorting: true,
-    cell: ({ row }) =>
-      row.original.roles.map(role => (
-        <Badge
-          variant="outline"
-          className={twMerge(
-            'flex gap-1 px-1.5 py-1.5 text-muted-foreground [&_svg]:size-3 text-white',
-            getRoleColor(role.name)
-          )}
-        >
-          {role.name}
-        </Badge>
-      )),
+    cell: ({ row }) => row.original.roles.map(role => <RoleBadge role={role.name}></RoleBadge>),
   },
   {
     accessorKey: 'createdAt',
     header: '创建时间',
+    enableSorting: true,
   },
 ];
-
-function getRoleColor(roleName: string) {
-  switch (roleName) {
-    case 'superadmin':
-      return 'bg-primary';
-    case 'admin':
-      return 'bg-blue-500';
-    default:
-      return 'bg-gray-500';
-  }
-}
 
 export default function UserManager() {
   console.log('refresh');

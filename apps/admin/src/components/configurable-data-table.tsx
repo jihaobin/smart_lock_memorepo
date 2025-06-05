@@ -36,6 +36,7 @@ import {
   useReactTable,
   type Updater,
   ColumnSizingState,
+  RowSelectionState,
 } from '@tanstack/react-table';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -72,6 +73,7 @@ import {
 import { Table, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BaseDataType, DataTableConfig } from '@/types/data-table';
+import { FormDialog, useFormDialog } from '@/components/form-dialog';
 
 interface AccessorKeyColumn {
   accessorKey?: string;
@@ -228,9 +230,15 @@ export function ConfigurableDataTable<TData extends BaseDataType>({
     defaultPageSize: 10,
     pageSizeOptions: [10, 20, 30, 40, 50],
   },
-}: DataTableConfig<TData> & { serverSidePagination?: boolean }) {
-  // const [data, setData] = React.useState(() => initialData)
-  const [rowSelection, setRowSelection] = React.useState({});
+  formDialog,
+  editDialog,
+  onEditButtonClick,
+  meta,
+}: DataTableConfig<TData> & {
+  serverSidePagination?: boolean;
+  onEditButtonClick?: (rowData: TData) => void;
+}) {
+  const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -243,6 +251,89 @@ export function ConfigurableDataTable<TData extends BaseDataType>({
   const [pageAnimationKey, setPageAnimationKey] = React.useState(0);
   // 跟踪翻页方向，用于控制动画效果
   const [pageDirection, setPageDirection] = React.useState<'next' | 'prev' | 'initial'>('initial');
+
+  // 统一对话框状态管理
+  const {
+    isOpen: isDialogOpen,
+    open: openDialog,
+    close: closeDialog,
+    loading: dialogLoading,
+    setLoading: setDialogLoading,
+  } = useFormDialog();
+  const [dialogMode, setDialogMode] = React.useState<'add' | 'edit' | null>(null);
+  const [editingRowData, setEditingRowData] = React.useState<TData | null>(null);
+
+  // 处理添加按钮点击
+  const handleAddButtonClick = React.useCallback(() => {
+    if (formDialog) {
+      // 如果配置了表单对话框，打开对话框
+      setDialogMode('add');
+      setEditingRowData(null);
+      openDialog();
+    } else if (onAddButtonClick) {
+      // 否则调用原有的回调函数
+      onAddButtonClick();
+    }
+  }, [formDialog, openDialog, onAddButtonClick]);
+
+  // 处理编辑按钮点击
+  const handleEditButtonClick = React.useCallback(
+    (rowData: TData) => {
+      if (editDialog) {
+        setDialogMode('edit');
+        setEditingRowData(rowData);
+        openDialog();
+      } else if (onEditButtonClick) {
+        onEditButtonClick(rowData);
+      }
+    },
+    [editDialog, openDialog, onEditButtonClick]
+  );
+
+  // 统一对话框提交处理
+  const handleDialogSubmit = React.useCallback(
+    async (data: any) => {
+      if (dialogMode === 'add' && formDialog) {
+        setDialogLoading(true);
+        try {
+          await formDialog.onSubmit(data);
+          closeDialog();
+          setDialogMode(null);
+          setEditingRowData(null);
+        } catch (error) {
+          throw error; // 重新抛出错误以便FormDialog处理
+        } finally {
+          setDialogLoading(false);
+        }
+      } else if (dialogMode === 'edit' && editDialog && editingRowData) {
+        setDialogLoading(true);
+        try {
+          await editDialog.onSubmit(data, editingRowData);
+          closeDialog();
+          setDialogMode(null);
+          setEditingRowData(null);
+        } catch (error) {
+          throw error; // 重新抛出错误以便FormDialog处理
+        } finally {
+          setDialogLoading(false);
+        }
+      }
+    },
+    [dialogMode, formDialog, editDialog, editingRowData, setDialogLoading, closeDialog]
+  );
+
+  // 获取对话框的默认值
+  const getDialogDefaultValues = React.useCallback(() => {
+    if (dialogMode === 'add' && formDialog) {
+      return formDialog.defaultValues || {};
+    } else if (dialogMode === 'edit' && editDialog && editingRowData) {
+      if (editDialog.transformToFormData) {
+        return editDialog.transformToFormData(editingRowData);
+      }
+      return editingRowData;
+    }
+    return {};
+  }, [dialogMode, formDialog, editDialog, editingRowData]);
 
   // 处理分页状态变化
   const handlePaginationChange = React.useCallback(
@@ -379,6 +470,10 @@ export function ConfigurableDataTable<TData extends BaseDataType>({
       columnSizing,
     },
     defaultColumn,
+    meta: {
+      ...meta,
+      handleEditButtonClick,
+    },
     onColumnSizingChange: setColumnSizing,
     columnResizeMode: 'onChange',
     getRowId: row => String(row.id),
@@ -656,7 +751,7 @@ export function ConfigurableDataTable<TData extends BaseDataType>({
     return (
       <div className="flex items-center justify-between px-4">
         <div className="hidden flex-1 text-sm text-muted-foreground lg:flex">
-          {table.getFilteredSelectedRowModel().rows.length} 个中的{' '}
+          {Object.keys(rowSelection).length} 个中的{' '}
           {serverSidePagination && pagination.rowCount
             ? pagination.rowCount
             : table.getFilteredRowModel().rows.length}{' '}
@@ -824,7 +919,7 @@ export function ConfigurableDataTable<TData extends BaseDataType>({
           </DropdownMenu>
         )}
         {enableAddButton && (
-          <Button variant="outline" size="sm" onClick={onAddButtonClick}>
+          <Button variant="outline" size="sm" onClick={handleAddButtonClick}>
             <PlusIcon />
             <span className="hidden lg:inline">{addButtonText}</span>
           </Button>
@@ -836,39 +931,113 @@ export function ConfigurableDataTable<TData extends BaseDataType>({
   // 如果有标签页，渲染带标签页的表格
   if (tabs) {
     return (
-      <Tabs defaultValue={tabs.defaultValue} className="flex w-full flex-col justify-start gap-6">
-        {renderToolbar()}
-        {tabs.items.map(item => (
-          <TabsContent
-            key={item.value}
-            value={item.value}
-            className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
-          >
-            {item.value === tabs.defaultValue ? (
-              <>
-                {renderTableContent()}
-                {renderPagination()}
-              </>
-            ) : (
-              item.content || (
-                <div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
-              )
-            )}
-          </TabsContent>
-        ))}
-      </Tabs>
+      <>
+        <Tabs defaultValue={tabs.defaultValue} className="flex w-full flex-col justify-start gap-6">
+          {renderToolbar()}
+          {tabs.items.map(item => (
+            <TabsContent
+              key={item.value}
+              value={item.value}
+              className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
+            >
+              {item.value === tabs.defaultValue ? (
+                <>
+                  {renderTableContent()}
+                  {renderPagination()}
+                </>
+              ) : (
+                item.content || (
+                  <div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
+                )
+              )}
+            </TabsContent>
+          ))}
+        </Tabs>
+
+        {/* 统一对话框 */}
+        {(() => {
+          const currentSchema = dialogMode === 'add' ? formDialog?.schema : editDialog?.schema;
+          return (
+            (formDialog || editDialog) &&
+            currentSchema && (
+              <FormDialog
+                open={isDialogOpen}
+                onClose={() => {
+                  closeDialog();
+                  setDialogMode(null);
+                  setEditingRowData(null);
+                }}
+                title={(dialogMode === 'add' ? formDialog?.title : editDialog?.title) ?? ''}
+                description={
+                  dialogMode === 'add' ? formDialog?.description : editDialog?.description
+                }
+                schema={currentSchema}
+                defaultValues={getDialogDefaultValues()}
+                onSubmit={handleDialogSubmit}
+                loading={dialogLoading}
+                submitText={
+                  dialogMode === 'add' ? formDialog?.submitText : editDialog?.submitText || '保存'
+                }
+                cancelText={dialogMode === 'add' ? formDialog?.cancelText : editDialog?.cancelText}
+                maxWidth={dialogMode === 'add' ? formDialog?.maxWidth : editDialog?.maxWidth}
+                validate={dialogMode === 'add' ? formDialog?.validate : editDialog?.validate}
+              >
+                {dialogMode === 'add'
+                  ? formDialog?.component || (() => null)
+                  : editDialog?.component || (() => null)}
+              </FormDialog>
+            )
+          );
+        })()}
+      </>
     );
   }
 
   // 否则渲染普通表格
   return (
-    <div className="flex w-full flex-col justify-start gap-6">
-      {renderToolbar()}
-      <div className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6">
-        {renderTableContent()}
-        {renderPagination()}
+    <>
+      <div className="flex w-full flex-col justify-start gap-6">
+        {renderToolbar()}
+        <div className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6">
+          {renderTableContent()}
+          {renderPagination()}
+        </div>
       </div>
-    </div>
+
+      {/* 统一对话框 */}
+      {(() => {
+        const currentSchema = dialogMode === 'add' ? formDialog?.schema : editDialog?.schema;
+        return (
+          (formDialog || editDialog) &&
+          currentSchema && (
+            <FormDialog
+              open={isDialogOpen}
+              onClose={() => {
+                closeDialog();
+                setDialogMode(null);
+                setEditingRowData(null);
+              }}
+              title={(dialogMode === 'add' ? formDialog?.title : editDialog?.title) ?? ''}
+              description={dialogMode === 'add' ? formDialog?.description : editDialog?.description}
+              schema={currentSchema}
+              defaultValues={getDialogDefaultValues()}
+              onSubmit={handleDialogSubmit}
+              loading={dialogLoading}
+              submitText={
+                dialogMode === 'add' ? formDialog?.submitText : editDialog?.submitText || '保存'
+              }
+              cancelText={dialogMode === 'add' ? formDialog?.cancelText : editDialog?.cancelText}
+              maxWidth={dialogMode === 'add' ? formDialog?.maxWidth : editDialog?.maxWidth}
+              validate={dialogMode === 'add' ? formDialog?.validate : editDialog?.validate}
+            >
+              {dialogMode === 'add'
+                ? formDialog?.component || (() => null)
+                : editDialog?.component || (() => null)}
+            </FormDialog>
+          )
+        );
+      })()}
+    </>
   );
 }
 

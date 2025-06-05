@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { IAdminAuthResponse, LoginSchemaType } from '@smart-lock/shared/shared';
+import { AdminAuthResponse, LoginSchemaType } from '@smart-lock/shared/shared';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 
@@ -20,7 +20,7 @@ interface ApiClient {
 const typedApiClient = apiClient as ApiClient;
 
 export function useAuthApi() {
-  const { login: setAuth, logout: contextLogout } = useAuthContext();
+  const { login: setAuth, logout: contextLogout, refreshUserRoutes } = useAuthContext();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +31,7 @@ export function useAuthApi() {
       setLoading(true);
       setError(null);
 
-      const response = await typedApiClient.post<IAdminAuthResponse>('/auth/login', {
+      const response = await typedApiClient.post<AdminAuthResponse>('/auth/login', {
         name: data.phone,
         password: data.password,
         rememberMe: data.rememberMe,
@@ -93,5 +93,6 @@ export function useAuthApi() {
     logout,
     loading,
     error,
+    refreshUserRoutes,
   };
 }

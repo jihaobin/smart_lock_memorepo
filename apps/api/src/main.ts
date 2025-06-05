@@ -27,7 +27,11 @@ async function bootstrap() {
   // 注册全局异常过滤器
   app.useGlobalFilters(new HttpExceptionFilter(logger));
 
-  const clientUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:8080';
+  // 允许localhost和127.0.0.1的任意端口访问
+  const clientUrl = process.env.NEXT_PUBLIC_APP_URL || [
+    /^http:\/\/localhost:\d+$/,
+    /^http:\/\/127\.0\.0\.1:\d+$/,
+  ];
   app.enableCors({
     origin: clientUrl,
     credentials: true,

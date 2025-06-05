@@ -1,0 +1,185 @@
+{
+  "data": [
+    {
+      "id": "w20gi",
+      "path": "dashboard",
+      "name": "数据图表",
+      "component": "Dashboard",
+      "icon": "dashboard",
+      "parentId": null,
+      "order": 1,
+      "meta": {
+        "title": "数据图表",
+        "description": "系统数据统计和图表展示"
+      },
+      "createdAt": "2025-04-14T03:06:49.006Z",
+      "updatedAt": "2025-04-14T03:06:49.006Z",
+      "children": [
+        {
+          "id": "easdb",
+          "path": "test-router",
+          "name": "测试路由",
+          "component": "TestManager",
+          "icon": "test",
+          "parentId": "w20gi",
+          "order": 1,
+          "meta": {
+            "title": "测试路由",
+            "description": "测试路由"
+          },
+          "createdAt": "2025-06-02T15:30:35.582Z",
+          "updatedAt": "2025-06-02T15:30:35.582Z",
+          "children": [],
+          "roleRoutes": [
+            {
+              "roleId": "v2mm5",
+              "routeId": "easdb",
+              "role": {
+                "id": "v2mm5",
+                "name": "superadmin",
+                "description": "超级管理员，拥有系统最高权限",
+                "isDefault": false,
+                "createdAt": "2025-04-14T02:07:45.742Z",
+                "updatedAt": "2025-04-14T02:07:45.742Z"
+              }
+            }
+          ]
+        }
+      ],
+      "roleRoutes": [
+        {
+          "roleId": "v2mm5",
+          "routeId": "w20gi",
+          "role": {
+            "id": "v2mm5",
+            "name": "superadmin",
+            "description": "超级管理员，拥有系统最高权限",
+            "isDefault": false,
+            "createdAt": "2025-04-14T02:07:45.742Z",
+            "updatedAt": "2025-04-14T02:07:45.742Z"
+          }
+        }
+      ]
+    },
+    {
+      "id": "easdb",
+      "path": "test-router",
+      "name": "测试路由",
+      "component": "TestManager",
+      "icon": "test",
+      "parentId": "w20gi",
+      "order": 1,
+      "meta": {
+        "title": "测试路由",
+        "description": "测试路由"
+      },
+      "createdAt": "2025-06-02T15:30:35.582Z",
+      "updatedAt": "2025-06-02T15:30:35.582Z",
+      "children": [],
+      "roleRoutes": [
+        {
+          "roleId": "v2mm5",
+          "routeId": "easdb",
+          "role": {
+            "id": "v2mm5",
+            "name": "superadmin",
+            "description": "超级管理员，拥有系统最高权限",
+            "isDefault": false,
+            "createdAt": "2025-04-14T02:07:45.742Z",
+            "updatedAt": "2025-04-14T02:07:45.742Z"
+          }
+        }
+      ]
+    },
+    {
+      "id": "jw0y5",
+      "path": "user-manager",
+      "name": "用户管理",
+      "component": "UserManager",
+      "icon": "user",
+      "parentId": null,
+      "order": 2,
+      "meta": {
+        "title": "用户管理",
+        "description": "系统用户管理"
+      },
+      "createdAt": "2025-04-14T03:06:49.128Z",
+      "updatedAt": "2025-04-14T03:06:49.128Z",
+      "children": [],
+      "roleRoutes": [
+        {
+          "roleId": "v2mm5",
+          "routeId": "jw0y5",
+          "role": {
+            "id": "v2mm5",
+            "name": "superadmin",
+            "description": "超级管理员，拥有系统最高权限",
+            "isDefault": false,
+            "createdAt": "2025-04-14T02:07:45.742Z",
+            "updatedAt": "2025-04-14T02:07:45.742Z"
+          }
+        }
+      ]
+    },
+    {
+      "id": "tfx2s",
+      "path": "router-manager",
+      "name": "路由管理",
+      "component": "RouterManager",
+      "icon": "router",
+      "parentId": null,
+      "order": 3,
+      "meta": {
+        "title": "路由管理",
+        "description": "系统路由管理"
+      },
+      "createdAt": "2025-04-14T03:06:49.227Z",
+      "updatedAt": "2025-04-14T03:06:49.227Z",
+      "children": [],
+      "roleRoutes": [
+        {
+          "roleId": "v2mm5",
+          "routeId": "tfx2s",
+          "role": {
+            "id": "v2mm5",
+            "name": "superadmin",
+            "description": "超级管理员，拥有系统最高权限",
+            "isDefault": false,
+            "createdAt": "2025-04-14T02:07:45.742Z",
+            "updatedAt": "2025-04-14T02:07:45.742Z"
+          }
+        }
+      ]
+    },
+    {
+      "id": "uxw94",
+      "path": "role-manager",
+      "name": "角色管理",
+      "component": "RoleManager",
+      "icon": "role",
+      "parentId": null,
+      "order": 4,
+      "meta": {
+        "title": "角色管理",
+        "description": "系统角色管理"
+      },
+      "createdAt": "2025-04-14T03:06:49.326Z",
+      "updatedAt": "2025-04-14T03:06:49.326Z",
+      "children": [],
+      "roleRoutes": [
+        {
+          "roleId": "v2mm5",
+          "routeId": "uxw94",
+          "role": {
+            "id": "v2mm5",
+            "name": "superadmin",
+            "description": "超级管理员，拥有系统最高权限",
+            "isDefault": false,
+            "createdAt": "2025-04-14T02:07:45.742Z",
+            "updatedAt": "2025-04-14T02:07:45.742Z"
+          }
+        }
+      ]
+    }
+  ]
+}

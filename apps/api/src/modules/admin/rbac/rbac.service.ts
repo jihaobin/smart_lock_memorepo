@@ -345,6 +345,12 @@ export class RbacService implements OnModuleInit {
     );
   }
 
+  async getAllRoutesOnPage(query: { page?: string; pageSize?: string }) {
+    return this.getFromCacheOrFetch('allRoutesOnPage', () =>
+      this.rbacRepository.getAllRoutesOnPage(query),
+    );
+  }
+
   // 角色路由关联
   async assignRoutesToRole(roleId: string, routeIds: string[]) {
     // 验证角色是否存在
@@ -461,8 +467,25 @@ export class RbacService implements OnModuleInit {
         return [];
       }
 
+      // 为每个路由添加role字段
+      const routesWithRoles = await Promise.all(
+        routes.map(async (route) => {
+          // 获取该路由关联的所有角色
+          const routeRoles = await this.rbacRepository.getRouteRoles(route.id);
+          return {
+            ...route,
+            role: routeRoles.map((r) => r.name),
+          };
+        }),
+      );
+
       // 构建嵌套的路由树结构
-      return this.buildRouteTree(routes);
+      return this.buildRouteTree(
+        routesWithRoles.map((route) => ({
+          ...route,
+          isHidden: route.isHidden || false, // 确保isHidden为boolean类型
+        })),
+      );
     });
   }
 
@@ -545,52 +568,36 @@ export class RbacService implements OnModuleInit {
       await this.rbacRepository.createRoute({
         path: 'dashboard',
         name: '数据图表',
-        component: 'Dashboard',
         icon: 'dashboard',
         order: 1,
-        meta: {
-          title: '数据图表',
-          description: '系统数据统计和图表展示',
-        },
+        role: ['v2mm5'],
       });
 
       // 创建用户管理路由
       await this.rbacRepository.createRoute({
         path: 'user-manager',
         name: '用户管理',
-        component: 'UserManager',
         icon: 'user',
         order: 2,
-        meta: {
-          title: '用户管理',
-          description: '系统用户管理',
-        },
+        role: ['v2mm5'],
       });
 
       // 创建路由管理路由
       await this.rbacRepository.createRoute({
         path: 'router-manager',
         name: '路由管理',
-        component: 'RouterManager',
         icon: 'router',
         order: 3,
-        meta: {
-          title: '路由管理',
-          description: '系统路由管理',
-        },
+        role: ['v2mm5'],
       });
 
       // 创建角色管理路由
       await this.rbacRepository.createRoute({
         path: 'role-manager',
         name: '角色管理',
-        component: 'RoleManager',
         icon: 'role',
         order: 4,
-        meta: {
-          title: '角色管理',
-          description: '系统角色管理',
-        },
+        role: ['v2mm5'],
       });
       // 清除路由缓存
       this.clearRoutesCache();

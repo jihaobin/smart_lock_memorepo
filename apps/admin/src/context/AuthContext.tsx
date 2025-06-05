@@ -1,6 +1,7 @@
 import { AdminAuthUser, RouteItem } from '@smart-lock/shared/shared';
 import type React from 'react';
 import { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import apiClient from '@/lib/aip-service';
 
 import {
   flattenRoutes,
@@ -19,6 +20,7 @@ interface AuthContextType {
   setToken: (token: string | null) => void;
   accessibleRoutes: RouteItem[];
   hasPermission: (routePath: string) => boolean;
+  refreshUserRoutes: () => Promise<void>;
 }
 
 // 常量已移至authUtils.ts
@@ -66,6 +68,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // token的设置由useAuth.ts中的login函数通过ApiClient来处理
   };
 
+  // 刷新用户权限路由
+  const refreshUserRoutes = async () => {
+    if (!user) return;
+
+    try {
+      const routes = await apiClient.get<RouteItem[]>(`/rbac/users/${user.id}/accessible-routes`);
+      const updatedUser = { ...user, accessibleRoutes: routes };
+      setUser(updatedUser);
+      setAccessibleRoutes(routes);
+      saveUserToStorage(updatedUser);
+    } catch (error) {
+      console.error('刷新用户权限路由失败:', error);
+    }
+  };
+
   const hasPermission = (routePath: string) => {
     return checkPermission(user, routePath, flattenedRoutes);
   };
@@ -80,7 +97,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, login, logout, isLoading, setToken, accessibleRoutes, hasPermission }}
+      value={{
+        user,
+        token,
+        login,
+        logout,
+        isLoading,
+        setToken,
+        accessibleRoutes,
+        hasPermission,
+        refreshUserRoutes,
+      }}
     >
       {children}
     </AuthContext.Provider>

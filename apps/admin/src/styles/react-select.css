@@ -1,0 +1,98 @@
+/* React Select 样式定制，使其与 shadcn/ui 保持一致 */
+@import 'tailwindcss';
+.react-select-container {
+  @apply text-sm;
+}
+
+.react-select__control {
+  @apply border border-input bg-background text-sm ring-offset-background;
+  @apply focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2;
+  @apply hover:border-input;
+  min-height: 40px;
+  border-radius: calc(var(--radius) - 2px);
+  box-shadow: none;
+}
+
+.react-select__control--is-focused {
+  @apply border-ring;
+  box-shadow: 0 0 0 2px hsl(var(--ring));
+}
+
+.react-select__control--is-disabled {
+  @apply cursor-not-allowed opacity-50;
+}
+
+.react-select__value-container {
+  @apply px-3 py-2;
+}
+
+.react-select__placeholder {
+  @apply text-muted-foreground;
+}
+
+.react-select__single-value {
+  @apply text-foreground;
+}
+
+.react-select__input-container {
+  @apply text-foreground;
+}
+
+.react-select__indicator-separator {
+  @apply bg-border;
+}
+
+.react-select__dropdown-indicator {
+  @apply text-muted-foreground hover:text-foreground;
+}
+
+.react-select__clear-indicator {
+  @apply text-muted-foreground hover:text-foreground;
+}
+
+.react-select__menu {
+  @apply border border-border bg-popover text-popover-foreground shadow-md;
+  border-radius: calc(var(--radius) - 2px);
+  margin-top: 4px;
+}
+
+.react-select__menu-list {
+  @apply p-1;
+}
+
+.react-select__option {
+  @apply cursor-pointer px-2 py-1.5 text-sm;
+  @apply hover:bg-accent hover:text-accent-foreground;
+  @apply focus:bg-accent focus:text-accent-foreground;
+  border-radius: calc(var(--radius) - 4px);
+}
+
+.react-select__option--is-selected {
+  @apply bg-primary text-primary-foreground;
+}
+
+.react-select__option--is-focused {
+  @apply bg-accent text-accent-foreground;
+}
+
+.react-select__multi-value {
+  @apply bg-secondary text-secondary-foreground;
+  border-radius: calc(var(--radius) - 4px);
+}
+
+.react-select__multi-value__label {
+  @apply px-2 py-1 text-xs;
+}
+
+.react-select__multi-value__remove {
+  @apply text-secondary-foreground hover:bg-destructive hover:text-destructive-foreground;
+  border-radius: 0 calc(var(--radius) - 4px) calc(var(--radius) - 4px) 0;
+}
+
+.react-select__loading-indicator {
+  @apply text-muted-foreground;
+}
+
+.react-select__no-options-message {
+  @apply text-muted-foreground;
+}

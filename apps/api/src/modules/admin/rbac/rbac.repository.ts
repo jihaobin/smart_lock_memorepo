@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { RoleItem } from '@smart-lock/shared/.';
 import { DbType, schema } from '@smart-lock/shared/server';
-import { eq, inArray } from 'drizzle-orm';
+import { eq, inArray, isNull } from 'drizzle-orm';
 import { AppLoggerService } from 'src/common';
 import { DB } from 'src/database/database.provider';
 
@@ -233,16 +233,11 @@ export class RbacRepository {
   async createRoute(data: {
     path: string;
     name: string;
-    component: string;
     icon?: string;
     parentId?: string;
     order?: number;
-    isMenu?: boolean;
-    meta?: {
-      title?: string;
-      description?: string;
-      hidden?: boolean;
-    };
+    role: string[];
+    isHidden?: boolean;
   }) {
     if (!data.path || data.path.trim() === '') {
       throw new BadRequestException('路由路径不能为空');
@@ -252,8 +247,8 @@ export class RbacRepository {
       throw new BadRequestException('路由名称不能为空');
     }
 
-    if (!data.component || data.component.trim() === '') {
-      throw new BadRequestException('路由组件不能为空');
+    if (!Array.isArray(data.role)) {
+      throw new BadRequestException('角色ID列表必须是数组');
     }
 
     // 如果指定了父路由，检查父路由是否存在
@@ -265,17 +260,58 @@ export class RbacRepository {
     }
 
     try {
-      const result = await this.db
-        .insert(schema.routes)
-        .values({
-          ...data,
-          path: data.path.trim(),
-          name: data.name.trim(),
-          component: data.component.trim(),
-        })
-        .returning();
-      return result[0];
+      // 检查所有角色是否存在
+      if (data.role.length > 0) {
+        const roles = await this.db
+          .select({ id: schema.roles.id })
+          .from(schema.roles)
+          .where(inArray(schema.roles.id, data.role));
+
+        const existingRoleIds = roles.map((role) => role.id);
+        const nonExistingRoleIds = data.role.filter(
+          (id) => !existingRoleIds.includes(id),
+        );
+
+        if (nonExistingRoleIds.length > 0) {
+          throw new NotFoundException(
+            `ID为${nonExistingRoleIds.join(', ')}的角色不存在`,
+          );
+        }
+      }
+
+      // 使用事务确保数据一致性
+      return await this.db.transaction(async (tx) => {
+        // 创建路由
+        const routeResult = await tx
+          .insert(schema.routes)
+          .values({
+            ...data,
+            path: data.path.trim(),
+            name: data.name.trim(),
+          })
+          .returning();
+
+        const newRoute = routeResult[0];
+
+        // 如果有角色，创建路由与角色的关联
+        if (data.role.length > 0) {
+          const roleRouteValues = data.role.map((roleId) => ({
+            roleId,
+            routeId: newRoute.id,
+          }));
+
+          await tx.insert(schema.roleRoutes).values(roleRouteValues);
+        }
+
+        return newRoute;
+      });
     } catch (error) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof NotFoundException
+      ) {
+        throw error;
+      }
       this.logger.error(`创建路由失败: ${error.message}`, error.stack);
       throw new InternalServerErrorException('创建路由失败');
     }
@@ -340,7 +376,6 @@ export class RbacRepository {
           ...data,
           path: data.path?.trim(),
           name: data.name?.trim(),
-          component: data.component?.trim(),
           updatedAt: new Date(),
         })
         .where(eq(schema.routes.id, id))
@@ -419,10 +454,115 @@ export class RbacRepository {
 
   async getAllRoutes() {
     try {
-      return await this.db
-        .select()
-        .from(schema.routes)
-        .orderBy(schema.routes.order);
+      const routes = await this.db.query.routes.findMany({
+        with: {
+          children: {
+            with: {
+              children: true, // 第三层子路由
+              roleRoutes: {
+                with: {
+                  role: true,
+                },
+              },
+            },
+            orderBy: (router, { asc }) => [asc(router.order)],
+          },
+          roleRoutes: {
+            with: {
+              role: true,
+            },
+          },
+        },
+        where: isNull(schema.routes.parentId), // 只查询顶级路由
+        orderBy: (router, { asc }) => [asc(router.order)],
+      });
+
+      // 转换数据格式
+      const transformRouteData = (route: any): any => {
+        const transformed = { ...route };
+
+        // 转换roleRoutes为role字段
+        if (route.roleRoutes && route.roleRoutes.length > 0) {
+          transformed.role = route.roleRoutes.map((rr: any) => rr.role.name);
+          delete transformed.roleRoutes;
+        }
+
+        // 递归处理children
+        if (route.children && route.children.length > 0) {
+          transformed.children = route.children.map(transformRouteData);
+        }
+
+        return transformed;
+      };
+
+      return routes.map(transformRouteData);
+
+      // return {
+      //   items: routes.map(transformRouteData),
+      //   total: routes.length,
+      //   page: page,
+      //   pageSize: pageSize,
+      // }
+    } catch (error) {
+      this.logger.error(`获取所有路由失败: ${error.message}`, error.stack);
+      throw new InternalServerErrorException('获取所有路由失败');
+    }
+  }
+
+  async getAllRoutesOnPage(query: { page?: string; pageSize?: string }) {
+    const page = Math.max(1, Number(query.page) || 1);
+    const pageSize = Math.max(1, Number(query.pageSize) || 10);
+    const offset = (page - 1) * pageSize;
+    try {
+      const routes = await this.db.query.routes.findMany({
+        with: {
+          children: {
+            with: {
+              children: true, // 第三层子路由
+              roleRoutes: {
+                with: {
+                  role: true,
+                },
+              },
+            },
+            orderBy: (router, { asc }) => [asc(router.order)],
+          },
+          roleRoutes: {
+            with: {
+              role: true,
+            },
+          },
+        },
+        where: isNull(schema.routes.parentId), // 只查询顶级路由
+        orderBy: (router, { asc }) => [asc(router.order)],
+        offset,
+        limit: pageSize,
+      });
+
+      // 转换数据格式
+      const transformRouteData = (route: any): any => {
+        const transformed = { ...route };
+
+        // 转换roleRoutes为role字段
+        if (route.roleRoutes && route.roleRoutes.length > 0) {
+          transformed.role = route.roleRoutes.map((rr: any) => rr.role.name);
+          delete transformed.roleRoutes;
+        }
+
+        // 递归处理children
+        if (route.children && route.children.length > 0) {
+          transformed.children = route.children.map(transformRouteData);
+        }
+
+        return transformed;
+      };
+
+      return {
+        items: routes.map(transformRouteData),
+        total: routes.length,
+        page: page,
+        pageSize: pageSize,
+      };
     } catch (error) {
       this.logger.error(`获取所有路由失败: ${error.message}`, error.stack);
       throw new InternalServerErrorException('获取所有路由失败');
@@ -690,6 +830,34 @@ export class RbacRepository {
     } catch (error) {
       this.logger.error(`根据ID查询用户失败: ${error.message}`, error.stack);
       throw new InternalServerErrorException('查询用户失败');
+    }
+  }
+
+  /**
+   * 获取指定路由关联的所有角色
+   * @param routeId 路由ID
+   * @returns 角色列表
+   */
+  async getRouteRoles(routeId: string) {
+    if (!routeId) {
+      throw new BadRequestException('路由ID不能为空');
+    }
+
+    try {
+      const result = await this.db
+        .select({
+          id: schema.roles.id,
+          name: schema.roles.name,
+          description: schema.roles.description,
+        })
+        .from(schema.roleRoutes)
+        .innerJoin(schema.roles, eq(schema.roleRoutes.roleId, schema.roles.id))
+        .where(eq(schema.roleRoutes.routeId, routeId));
+
+      return result;
+    } catch (error) {
+      this.logger.error(`获取路由关联角色失败: ${error.message}`, error.stack);
+      throw new InternalServerErrorException('获取路由关联角色失败');
     }
   }
 }

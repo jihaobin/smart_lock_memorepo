@@ -7,16 +7,12 @@ export interface RouteItem {
   id: string;
   path: string;
   name: string;
-  component: string;
   icon?: string | null;
   parentId?: string | null;
   order?: number | null;
-  meta?: {
-    title?: string;
-    description?: string;
-    hidden?: boolean;
-  } | null;
+  isHidden: boolean;
   children?: RouteItem[];
+  role: string[];
   createdAt?: Date | null;
   updatedAt?: Date | null;
 }
@@ -39,34 +35,24 @@ export interface RoleItem {
 export interface CreateRouteDto {
   path: string;
   name: string;
-  component: string;
+  role: string[];
   icon?: string;
   parentId?: string;
   order?: number;
   isMenu?: boolean;
-  meta?: {
-    title?: string;
-    description?: string;
-    hidden?: boolean;
-  };
+  isHidden?: boolean;
 }
 
 /**
  * 更新路由请求数据接口
  */
 export interface UpdateRouteDto {
-  path?: string;
+  role?: string[];
   name?: string;
-  component?: string;
   icon?: string;
   parentId?: string;
   order?: number;
-  isMenu?: boolean;
-  meta?: {
-    title?: string;
-    description?: string;
-    hidden?: boolean;
-  };
+  isHidden?: boolean;
 }
 
 /**
@@ -91,35 +77,21 @@ export interface UpdateRoleDto {
 export const CreateRouteSchema = z.object({
   path: z.string().min(1, '路径不能为空'),
   name: z.string().min(1, '名称不能为空'),
-  component: z.string().min(1, '组件不能为空'),
+  role: z.string().array().min(1, '请至少选择一名角色'),
   icon: z.string().optional(),
   parentId: z.string().optional(),
   order: z.number().optional(),
-  isMenu: z.boolean().optional(),
-  meta: z
-    .object({
-      title: z.string().optional(),
-      description: z.string().optional(),
-      hidden: z.boolean().optional(),
-    })
-    .optional(),
+  isHidden: z.boolean().optional(),
 });
 
 export const UpdateRouteSchema = z.object({
   path: z.string().min(1, '路径不能为空').optional(),
   name: z.string().min(1, '名称不能为空').optional(),
-  component: z.string().min(1, '组件不能为空').optional(),
+  role: z.string().array().min(1, '请至少选择一名角色').optional(),
   icon: z.string().optional(),
   parentId: z.string().optional(),
   order: z.number().optional(),
-  isMenu: z.boolean().optional(),
-  meta: z
-    .object({
-      title: z.string().optional(),
-      description: z.string().optional(),
-      hidden: z.boolean().optional(),
-    })
-    .optional(),
+  isHidden: z.boolean().optional(),
 });
 
 export const CreateRoleSchema = z.object({

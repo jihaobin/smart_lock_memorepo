@@ -1,7 +1,8 @@
 import { RouteItem } from '@smart-lock/shared/shared';
 import { IconInnerShadowTop } from '@tabler/icons-react';
-import { Link } from '@tanstack/react-router';
+import { Link, useLocation } from '@tanstack/react-router';
 import * as React from 'react';
+import { DynamicIcon, IconName } from 'lucide-react/dynamic';
 
 import { NavUser } from '@/components/nav-user';
 import {
@@ -79,20 +80,53 @@ const buildMenuTree = (routes: RouteItem[]) => {
 
 // 渲染菜单项组件
 const RenderMenuItem = ({ item }: { item: RouteItem }) => {
-  // 获取图标组件（如果有）
-  // 注意：这里我们不使用动态导入，因为图标名称可能不是有效的组件名
-  // 实际项目中应该使用一个映射表来映射icon字符串到实际组件
+  const location = useLocation();
+
+  // 判断当前菜单项是否处于激活状态
+  const isActive = React.useMemo(() => {
+    const itemPath = item.path.startsWith('/') ? item.path : `/${item.path}`;
+    const currentPath = location.pathname;
+
+    // 精确匹配或路径前缀匹配
+    return currentPath === itemPath || currentPath.startsWith(itemPath + '/');
+  }, [item.path, location.pathname]);
+
+  // 渲染图标
+  const renderIcon = () => {
+    if (item.icon) {
+      return (
+        <DynamicIcon
+          name={item.icon as IconName}
+          className={`transition-all will-change-transform ${
+            isActive ? 'text-sidebar-primary font-medium' : ''
+          }`}
+        />
+      );
+    }
+    return null;
+  };
 
   return (
     <SidebarMenuItem key={item.id}>
       <SidebarMenuButton
         asChild
         tooltip={item.name}
-        className="transition-all duration-300 ease-in-out hover:bg-sidebar-accent/10 hover:translate-x-1"
+        className={`transition-all duration-300 ease-in-out hover:bg-sidebar-accent/10 hover:translate-x-1 ${
+          isActive
+            ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-sm border-l-2 border-sidebar-primary'
+            : ''
+        }`}
+        data-active={isActive}
       >
         <Link to={item.path.startsWith('/') ? item.path : `/${item.path}`}>
-          {/* 如果有图标名称，可以在这里添加一个通用图标 */}
-          <span className="transition-transform will-change-transform">{item.name}</span>
+          {renderIcon()}
+          <span
+            className={`transition-all will-change-transform ${
+              isActive ? 'text-sidebar-primary font-medium' : ''
+            }`}
+          >
+            {item.name}
+          </span>
         </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>
@@ -130,12 +164,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   // 构建菜单树
   const menuItems = React.useMemo(() => {
     // 过滤掉不应该显示在菜单中的路由
-    const menuRoutes = accessibleRoutes.filter(
-      route =>
-        // 这里可以根据实际需求添加过滤条件
-        // 例如：只显示没有meta.hidden或meta.hidden为false的路由
-        !route.meta?.hidden
-    );
+    const menuRoutes = accessibleRoutes.filter(route => {
+      // 过滤条件：
+      // 1. 不是隐藏的路由
+      // 2. 不是登录、注册等认证相关路由
+      // 3. 不是错误页面路由
+      const isHidden = route.meta?.hidden === true;
+      const isAuthRoute = route.path.includes('/login') || route.path.includes('/register');
+      const isErrorRoute = route.path.includes('/404') || route.path.includes('/error');
+
+      return !isHidden && !isAuthRoute && !isErrorRoute;
+    });
+
     return buildMenuTree(menuRoutes);
   }, [accessibleRoutes]);
 

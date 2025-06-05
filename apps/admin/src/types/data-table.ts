@@ -4,7 +4,9 @@
  */
 
 import { ColumnDef } from '@tanstack/react-table';
-import { ReactNode } from 'react';
+import { UseFormReturn } from 'react-hook-form';
+import { z } from 'zod';
+import React, { ReactNode } from 'react';
 
 /**
  * 基础数据类型
@@ -98,6 +100,54 @@ export interface DataTableConfig<TData extends BaseDataType> {
   tabs?: TabsConfig;
   /** 分页配置 */
   pagination?: PaginationConfig;
+  /** 表格元数据，可用于传递额外的处理函数 */
+  meta?: Record<string, any>;
+  /** 表单对话框配置 */
+  formDialog?: {
+    /** 对话框标题 */
+    title: string;
+    /** 对话框描述（可选） */
+    description?: string;
+    /** 表单验证模式 */
+    schema: z.ZodType;
+    /** 表单默认值 */
+    defaultValues?: Record<string, any>;
+    /** 表单组件 */
+    component: (form: UseFormReturn<any>) => React.ReactNode;
+    /** 表单提交回调 */
+    onSubmit: (data: any) => Promise<void>;
+    /** 提交按钮文本 */
+    submitText?: string;
+    /** 取消按钮文本 */
+    cancelText?: string;
+    /** 对话框最大宽度 */
+    maxWidth?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+    /** 表单验证函数 */
+    validate?: (data: any) => void;
+  };
+  /** 编辑对话框配置 */
+  editDialog?: {
+    /** 对话框标题 */
+    title: string;
+    /** 对话框描述（可选） */
+    description?: string;
+    /** 表单验证模式 */
+    schema: z.ZodType;
+    /** 表单组件 */
+    component: (form: UseFormReturn<any>) => React.ReactNode;
+    /** 表单提交回调，接收编辑的数据和原始行数据 */
+    onSubmit: (data: any, originalData: TData) => Promise<void>;
+    /** 数据转换函数，将行数据转换为表单数据 */
+    transformToFormData?: (rowData: TData) => Record<string, any>;
+    /** 提交按钮文本 */
+    submitText?: string;
+    /** 取消按钮文本 */
+    cancelText?: string;
+    /** 对话框最大宽度 */
+    maxWidth?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+    /** 表单验证函数 */
+    validate?: (data: any) => void;
+  };
   // 列可见性文本
   columnVisibilityText?: string;
   // 添加按钮文本

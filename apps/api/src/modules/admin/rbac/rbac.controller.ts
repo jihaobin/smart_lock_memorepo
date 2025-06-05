@@ -9,6 +9,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import {
   CreateRouteDto,
@@ -85,13 +86,20 @@ export class RbacController {
   }
 
   @Get('routes/:id')
+  @Roles('admin', 'superadmin')
   async getRouteById(@Param('id') id: string) {
     return this.rbacService.getRouteById(id);
   }
 
+  @Roles('admin', 'superadmin')
   @Get('routes')
-  async getAllRoutes() {
-    return this.rbacService.getAllRoutes();
+  async getAllRoutes(
+    @Query() { page, pageSize }: { page?: string; pageSize?: string },
+  ) {
+    return this.rbacService.getAllRoutesOnPage({
+      page,
+      pageSize,
+    });
   }
 
   // 角色路由关联

@@ -25,7 +25,9 @@ export const adminUsers = pgTable(
     name: varchar('name', { length: 255 }).notNull(),
     passwordHash: text('password_hash').notNull(),
     createdAt: timestamp('created_at').defaultNow(),
-    updatedAt: timestamp('updated_at').defaultNow(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date()),
   },
   table => [uniqueIndex('admin_users_email_idx').on(table.name)]
 );
@@ -42,7 +44,9 @@ export const roles = pgTable(
     description: varchar('description'),
     isDefault: boolean('is_default').default(false),
     createdAt: timestamp('created_at').defaultNow(),
-    updatedAt: timestamp('updated_at').defaultNow(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date()),
   },
   table => [uniqueIndex('roles_name_idx').on(table.name)]
 );
@@ -73,17 +77,14 @@ export const routes = pgTable(
       .unique(),
     path: varchar('path', { length: 255 }).notNull(),
     name: varchar('name', { length: 100 }).notNull(),
-    component: varchar('component', { length: 255 }).notNull(),
     icon: varchar('icon', { length: 50 }),
     parentId: char('parent_id', { length: 5 }),
     order: integer('order').default(0),
-    meta: json('meta').$type<{
-      title?: string;
-      description?: string;
-      hidden?: boolean;
-    }>(),
+    isHidden: boolean('hidden').default(false),
     createdAt: timestamp('created_at').defaultNow(),
-    updatedAt: timestamp('updated_at').defaultNow(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date()),
   },
   table => {
     return {
@@ -143,7 +144,7 @@ export const routesRelations = relations(routes, ({ one, many }) => ({
     references: [routes.id],
     relationName: 'route_parent',
   }),
-  children: many(routes, { relationName: 'route_children' }),
+  children: many(routes, { relationName: 'route_parent' }),
   roleRoutes: many(roleRoutes, { relationName: 'route_roles' }),
 }));
 
