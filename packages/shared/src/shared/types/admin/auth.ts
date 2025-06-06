@@ -35,7 +35,7 @@ export const AdminCreateSchema = z
     name: z.string().min(1, '用户名不能为空'),
     password: strongPasswordSchema,
     confirmPassword: z.string(),
-    roleIds: z.array(z.string()).optional(),
+    roleIds: z.array(z.string()),
   })
   .refine(data => data.password === data.confirmPassword, {
     message: '两次输入的密码不匹配',

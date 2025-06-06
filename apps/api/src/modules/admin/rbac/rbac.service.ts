@@ -15,31 +15,21 @@ import {
   UpdateRoleDto,
 } from '@smart-lock/shared';
 import { APP_CONFIG, AppConfig } from 'src/config/config.provider';
+import { CACHE_SERVICE, ICacheService } from 'src/common/cache';
 
 import { RbacRepository } from './rbac.repository';
 import { AdminAuthRepository } from '../auth/admin-auth.repository';
 
-/**
- * 简单缓存接口
- */
-interface CacheItem<T> {
-  data: T;
-  timestamp: number;
-  expiresIn: number;
-}
-
 @Injectable()
 export class RbacService implements OnModuleInit {
-  // 简单的内存缓存，适用于小型系统 (不超过100用户)
-  private cache: Map<string, CacheItem<unknown>> = new Map();
-
-  // 默认缓存过期时间: 5分钟
-  private readonly DEFAULT_CACHE_TTL = 5 * 60 * 1000;
+  // 默认缓存过期时间: 5分钟 (转换为秒)
+  private readonly DEFAULT_CACHE_TTL = 5 * 60;
 
   constructor(
     private readonly rbacRepository: RbacRepository,
     private readonly adminAuthRepository: AdminAuthRepository,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
+    @Inject(CACHE_SERVICE) private readonly cacheService: ICacheService,
   ) {}
 
   /**
@@ -55,7 +45,7 @@ export class RbacService implements OnModuleInit {
    * 从缓存获取数据，如果缓存不存在或已过期，则执行fetchFn获取数据并缓存
    * @param key 缓存键
    * @param fetchFn 获取数据的函数
-   * @param ttl 缓存有效期（毫秒）
+   * @param ttl 缓存有效期（秒）
    * @returns 缓存的数据或新获取的数据
    */
   private async getFromCacheOrFetch<T>(
@@ -63,23 +53,19 @@ export class RbacService implements OnModuleInit {
     fetchFn: () => Promise<T>,
     ttl = this.DEFAULT_CACHE_TTL,
   ): Promise<T> {
-    const now = Date.now();
-    const cached = this.cache.get(key);
+    // 尝试从Redis缓存获取数据
+    const cached = await this.cacheService.get<T>(key);
 
-    // 如果缓存存在且未过期，返回缓存数据
-    if (cached && now - cached.timestamp < cached.expiresIn) {
-      return cached.data as T;
+    // 如果缓存存在，直接返回
+    if (cached !== undefined) {
+      return cached;
     }
 
     // 否则重新获取数据
     const data = await fetchFn();
 
-    // 更新缓存
-    this.cache.set(key, {
-      data,
-      timestamp: now,
-      expiresIn: ttl,
-    });
+    // 更新Redis缓存
+    await this.cacheService.set(key, data, ttl);
 
     return data;
   }
@@ -88,33 +74,36 @@ export class RbacService implements OnModuleInit {
    * 清除指定键的缓存
    * @param key 缓存键
    */
-  private clearCache(key: string) {
-    this.cache.delete(key);
+  private async clearCache(key: string) {
+    await this.cacheService.del(key);
   }
 
   /**
    * 清除所有角色相关的缓存
    */
-  private clearRolesCache() {
-    this.clearCache('allRoles');
-    // 清除可能存在的角色详情缓存
-    for (const key of this.cache.keys()) {
-      if (key.startsWith('role_')) {
-        this.cache.delete(key);
-      }
+  private async clearRolesCache() {
+    await this.clearCache('allRoles');
+    // 注意：Redis缓存无法直接遍历所有键，这里采用约定的键名模式
+    // 在实际使用中，可以考虑使用Redis的SCAN命令或维护一个键列表
+    // 暂时清除常用的角色缓存键
+    const commonRoleKeys = ['allRoles'];
+    for (const key of commonRoleKeys) {
+      await this.clearCache(key);
     }
   }
 
   /**
    * 清除所有路由相关的缓存
    */
-  private clearRoutesCache() {
-    this.clearCache('allRoutes');
-    // 清除可能存在的路由详情缓存
-    for (const key of this.cache.keys()) {
-      if (key.startsWith('route_')) {
-        this.cache.delete(key);
-      }
+  private async clearRoutesCache() {
+    await this.clearCache('allRoutes');
+    await this.clearCache('allRoutesOnPage');
+    // 注意：Redis缓存无法直接遍历所有键，这里采用约定的键名模式
+    // 在实际使用中，可以考虑使用Redis的SCAN命令或维护一个键列表
+    // 暂时清除常用的路由缓存键
+    const commonRouteKeys = ['allRoutes', 'allRoutesOnPage'];
+    for (const key of commonRouteKeys) {
+      await this.clearCache(key);
     }
   }
 
@@ -201,7 +190,7 @@ export class RbacService implements OnModuleInit {
         description: '普通用户，拥有基本访问权限',
         isDefault: true,
       });
-      this.clearRolesCache(); // 清除缓存
+      await this.clearRolesCache(); // 清除缓存
     }
 
     // 确保系统中有管理员角色
@@ -212,7 +201,7 @@ export class RbacService implements OnModuleInit {
         description: '管理员，拥有管理系统的权限',
         isDefault: false,
       });
-      this.clearRolesCache(); // 清除缓存
+      await this.clearRolesCache(); // 清除缓存
     }
 
     // 确保系统中有超级管理员角色
@@ -223,14 +212,14 @@ export class RbacService implements OnModuleInit {
         description: '超级管理员，拥有系统最高权限',
         isDefault: false,
       });
-      this.clearRolesCache(); // 清除缓存
+      await this.clearRolesCache(); // 清除缓存
     }
   }
 
   // 角色管理
   async createRole(data: CreateRoleDto) {
     const result = await this.rbacRepository.createRole(data);
-    this.clearRolesCache(); // 清除缓存
+    await this.clearRolesCache(); // 清除缓存
     return result;
   }
 
@@ -240,7 +229,7 @@ export class RbacService implements OnModuleInit {
       throw new NotFoundException(`角色ID ${id} 不存在`);
     }
     const result = await this.rbacRepository.updateRole(id, data);
-    this.clearRolesCache(); // 清除缓存
+    await this.clearRolesCache(); // 清除缓存
     return result;
   }
 
@@ -261,7 +250,7 @@ export class RbacService implements OnModuleInit {
     }
 
     const result = await this.rbacRepository.deleteRole(id);
-    this.clearRolesCache(); // 清除缓存
+    await this.clearRolesCache(); // 清除缓存
     return result;
   }
 
@@ -283,16 +272,8 @@ export class RbacService implements OnModuleInit {
 
   // 路由管理
   async createRoute(data: CreateRouteDto) {
-    // 如果有父路由ID，确保父路由存在
-    if (data.parentId) {
-      const parentRoute = await this.getRouteById(data.parentId);
-      if (!parentRoute) {
-        throw new NotFoundException(`父路由ID ${data.parentId} 不存在`);
-      }
-    }
-
     const result = await this.rbacRepository.createRoute(data);
-    this.clearRoutesCache(); // 清除缓存
+    await this.clearRoutesCache(); // 清除缓存
     return result;
   }
 
@@ -315,7 +296,7 @@ export class RbacService implements OnModuleInit {
     }
 
     const result = await this.rbacRepository.updateRoute(id, data);
-    this.clearRoutesCache(); // 清除缓存
+    await this.clearRoutesCache(); // 清除缓存
     return result;
   }
 
@@ -325,7 +306,7 @@ export class RbacService implements OnModuleInit {
       throw new NotFoundException(`路由ID ${id} 不存在`);
     }
     const result = await this.rbacRepository.deleteRoute(id);
-    this.clearRoutesCache(); // 清除缓存
+    await this.clearRoutesCache(); // 清除缓存
     return result;
   }
 
@@ -362,7 +343,7 @@ export class RbacService implements OnModuleInit {
     // 如果没有提供路由ID，直接清空该角色的所有路由
     if (!routeIds || routeIds.length === 0) {
       const result = await this.rbacRepository.assignRoutesToRole(roleId, []);
-      this.clearRoutesCache(); // 清除缓存，因为角色的路由发生了变化
+      await this.clearRoutesCache(); // 清除缓存，因为角色的路由发生了变化
       return result;
     }
 
@@ -383,7 +364,7 @@ export class RbacService implements OnModuleInit {
       roleId,
       routeIds,
     );
-    this.clearRoutesCache(); // 清除缓存
+    await this.clearRoutesCache(); // 清除缓存
     return result;
   }
 
@@ -412,8 +393,8 @@ export class RbacService implements OnModuleInit {
     // 如果没有提供角色ID，直接清空该用户的所有角色
     if (!roleIds || roleIds.length === 0) {
       const result = await this.rbacRepository.assignRolesToUser(userId, []);
-      this.clearCache(`userRoles_${userId}`); // 清除用户角色缓存
-      this.clearCache(`userRoutes_${userId}`); // 清除用户路由缓存
+      await this.clearCache(`userRoles_${userId}`); // 清除用户角色缓存
+      await this.clearCache(`userRoutes_${userId}`); // 清除用户路由缓存
       return result;
     }
 
@@ -429,8 +410,8 @@ export class RbacService implements OnModuleInit {
     }
 
     const result = await this.rbacRepository.assignRolesToUser(userId, roleIds);
-    this.clearCache(`userRoles_${userId}`); // 清除用户角色缓存
-    this.clearCache(`userRoutes_${userId}`); // 清除用户路由缓存
+    await this.clearCache(`userRoles_${userId}`); // 清除用户角色缓存
+    await this.clearCache(`userRoutes_${userId}`); // 清除用户路由缓存
     return result;
   }
 
@@ -600,7 +581,7 @@ export class RbacService implements OnModuleInit {
         role: ['v2mm5'],
       });
       // 清除路由缓存
-      this.clearRoutesCache();
+      await this.clearRoutesCache();
 
       // 为超级管理员角色分配所有路由
       const superAdminRole =
@@ -615,7 +596,7 @@ export class RbacService implements OnModuleInit {
       }
 
       // 清除路由缓存
-      this.clearRoutesCache();
+      await this.clearRoutesCache();
       console.log('默认路由初始化完成');
     } catch (error) {
       console.error('初始化默认路由失败:', error.message);

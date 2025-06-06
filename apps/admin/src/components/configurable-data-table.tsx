@@ -49,6 +49,7 @@ import {
   GripVerticalIcon,
   PlusIcon,
   Loader2,
+  ChevronRightIcon as ExpandIcon,
 } from 'lucide-react';
 import * as React from 'react';
 // 导入motion库组件
@@ -79,6 +80,128 @@ interface AccessorKeyColumn {
   accessorKey?: string;
 }
 
+// 扩展数据类型以支持树形结构
+interface TreeDataType extends BaseDataType {
+  children?: TreeDataType[];
+  level?: number;
+  parentId?: string | number;
+  hasChildren?: boolean;
+  isExpanded?: boolean;
+}
+
+// 扁平化树形数据的工具函数
+function flattenTreeData<TData extends BaseDataType>(
+  data: TData[],
+  expandedRows: Set<string | number>,
+  level = 0,
+  parentId?: string | number
+): (TData & TreeDataType)[] {
+  const result: (TData & TreeDataType)[] = [];
+
+  data.forEach(item => {
+    const hasChildren = Array.isArray((item as any).children) && (item as any).children.length > 0;
+    const isExpanded = expandedRows.has(item.id);
+
+    // 添加当前项
+    result.push({
+      ...item,
+      level,
+      parentId,
+      hasChildren,
+      isExpanded,
+    });
+
+    // 如果有子项且已展开，递归添加子项
+    if (hasChildren && isExpanded) {
+      const children = flattenTreeData(
+        (item as any).children as TData[],
+        expandedRows,
+        level + 1,
+        item.id
+      );
+      result.push(...(children as (TData & TreeDataType)[]));
+    }
+  });
+
+  return result;
+}
+
+// 检查数据是否包含树形结构
+function hasTreeStructure<TData extends BaseDataType>(data: TData[]): boolean {
+  return data.some(
+    item => Array.isArray((item as any).children) && (item as any).children.length > 0
+  );
+}
+
+// 展开/折叠按钮组件
+function ExpandButton({
+  isExpanded,
+  hasChildren,
+  level,
+  onToggle,
+}: {
+  isExpanded: boolean;
+  hasChildren: boolean;
+  level: number;
+  onToggle: () => void;
+}) {
+  return (
+    <div
+      className="flex items-center justify-start mr-2"
+      style={{ paddingLeft: `${level * 16}px` }}
+    >
+      {hasChildren ? (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-5 w-5 p-0 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors"
+          onClick={onToggle}
+        >
+          <ExpandIcon
+            className={`h-3 w-3 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}
+          />
+          <span className="sr-only">{isExpanded ? 'Collapse' : 'Expand'}</span>
+        </Button>
+      ) : (
+        <div className="h-5 w-5" />
+      )}
+    </div>
+  );
+}
+
+// 树形单元格包装器组件
+function TreeCellWrapper<TData extends BaseDataType>({
+  row,
+  originalCell,
+  onToggle,
+}: {
+  row: any;
+  originalCell: React.ReactNode;
+  onToggle: (id: string) => void;
+}) {
+  const rowData = row.original as TData & TreeDataType;
+  const hasChildren = rowData.hasChildren || false;
+  const level = rowData.level || 0;
+
+  // 只有有子节点或者层级大于0的行才需要展开按钮区域
+  // 这样可以确保没有子节点的根节点与表头对齐
+  if (!hasChildren && level === 0) {
+    return <>{originalCell}</>;
+  }
+
+  return (
+    <div className="flex items-center">
+      <ExpandButton
+        isExpanded={rowData.isExpanded || false}
+        hasChildren={hasChildren}
+        level={level}
+        onToggle={() => onToggle(row.original.id)}
+      />
+      <div className="flex-1">{originalCell}</div>
+    </div>
+  );
+}
+
 // 定义可拖拽行组件
 function DragHandle({ id }: { id: UniqueIdentifier }) {
   const { attributes, listeners } = useSortable({
@@ -105,12 +228,17 @@ function DraggableRow<TData extends BaseDataType>({ row }: { row: Row<TData> }) 
     id: row.original.id,
   });
 
+  const rowData = row.original as TData & TreeDataType;
+  const level = rowData.level || 0;
+
   return (
     <TableRow
       data-state={row.getIsSelected() && 'selected'}
       data-dragging={isDragging}
       ref={setNodeRef}
-      className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
+      className={`relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80 ${
+        level > 0 ? 'bg-muted/20' : ''
+      }`}
       style={{
         transform: CSS.Transform.toString(transform),
         transition: transition,
@@ -145,6 +273,9 @@ const MemoizedDraggableRow = React.memo(
 
 // 创建带动画的表格行组件
 function AnimatedTableRow<TData extends BaseDataType>({ row }: { row: Row<TData> }) {
+  const rowData = row.original as TData & TreeDataType;
+  const level = rowData.level || 0;
+
   return (
     <motion.tr
       initial={{ opacity: 0, y: 10 }}
@@ -152,7 +283,9 @@ function AnimatedTableRow<TData extends BaseDataType>({ row }: { row: Row<TData>
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.2 }}
       data-state={row.getIsSelected() && 'selected'}
-      className="border-none transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+      className={`border-none transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted ${
+        level > 0 ? 'bg-muted/20' : ''
+      }`}
     >
       {row.getVisibleCells().map(cell => (
         <TableCell
@@ -180,7 +313,7 @@ const MemoizedAnimatedTableRow = React.memo(
     );
   }
 );
-// 944493
+
 // 列大小调整手柄组件
 function ColumnResizeHandle({
   onMouseDown,
@@ -246,6 +379,31 @@ export function ConfigurableDataTable<TData extends BaseDataType>({
     pageIndex: 0,
     pageSize: pagination.defaultPageSize || 10,
   });
+
+  // 树形结构相关状态
+  const [expandedRows, setExpandedRows] = React.useState<Set<string | number>>(new Set());
+  const isTreeData = React.useMemo(() => hasTreeStructure(data), [data]);
+
+  // 处理展开/折叠
+  const toggleRowExpansion = React.useCallback((rowId: string | number) => {
+    setExpandedRows(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(rowId)) {
+        newSet.delete(rowId);
+      } else {
+        newSet.add(rowId);
+      }
+      return newSet;
+    });
+  }, []);
+
+  // 处理树形数据
+  const processedData = React.useMemo(() => {
+    if (isTreeData) {
+      return flattenTreeData(data, expandedRows);
+    }
+    return data;
+  }, [data, expandedRows, isTreeData]);
 
   // 创建页面动画标识符，用于在翻页时触发动画
   const [pageAnimationKey, setPageAnimationKey] = React.useState(0);
@@ -428,8 +586,33 @@ export function ConfigurableDataTable<TData extends BaseDataType>({
       });
     }
 
-    // 增强用户定义的列，为ID列和排序列添加自动宽度
-    const enhancedUserColumns = userColumns.map(column => {
+    // 增强用户定义的列，为ID列和排序列添加自动宽度，并为树形数据的第一列添加展开按钮
+    const enhancedUserColumns = userColumns.map((column, index) => {
+      // 如果是树形数据的第一列，包装cell以添加展开按钮
+      if (isTreeData && index === 0) {
+        const originalCell = column.cell;
+        return {
+          ...column,
+          cell: ({ row, ...props }: any) => {
+            const columnKey = column.id || (column as any).accessorKey;
+            const originalCellContent =
+              typeof originalCell === 'function'
+                ? originalCell({ row, ...props })
+                : columnKey
+                  ? row.getValue(columnKey)
+                  : '';
+            return (
+              <TreeCellWrapper
+                row={row}
+                originalCell={originalCellContent}
+                onToggle={toggleRowExpansion}
+              />
+            );
+          },
+          enableResizing: true,
+        };
+      }
+
       // 如果是ID列，设置合适的宽度
       if (column.id === 'id' || (column as unknown as AccessorKeyColumn).accessorKey === 'id') {
         return {
@@ -452,14 +635,17 @@ export function ConfigurableDataTable<TData extends BaseDataType>({
 
     // 合并用户定义的列
     return [...baseColumns, ...enhancedUserColumns];
-  }, [enableDragSort, enableRowSelection, userColumns]);
+  }, [enableDragSort, enableRowSelection, userColumns, isTreeData, toggleRowExpansion]);
 
-  const dataIds = React.useMemo<UniqueIdentifier[]>(() => data?.map(({ id }) => id) || [], [data]);
+  const dataIds = React.useMemo<UniqueIdentifier[]>(
+    () => processedData?.map(({ id }) => id) || [],
+    [processedData]
+  );
 
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
 
   const table = useReactTable({
-    data,
+    data: processedData,
     columns,
     state: {
       sorting,
@@ -504,7 +690,10 @@ export function ConfigurableDataTable<TData extends BaseDataType>({
     if (active && over && active.id !== over.id) {
       const oldIndex = dataIds.indexOf(active.id);
       const newIndex = dataIds.indexOf(over.id);
-      const newData = arrayMove(data, oldIndex, newIndex);
+
+      // 对于树形数据，我们需要重新排列原始数据而不是扁平化的数据
+      const dataToSort = isTreeData ? data : processedData;
+      const newData = arrayMove(dataToSort, oldIndex, newIndex);
 
       // 调用拖拽排序完成回调
       if (onDragSortEnd) {

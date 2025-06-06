@@ -51,7 +51,7 @@ export interface ErrorDetails {
  */
 export function handleDatabaseError(error: DatabaseError): DatabaseException {
   // 默认错误信息和代码
-  let message = '数据库操作失败';
+  let message = '操作失败，请重试';
   let errorCode = ErrorCode.DATABASE_ERROR;
   const details: ErrorDetails = {};
 
@@ -68,28 +68,28 @@ export function handleDatabaseError(error: DatabaseError): DatabaseException {
       switch (error.code) {
         // 唯一约束违反
         case '23505':
-          message = '数据已存在，违反唯一约束';
+          message = '该信息已存在，请勿重复添加';
           errorCode = ErrorCode.UNIQUE_VIOLATION;
           details.constraint = error.constraint;
           break;
 
         // 外键约束违反
         case '23503':
-          message = '违反外键约束';
+          message = '相关数据不存在，请检查后重试';
           errorCode = ErrorCode.FOREIGN_KEY_ERROR;
           details.constraint = error.constraint;
           break;
 
         // 非空约束违反
         case '23502':
-          message = '违反非空约束';
+          message = '必填信息不能为空，请完整填写';
           errorCode = ErrorCode.NOT_NULL_VIOLATION;
           details.column = error.column;
           break;
 
         // 检查约束违反
         case '23514':
-          message = '违反检查约束';
+          message = '输入的信息格式不正确，请重新填写';
           errorCode = ErrorCode.CONSTRAINT_ERROR;
           details.constraint = error.constraint;
           break;
@@ -98,13 +98,13 @@ export function handleDatabaseError(error: DatabaseError): DatabaseException {
         case '08000':
         case '08003':
         case '08006':
-          message = '数据库连接错误';
+          message = '系统暂时无法连接，请稍后重试';
           errorCode = ErrorCode.CONNECTION_ERROR;
           break;
 
         // 查询超时
         case '57014':
-          message = '查询超时';
+          message = '操作时间过长，请重新尝试';
           errorCode = ErrorCode.TIMEOUT_ERROR;
           break;
       }
@@ -115,20 +115,20 @@ export function handleDatabaseError(error: DatabaseError): DatabaseException {
       switch (error.errno) {
         // 唯一约束违反
         case 1062:
-          message = '数据已存在，违反唯一约束';
+          message = '该信息已存在，请勿重复添加';
           errorCode = ErrorCode.UNIQUE_VIOLATION;
           break;
 
         // 外键约束违反
         case 1452:
         case 1451:
-          message = '违反外键约束';
+          message = '相关数据不存在，请检查后重试';
           errorCode = ErrorCode.FOREIGN_KEY_ERROR;
           break;
 
         // 非空约束违反
         case 1048:
-          message = '违反非空约束';
+          message = '必填信息不能为空，请完整填写';
           errorCode = ErrorCode.NOT_NULL_VIOLATION;
           break;
 
@@ -136,7 +136,7 @@ export function handleDatabaseError(error: DatabaseError): DatabaseException {
         case 1040:
         case 1042:
         case 1043:
-          message = '数据库连接错误';
+          message = '系统暂时无法连接，请稍后重试';
           errorCode = ErrorCode.CONNECTION_ERROR;
           break;
       }

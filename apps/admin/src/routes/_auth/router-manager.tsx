@@ -12,6 +12,14 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import apiClient, { queryHooks } from '@/lib/aip-service';
 import { RouteItem } from '@smart-lock/shared';
 import { keepPreviousData } from '@tanstack/react-query';
@@ -23,6 +31,7 @@ import { z } from 'zod';
 import { UseFormReturn } from 'react-hook-form';
 import Select from 'react-select';
 import { useRbacApi } from '@/hooks/useRbacApi';
+import { DynamicIcon, IconName } from 'lucide-react/dynamic';
 
 // 定义表单验证schema
 const routeFormSchema = z.object({
@@ -44,7 +53,6 @@ const editRouteFormSchema = z.object({
 });
 
 type RouteFormData = z.infer<typeof routeFormSchema>;
-type EditRouteFormData = z.infer<typeof editRouteFormSchema>;
 
 export const Route = createFileRoute('/_auth/router-manager')({
   component: RouteComponent,
@@ -65,6 +73,8 @@ function RouteComponent() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [data, setData] = useState<RouteItem[]>([]);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [routeToDelete, setRouteToDelete] = useState<string | null>(null);
   const { data: apiData, isFetching } = queryHooks.usePaginatedQuery<RouteItem>(
     ['routes'],
     '/rbac/routes',
@@ -105,6 +115,15 @@ function RouteComponent() {
       accessorKey: 'icon',
       header: '图标',
       enableSorting: true,
+      cell: ({ row }) => {
+        return (
+          <DynamicIcon
+            name={row.original.icon as IconName}
+            className={`transition-all will-change-transform text-sidebar-primary font-medium'
+        }`}
+          />
+        );
+      },
     },
     {
       accessorKey: 'role',
@@ -141,7 +160,15 @@ function RouteComponent() {
             >
               编辑
             </Button>
-            <Button type="button" variant="link" className="text-red-600">
+            <Button
+              type="button"
+              variant="link"
+              className="text-red-600"
+              onClick={() => {
+                setRouteToDelete(row.original.id);
+                setDeleteDialogOpen(true);
+              }}
+            >
               删除
             </Button>
           </div>
@@ -154,9 +181,30 @@ function RouteComponent() {
     setData(apiData?.items ?? []);
   }, [apiData]);
 
-  const { useRoles, useCreateRoute } = useRbacApi();
+  const { useRoles, useCreateRoute, useUpdateRoute, useDeleteRoute } = useRbacApi();
   const role = useRoles();
-  const { isPending, mutateAsync: createRoute } = useCreateRoute();
+  const { mutateAsync: createRoute } = useCreateRoute();
+  const { mutateAsync: updateRoute } = useUpdateRoute();
+  const { mutateAsync: deleteRoute } = useDeleteRoute();
+
+  // 处理删除确认
+  const handleDeleteConfirm = async () => {
+    if (routeToDelete) {
+      try {
+        await deleteRoute(routeToDelete);
+        setDeleteDialogOpen(false);
+        setRouteToDelete(null);
+      } catch (error) {
+        console.error('删除路由失败:', error);
+      }
+    }
+  };
+
+  // 取消删除
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+    setRouteToDelete(null);
+  };
 
   // 表单组件
   function RouteFormComponent({
@@ -316,6 +364,7 @@ function RouteComponent() {
         <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
           <ConfigurableDataTable
             serverSidePagination={true}
+            enableRowSelection={false}
             data={data}
             columns={columns}
             loading={isFetching}
@@ -377,13 +426,18 @@ function RouteComponent() {
               description: '修改路由信息',
               schema: editRouteFormSchema,
               component: form => <RouteFormComponent form={form} isEdit={true} />,
-              transformToFormData: (rowData: RouteItem) => ({
-                name: rowData.name,
-                icon: rowData.icon || '',
-                parentId: rowData.parentId || '',
-                role: rowData.role, // 提取角色ID
-                isEnabled: !rowData.isHidden, // 转换：isHidden -> isEnabled
-              }),
+              transformToFormData: (rowData: RouteItem) => {
+                console.log('role', role.data);
+                return {
+                  name: rowData.name,
+                  icon: rowData.icon || '',
+                  parentId: rowData.parentId || '',
+                  role: rowData.role.map(item => {
+                    return role.data?.find(role => role.name === item)?.id;
+                  }), // 提取角色ID
+                  isEnabled: !rowData.isHidden, // 转换：isHidden -> isEnabled
+                };
+              },
               onSubmit: async (data: RouteFormData, originalData: RouteItem) => {
                 try {
                   // 转换数据格式：isEnabled -> isHidden
@@ -394,6 +448,16 @@ function RouteComponent() {
                     role: data.role,
                     isHidden: !data.isEnabled, // 注意：这里需要取反
                   };
+                  updateRoute({
+                    routeData: {
+                      name: submitData.name,
+                      icon: submitData.icon || undefined,
+                      parentId: submitData.parentId || undefined,
+                      role: submitData.role,
+                      isHidden: submitData.isHidden,
+                    },
+                    id: originalData.id,
+                  });
 
                   console.log('Route updated successfully:', submitData);
                 } catch (error) {
@@ -405,6 +469,24 @@ function RouteComponent() {
           />
         </div>
       </div>
+
+      {/* 删除确认弹窗 */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>确认删除</DialogTitle>
+            <DialogDescription>您确定要删除这个路由吗？此操作无法撤销。</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleDeleteCancel}>
+              取消
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteConfirm}>
+              确认删除
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

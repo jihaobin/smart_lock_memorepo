@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { GetAllAdminUsersType } from '@smart-lock/shared/';
+import {
+  GetAllAdminUsersType,
+  CreateAdminUserType,
+  UpdateAdminUserType,
+} from '@smart-lock/shared/';
 
 import { UserRepository } from './user.repository';
 
@@ -7,24 +11,24 @@ import { UserRepository } from './user.repository';
 export class UserService {
   constructor(private readonly userRepository: UserRepository) {}
 
-  create(createUserDto) {
-    return 'This action adds a new user';
+  async create(createUserDto: CreateAdminUserType) {
+    return await this.userRepository.createUser(createUserDto);
   }
 
   async findAll(query: GetAllAdminUsersType) {
     return this.userRepository.getAllUsers(query);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: string) {
+    return await this.userRepository.findUserById(id);
   }
 
-  update(id: number, updateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: string, updateUserDto: UpdateAdminUserType) {
+    return await this.userRepository.updateUser(id, updateUserDto);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: string) {
+    return await this.userRepository.deleteUser(id);
   }
 
   async createTestUserData(total = 50) {

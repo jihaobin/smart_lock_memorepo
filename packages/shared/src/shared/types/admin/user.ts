@@ -27,6 +27,7 @@ export const CreateAdminUserSchema = AdminCreateSchema;
  */
 export const UpdateAdminUserSchema = z.object({
   name: z.string().min(1, '用户名不能为空').optional(),
+  password: z.string().min(6, '密码至少6位字符').optional(),
   // 密码更新通常在单独的接口处理，这里不包含密码字段
   roleIds: z.array(z.string()).optional(), // 允许更新用户角色
 });
@@ -43,7 +44,7 @@ export type GetAllAdminUsersType = GetAllDataType;
 /**
  * 创建管理员用户的类型 (复用 auth.ts 中的定义)
  */
-export type CreateAdminUserType = z.infer<typeof CreateAdminUserSchema>;
+export type CreateAdminUserType = Required<z.infer<typeof CreateAdminUserSchema>>;
 
 /**
  * 更新管理员用户的类型

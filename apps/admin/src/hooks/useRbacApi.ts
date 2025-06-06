@@ -117,11 +117,11 @@ export function useRbacApi() {
       mutationFn: id => apiClient.delete<void>(`/rbac/routes/${id}`),
       onSuccess: (_, variables) => {
         queryClient.invalidateQueries({ queryKey: queryKeys.routes });
+
         queryClient.invalidateQueries({ queryKey: queryKeys.route(variables) });
       },
     });
   };
-
   // 角色路由关联
   const useAssignRoutesToRole = () => {
     const queryClient = useQueryClient();

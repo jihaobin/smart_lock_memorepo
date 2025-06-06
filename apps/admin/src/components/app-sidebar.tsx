@@ -169,7 +169,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       // 1. 不是隐藏的路由
       // 2. 不是登录、注册等认证相关路由
       // 3. 不是错误页面路由
-      const isHidden = route.meta?.hidden === true;
+      const isHidden = route.isHidden === true;
       const isAuthRoute = route.path.includes('/login') || route.path.includes('/register');
       const isErrorRoute = route.path.includes('/404') || route.path.includes('/error');
 

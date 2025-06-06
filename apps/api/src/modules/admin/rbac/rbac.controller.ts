@@ -7,8 +7,6 @@ import {
   Body,
   Param,
   UseGuards,
-  HttpCode,
-  HttpStatus,
   Query,
 } from '@nestjs/common';
 import {
@@ -45,7 +43,6 @@ export class RbacController {
   }
 
   @Delete('roles/:id')
-  @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(RolesGuard)
   @Roles('admin', 'superadmin')
   async deleteRole(@Param('id') id: string) {
@@ -78,7 +75,6 @@ export class RbacController {
   }
 
   @Delete('routes/:id')
-  @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(RolesGuard)
   @Roles('admin', 'superadmin')
   async deleteRoute(@Param('id') id: string) {

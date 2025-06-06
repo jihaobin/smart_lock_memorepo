@@ -313,7 +313,7 @@ export class RbacRepository {
         throw error;
       }
       this.logger.error(`创建路由失败: ${error.message}`, error.stack);
-      throw new InternalServerErrorException('创建路由失败');
+      throw error;
     }
   }
 
@@ -496,13 +496,6 @@ export class RbacRepository {
       };
 
       return routes.map(transformRouteData);
-
-      // return {
-      //   items: routes.map(transformRouteData),
-      //   total: routes.length,
-      //   page: page,
-      //   pageSize: pageSize,
-      // }
     } catch (error) {
       this.logger.error(`获取所有路由失败: ${error.message}`, error.stack);
       throw new InternalServerErrorException('获取所有路由失败');
