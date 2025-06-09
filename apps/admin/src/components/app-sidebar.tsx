@@ -173,10 +173,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       const isAuthRoute = route.path.includes('/login') || route.path.includes('/register');
       const isErrorRoute = route.path.includes('/404') || route.path.includes('/error');
 
-      return !isHidden && !isAuthRoute && !isErrorRoute;
+      const shouldShow = !isHidden && !isAuthRoute && !isErrorRoute;
+      return shouldShow;
     });
-
-    return buildMenuTree(menuRoutes);
+    const tree = buildMenuTree(menuRoutes);
+    return tree;
   }, [accessibleRoutes]);
 
   return (

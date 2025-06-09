@@ -32,6 +32,7 @@ import { UseFormReturn } from 'react-hook-form';
 import Select from 'react-select';
 import { useRbacApi } from '@/hooks/useRbacApi';
 import { DynamicIcon, IconName } from 'lucide-react/dynamic';
+import { useAuth } from '@/context/AuthContext';
 
 // 定义表单验证schema
 const routeFormSchema = z.object({
@@ -186,12 +187,15 @@ function RouteComponent() {
   const { mutateAsync: createRoute } = useCreateRoute();
   const { mutateAsync: updateRoute } = useUpdateRoute();
   const { mutateAsync: deleteRoute } = useDeleteRoute();
+  const { refreshUserRoutes } = useAuth();
 
   // 处理删除确认
   const handleDeleteConfirm = async () => {
     if (routeToDelete) {
       try {
         await deleteRoute(routeToDelete);
+        // 刷新用户路由缓存
+        await refreshUserRoutes();
         setDeleteDialogOpen(false);
         setRouteToDelete(null);
       } catch (error) {
@@ -412,11 +416,9 @@ function RouteComponent() {
                     icon: submitData.icon || undefined, // 将 null 转换为 undefined 以匹配 CreateRouteDto 类型
                   });
 
-                  // 刷新数据
-                  // 这里可以触发重新获取数据的逻辑
-                  console.log('Route created successfully:', submitData);
+                  // 刷新用户路由缓存
+                  await refreshUserRoutes();
                 } catch (error) {
-                  console.error('Failed to create route:', error);
                   throw error; // 重新抛出错误以便FormDialog处理
                 }
               },
@@ -427,7 +429,6 @@ function RouteComponent() {
               schema: editRouteFormSchema,
               component: form => <RouteFormComponent form={form} isEdit={true} />,
               transformToFormData: (rowData: RouteItem) => {
-                console.log('role', role.data);
                 return {
                   name: rowData.name,
                   icon: rowData.icon || '',
@@ -448,7 +449,7 @@ function RouteComponent() {
                     role: data.role,
                     isHidden: !data.isEnabled, // 注意：这里需要取反
                   };
-                  updateRoute({
+                  await updateRoute({
                     routeData: {
                       name: submitData.name,
                       icon: submitData.icon || undefined,
@@ -459,7 +460,8 @@ function RouteComponent() {
                     id: originalData.id,
                   });
 
-                  console.log('Route updated successfully:', submitData);
+                  // 刷新用户路由缓存
+                  await refreshUserRoutes();
                 } catch (error) {
                   console.error('Failed to update route:', error);
                   throw error; // 重新抛出错误以便FormDialog处理

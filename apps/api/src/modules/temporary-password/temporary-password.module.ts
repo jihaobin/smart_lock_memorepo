@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
-import { TemporaryPasswordService } from './temporary-password.service';
+
 import { TemporaryPasswordController } from './temporary-password.controller';
+import { TemporaryPasswordService } from './temporary-password.service';
 
 @Module({
   controllers: [TemporaryPasswordController],

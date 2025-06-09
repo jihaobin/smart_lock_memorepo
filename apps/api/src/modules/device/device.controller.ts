@@ -12,7 +12,6 @@ import { Request } from 'express';
 
 import { DeviceService } from './device.service';
 import { DeviceGateway } from './gateways/device.gateway';
-import { DeviceStatusService } from './services/device-status.service';
 
 /**
  * 设备管理控制器
@@ -23,7 +22,6 @@ export class DeviceController {
   constructor(
     private readonly deviceService: DeviceService,
     private readonly deviceGateway: DeviceGateway,
-    private readonly deviceStatusService: DeviceStatusService,
   ) {}
 
   // 设备分组管理接口

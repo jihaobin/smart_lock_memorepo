@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { DbType, TemporaryPasswordInfo } from '@smart-lock/shared';
+import { schema } from '@smart-lock/shared/server';
 import {
   eq,
   and,
@@ -21,15 +22,15 @@ import {
   SQL,
   gt,
 } from 'drizzle-orm';
-import { DB } from '../../database/database.provider';
+import { AppLoggerService } from 'src/common';
+
 import {
   CreateTemporaryPasswordDto,
   QueryTemporaryPasswordDto,
   BatchDeleteTemporaryPasswordDto,
   ValidateTemporaryPasswordDto,
 } from './dto';
-import { schema } from '@smart-lock/shared/server';
-import { AppLoggerService } from 'src/common';
+import { DB } from '../../database/database.provider';
 import { NotificationQueueService } from '../notification/queues/notification-queue.service';
 
 @Injectable()
@@ -117,7 +118,12 @@ export class TemporaryPasswordService {
       where: eq(schema.temporaryPasswords.id, id),
       with: {
         device: {
-          columns: { name: true, type: true },
+          columns: { name: true },
+          with: {
+            deviceModel: {
+              columns: { modelName: true },
+            },
+          },
         },
         creator: {
           columns: { nikeName: true, phone: true },
@@ -187,7 +193,12 @@ export class TemporaryPasswordService {
         offset,
         with: {
           device: {
-            columns: { name: true, type: true },
+            columns: { name: true },
+            with: {
+              deviceModel: {
+                columns: { modelName: true },
+              },
+            },
           },
           creator: {
             columns: { nikeName: true, phone: true },
@@ -239,7 +250,12 @@ export class TemporaryPasswordService {
       orderBy: desc(schema.temporaryPasswords.expiresAt),
       with: {
         device: {
-          columns: { name: true, type: true },
+          columns: { name: true },
+          with: {
+            deviceModel: {
+              columns: { modelName: true },
+            },
+          },
         },
       },
     });
@@ -276,9 +292,7 @@ export class TemporaryPasswordService {
   /**
    * 验证临时密码
    */
-  async validatePassword(
-    validateDto: ValidateTemporaryPasswordDto,
-  ): Promise<{
+  async validatePassword(validateDto: ValidateTemporaryPasswordDto): Promise<{
     valid: boolean;
     passwordInfo?: TemporaryPasswordInfo;
     reason?: string;

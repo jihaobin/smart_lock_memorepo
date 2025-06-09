@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import { createZodDto } from 'nestjs-zod';
+import { z } from 'zod';
 
 // 创建临时密码的验证schema
 export const CreateTemporaryPasswordSchema = z.object({

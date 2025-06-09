@@ -14,8 +14,12 @@ import {
   CreateRoleDto,
   UpdateRoleDto,
 } from '@smart-lock/shared';
+import {
+  CACHE_SERVICE,
+  ICacheService,
+  IAdvancedCacheService,
+} from 'src/common/cache';
 import { APP_CONFIG, AppConfig } from 'src/config/config.provider';
-import { CACHE_SERVICE, ICacheService } from 'src/common/cache';
 
 import { RbacRepository } from './rbac.repository';
 import { AdminAuthRepository } from '../auth/admin-auth.repository';
@@ -98,6 +102,11 @@ export class RbacService implements OnModuleInit {
   private async clearRoutesCache() {
     await this.clearCache('allRoutes');
     await this.clearCache('allRoutesOnPage');
+
+    // 清除所有用户的路由缓存
+    // 由于路由信息发生变化，所有用户的可访问路由都可能受到影响
+    await this.clearAllUserRoutesCache();
+
     // 注意：Redis缓存无法直接遍历所有键，这里采用约定的键名模式
     // 在实际使用中，可以考虑使用Redis的SCAN命令或维护一个键列表
     // 暂时清除常用的路由缓存键
@@ -105,6 +114,49 @@ export class RbacService implements OnModuleInit {
     for (const key of commonRouteKeys) {
       await this.clearCache(key);
     }
+  }
+
+  /**
+   * 清除所有用户的路由缓存
+   * 当路由信息发生变化时，需要清除所有用户的路由缓存
+   */
+  private async clearAllUserRoutesCache() {
+    try {
+      // 检查是否是高级缓存服务（Redis）
+      if (this.isAdvancedCacheService(this.cacheService)) {
+        // 使用Redis的keys命令查找所有userRoutes_*键
+        const redis = this.cacheService.getClient<any>();
+        const pattern = 'userRoutes_*';
+        const keys = await redis.keys(pattern);
+
+        if (keys && keys.length > 0) {
+          // 批量删除所有用户路由缓存
+          await Promise.all(keys.map((key: string) => this.clearCache(key)));
+          console.log(`已清除 ${keys.length} 个用户路由缓存`);
+        } else {
+          console.log('没有找到需要清除的用户路由缓存');
+        }
+      } else {
+        // 如果是内存缓存，由于无法遍历所有键，这里可以考虑其他方案
+        // 比如设置较短的缓存过期时间，或者维护一个用户ID列表
+        console.log('当前使用内存缓存，无法批量清除用户路由缓存');
+      }
+    } catch (error) {
+      console.error('清除用户路由缓存时出错:', error);
+      // 如果出错，可以考虑其他方案
+      // 比如维护一个用户ID列表，或者使用固定的缓存失效时间
+    }
+  }
+
+  /**
+   * 检查缓存服务是否是高级缓存服务
+   */
+  private isAdvancedCacheService(
+    cacheService: ICacheService,
+  ): cacheService is IAdvancedCacheService {
+    return (
+      cacheService && typeof (cacheService as any).getClient === 'function'
+    );
   }
 
   /**

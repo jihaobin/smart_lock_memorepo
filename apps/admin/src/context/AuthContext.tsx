@@ -70,13 +70,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // 刷新用户权限路由
   const refreshUserRoutes = async () => {
-    if (!user) return;
+    if (!user) {
+      console.warn('refreshUserRoutes: 用户未登录，跳过刷新');
+      return;
+    }
 
     try {
       const routes = await apiClient.get<RouteItem[]>(`/rbac/users/${user.id}/accessible-routes`);
       const updatedUser = { ...user, accessibleRoutes: routes };
+
+      // 使用批量状态更新来确保一致性
       setUser(updatedUser);
       setAccessibleRoutes(routes);
+
+      // 保存到localStorage
       saveUserToStorage(updatedUser);
     } catch (error) {
       console.error('刷新用户权限路由失败:', error);

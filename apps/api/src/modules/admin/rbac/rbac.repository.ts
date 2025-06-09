@@ -5,7 +5,7 @@ import {
   NotFoundException,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { RoleItem } from '@smart-lock/shared/.';
+import { RoleItem, UpdateRouteDto } from '@smart-lock/shared';
 import { DbType, schema } from '@smart-lock/shared/server';
 import { eq, inArray, isNull } from 'drizzle-orm';
 import { AppLoggerService } from 'src/common';
@@ -317,37 +317,17 @@ export class RbacRepository {
     }
   }
 
-  async updateRoute(
-    id: string,
-    data: {
-      path?: string;
-      name?: string;
-      component?: string;
-      icon?: string;
-      parentId?: string;
-      order?: number;
-      isMenu?: boolean;
-      meta?: {
-        title?: string;
-        description?: string;
-        hidden?: boolean;
-      };
-    },
-  ) {
+  async updateRoute(id: string, data: UpdateRouteDto) {
     if (!id) {
       throw new BadRequestException('路由ID不能为空');
-    }
-
-    if (data.path !== undefined && data.path.trim() === '') {
-      throw new BadRequestException('路由路径不能为空');
     }
 
     if (data.name !== undefined && data.name.trim() === '') {
       throw new BadRequestException('路由名称不能为空');
     }
 
-    if (data.component !== undefined && data.component.trim() === '') {
-      throw new BadRequestException('路由组件不能为空');
+    if (data.role !== undefined && !Array.isArray(data.role)) {
+      throw new BadRequestException('角色ID列表必须是数组');
     }
 
     try {
@@ -370,17 +350,59 @@ export class RbacRepository {
         }
       }
 
-      const result = await this.db
-        .update(schema.routes)
-        .set({
-          ...data,
-          path: data.path?.trim(),
-          name: data.name?.trim(),
-          updatedAt: new Date(),
-        })
-        .where(eq(schema.routes.id, id))
-        .returning();
-      return result[0];
+      // 如果传入了role字段，检查所有角色是否存在
+      if (data.role !== undefined && data.role.length > 0) {
+        const roles = await this.db
+          .select({ id: schema.roles.id })
+          .from(schema.roles)
+          .where(inArray(schema.roles.id, data.role));
+
+        const existingRoleIds = roles.map((role) => role.id);
+        const nonExistingRoleIds = data.role.filter(
+          (roleId) => !existingRoleIds.includes(roleId),
+        );
+
+        if (nonExistingRoleIds.length > 0) {
+          throw new NotFoundException(
+            `ID为${nonExistingRoleIds.join(', ')}的角色不存在`,
+          );
+        }
+      }
+
+      // 使用事务确保数据一致性
+      return await this.db.transaction(async (tx) => {
+        // 更新路由基本信息（排除role字段）
+        const { role, ...routeData } = data;
+        const result = await tx
+          .update(schema.routes)
+          .set({
+            ...routeData,
+            name: data.name?.trim(),
+            updatedAt: new Date(),
+          })
+          .where(eq(schema.routes.id, id))
+          .returning();
+
+        // 如果传入了role字段，更新角色关联
+        if (data.role !== undefined) {
+          // 先删除该路由的所有角色关联
+          await tx
+            .delete(schema.roleRoutes)
+            .where(eq(schema.roleRoutes.routeId, id));
+
+          // 如果有新的角色，创建新的关联
+          if (data.role.length > 0) {
+            const roleRouteValues = data.role.map((roleId) => ({
+              roleId,
+              routeId: id,
+            }));
+
+            await tx.insert(schema.roleRoutes).values(roleRouteValues);
+          }
+        }
+
+        return result[0];
+      });
     } catch (error) {
       if (
         error instanceof BadRequestException ||

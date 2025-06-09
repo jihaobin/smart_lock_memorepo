@@ -1,9 +1,9 @@
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 import { RoleItem, RouteItem } from './rbac';
 
 // 定义通用的强密码验证规则
-const strongPasswordSchema = z
+export const strongPasswordSchema = z
   .string()
   .min(8, '密码至少需要8个字符')
   .regex(/[A-Z]/, '密码需要包含至少一个大写字母')

@@ -23,8 +23,6 @@ export function SiteHeader() {
   const [breadcrumbs, setBreadcrumbs] = React.useState<any[]>([]);
   const debounceTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
-  console.log(matches);
-
   // 使用useMemo缓存路径到路由的映射关系
   const routePathMap = React.useMemo(() => {
     const map = new Map();

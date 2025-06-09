@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 export const createFriendSchema = z.object({
   remarkName: z.string().min(1, '昵称不能为空'),

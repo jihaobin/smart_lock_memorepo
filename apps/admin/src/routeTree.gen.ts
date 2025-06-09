@@ -16,6 +16,8 @@ import { Route as AuthImport } from './routes/_auth';
 import { Route as AuthIndexImport } from './routes/_auth/index';
 import { Route as AuthUserManagerImport } from './routes/_auth/user-manager';
 import { Route as AuthRouterManagerImport } from './routes/_auth/router-manager';
+import { Route as AuthDeviceManagerImport } from './routes/_auth/device-manager';
+import { Route as AuthAdminManagerImport } from './routes/_auth/admin-manager';
 
 // Create/Update Routes
 
@@ -48,6 +50,18 @@ const AuthRouterManagerRoute = AuthRouterManagerImport.update({
   getParentRoute: () => AuthRoute,
 } as any);
 
+const AuthDeviceManagerRoute = AuthDeviceManagerImport.update({
+  id: '/device-manager',
+  path: '/device-manager',
+  getParentRoute: () => AuthRoute,
+} as any);
+
+const AuthAdminManagerRoute = AuthAdminManagerImport.update({
+  id: '/admin-manager',
+  path: '/admin-manager',
+  getParentRoute: () => AuthRoute,
+} as any);
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -65,6 +79,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/login';
       preLoaderRoute: typeof LoginImport;
       parentRoute: typeof rootRoute;
+    };
+    '/_auth/admin-manager': {
+      id: '/_auth/admin-manager';
+      path: '/admin-manager';
+      fullPath: '/admin-manager';
+      preLoaderRoute: typeof AuthAdminManagerImport;
+      parentRoute: typeof AuthImport;
+    };
+    '/_auth/device-manager': {
+      id: '/_auth/device-manager';
+      path: '/device-manager';
+      fullPath: '/device-manager';
+      preLoaderRoute: typeof AuthDeviceManagerImport;
+      parentRoute: typeof AuthImport;
     };
     '/_auth/router-manager': {
       id: '/_auth/router-manager';
@@ -93,12 +121,16 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 interface AuthRouteChildren {
+  AuthAdminManagerRoute: typeof AuthAdminManagerRoute;
+  AuthDeviceManagerRoute: typeof AuthDeviceManagerRoute;
   AuthRouterManagerRoute: typeof AuthRouterManagerRoute;
   AuthUserManagerRoute: typeof AuthUserManagerRoute;
   AuthIndexRoute: typeof AuthIndexRoute;
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
+  AuthAdminManagerRoute: AuthAdminManagerRoute,
+  AuthDeviceManagerRoute: AuthDeviceManagerRoute,
   AuthRouterManagerRoute: AuthRouterManagerRoute,
   AuthUserManagerRoute: AuthUserManagerRoute,
   AuthIndexRoute: AuthIndexRoute,
@@ -109,6 +141,8 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren);
 export interface FileRoutesByFullPath {
   '': typeof AuthRouteWithChildren;
   '/login': typeof LoginRoute;
+  '/admin-manager': typeof AuthAdminManagerRoute;
+  '/device-manager': typeof AuthDeviceManagerRoute;
   '/router-manager': typeof AuthRouterManagerRoute;
   '/user-manager': typeof AuthUserManagerRoute;
   '/': typeof AuthIndexRoute;
@@ -116,6 +150,8 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute;
+  '/admin-manager': typeof AuthAdminManagerRoute;
+  '/device-manager': typeof AuthDeviceManagerRoute;
   '/router-manager': typeof AuthRouterManagerRoute;
   '/user-manager': typeof AuthUserManagerRoute;
   '/': typeof AuthIndexRoute;
@@ -125,6 +161,8 @@ export interface FileRoutesById {
   __root__: typeof rootRoute;
   '/_auth': typeof AuthRouteWithChildren;
   '/login': typeof LoginRoute;
+  '/_auth/admin-manager': typeof AuthAdminManagerRoute;
+  '/_auth/device-manager': typeof AuthDeviceManagerRoute;
   '/_auth/router-manager': typeof AuthRouterManagerRoute;
   '/_auth/user-manager': typeof AuthUserManagerRoute;
   '/_auth/': typeof AuthIndexRoute;
@@ -132,13 +170,22 @@ export interface FileRoutesById {
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: '' | '/login' | '/router-manager' | '/user-manager' | '/';
+  fullPaths:
+    | ''
+    | '/login'
+    | '/admin-manager'
+    | '/device-manager'
+    | '/router-manager'
+    | '/user-manager'
+    | '/';
   fileRoutesByTo: FileRoutesByTo;
-  to: '/login' | '/router-manager' | '/user-manager' | '/';
+  to: '/login' | '/admin-manager' | '/device-manager' | '/router-manager' | '/user-manager' | '/';
   id:
     | '__root__'
     | '/_auth'
     | '/login'
+    | '/_auth/admin-manager'
+    | '/_auth/device-manager'
     | '/_auth/router-manager'
     | '/_auth/user-manager'
     | '/_auth/';
@@ -172,6 +219,8 @@ export const routeTree = rootRoute
     "/_auth": {
       "filePath": "_auth.tsx",
       "children": [
+        "/_auth/admin-manager",
+        "/_auth/device-manager",
         "/_auth/router-manager",
         "/_auth/user-manager",
         "/_auth/"
@@ -179,6 +228,14 @@ export const routeTree = rootRoute
     },
     "/login": {
       "filePath": "login.tsx"
+    },
+    "/_auth/admin-manager": {
+      "filePath": "_auth/admin-manager.tsx",
+      "parent": "/_auth"
+    },
+    "/_auth/device-manager": {
+      "filePath": "_auth/device-manager.tsx",
+      "parent": "/_auth"
     },
     "/_auth/router-manager": {
       "filePath": "_auth/router-manager.tsx",

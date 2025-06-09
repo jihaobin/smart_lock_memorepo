@@ -29,7 +29,6 @@ export const users = pgTable(
       .$default(() => createId())
       .unique(),
     phone: varchar('phone', { length: 11 }).unique().notNull(),
-    email: varchar('email', { length: 255 }).unique(),
     nikeName: varchar('nike_name', { length: 255 }).notNull(),
     passwordHash: text('password_hash').notNull(),
     createdAt: timestamp('created_at').defaultNow(),
@@ -37,10 +36,7 @@ export const users = pgTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
-  table => [
-    uniqueIndex('users_phone_idx').on(table.phone),
-    uniqueIndex('users_email_idx').on(table.email),
-  ]
+  table => [uniqueIndex('users_phone_idx').on(table.phone)]
 );
 
 /** 设备表 */
@@ -53,7 +49,7 @@ export const devices = pgTable(
       .unique(),
     ownerId: char('owner_id', { length: 5 }), // 关联用户
     name: varchar('name', { length: 255 }).notNull(),
-    type: varchar('type', { length: 50 }).notNull(), // 设备类型（如门锁型号）
+    modelId: char('model_id', { length: 5 }), // 关联设备型号
     status: jsonb('status')
       .$type<{
         // 设备电量
@@ -78,37 +74,47 @@ export const devices = pgTable(
         connectionId: '',
       })
       .notNull(),
-    hasCamera: boolean('has_camera').default(false),
     deviceGroupId: char('device_group_id', { length: 5 }), // 新增字段：所属分组，可为 null
     nikeName: varchar('nike_name', { length: 255 }), // 新增字段：设备昵称
   },
   table => [
-    index('devices_owner_type_idx').on(table.ownerId, table.type), // 复合索引优化按所有者查询设备列表
+    index('devices_owner_idx').on(table.ownerId), // 优化按所有者查询设备列表
     index('devices_status_idx').on(table.status),
     index('devices_group_idx').on(table.deviceGroupId), // 新增索引，优化分组查询
+    index('devices_model_idx').on(table.modelId), // 新增索引，优化型号查询
   ]
 );
 
-/**设备类型表 */
-export const deviceTypes = pgTable(
-  'device_types',
+/** 设备型号表 */
+export const deviceModels = pgTable(
+  'device_models',
   {
-    id: char('id', { length: 5 }).primaryKey().unique(),
-    name: varchar('name', { length: 255 }).notNull(),
-    description: text('description'),
+    id: char('id', { length: 5 })
+      .primaryKey()
+      .$default(() => createId())
+      .unique(),
+    modelName: varchar('model_name', { length: 255 }).notNull(), // 型号名称
+    description: text('description'), // 型号描述
     hasCamera: boolean('has_camera').default(false),
     hasFingerprint: boolean('has_fingerprint').default(false),
     hasFace: boolean('has_face').default(false),
     hasEye: boolean('has_eye').default(false),
+    hasPalm: boolean('has_palm').default(false), // 掌纹识别
     hasNFC: boolean('has_nfc').default(false),
     hasWifi: boolean('has_wifi').default(false),
     hasBluetooth: boolean('has_bluetooth').default(false),
+    totalStock: integer('total_stock').default(0).notNull(), // 总库存
+    remainingStock: integer('remaining_stock').default(0).notNull(), // 剩余库存
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at')
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
-  table => [index('device_types_name_idx').on(table.name)]
+  table => [
+    index('device_models_name_idx').on(table.modelName),
+    index('device_models_total_stock_idx').on(table.totalStock),
+    index('device_models_remaining_stock_idx').on(table.remainingStock),
+  ]
 );
 /** 设备分组表 */
 export const deviceGroups = pgTable(
@@ -379,6 +385,7 @@ export const usersRelations = relations(users, ({ many }) => ({
  * 一个设备可以对应多个分组
  * 一个设备可以对应多个临时密码
  * 一个设备可以对应多个开锁记录
+ * 一个设备属于一个设备型号
  */
 export const devicesRelations = relations(devices, ({ one, many }) => ({
   owner: one(users, {
@@ -389,18 +396,18 @@ export const devicesRelations = relations(devices, ({ one, many }) => ({
     fields: [devices.deviceGroupId],
     references: [deviceGroups.id],
   }),
+  deviceModel: one(deviceModels, {
+    fields: [devices.modelId],
+    references: [deviceModels.id],
+  }),
   passwords: many(temporaryPasswords),
   unlockRecords: many(unlockRecords),
-  deviceType: one(deviceTypes, {
-    fields: [devices.type],
-    references: [deviceTypes.id],
-  }),
 }));
 
-/** 设备类型关系
- * 一个设备类型可以有多个设备
+/** 设备型号关系
+ * 一个设备型号可以有多个设备
  */
-export const deviceTypesRelations = relations(deviceTypes, ({ many }) => ({
+export const deviceModelsRelations = relations(deviceModels, ({ many }) => ({
   devices: many(devices),
 }));
 
@@ -514,19 +521,21 @@ export const notificationDeliveryLogsRelations = relations(notificationDeliveryL
 ```mermaid
 erDiagram
   users ||--o{ devices : "拥有"
-  users ||--o{ userGroups : "创建"
+  users ||--o{ deviceGroups : "创建"
+  users ||--o{ friendGroups : "创建"
   users ||--o{ friends : "管理"
   users ||--o{ notifications : "接收"
 
+  deviceModels ||--o{ devices : "具体设备"
   devices ||--o{ deviceGroups : "分组"
   devices ||--o{ temporaryPasswords : "生成"
   devices ||--o{ unlockRecords : "记录"
 
-  userGroups ||--o{ friends : "包含"
+  friendGroups ||--o{ friends : "包含"
   temporaryPasswords ||--o{ friends : "分配"
 
   deviceGroups ||--o{ devices : "包含"
-  userGroups ||--o{ friends : "分组"
+  friendGroups ||--o{ friends : "分组"
 
   notifications ||--o{ notificationDeliveryLogs : "产生"
 
@@ -534,5 +543,5 @@ erDiagram
   deviceGroupRelations }o--|| deviceGroups : "分组"
 
   friendGroupRelations }o--|| friends : "好友"
-  friendGroupRelations }o--|| userGroups : "分组"
+  friendGroupRelations }o--|| friendGroups : "分组"
   */

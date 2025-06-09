@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { AdminCreateSchema } from './auth'; // 复用创建用户的 Schema
+import { AdminCreateSchema, strongPasswordSchema } from './auth'; // 复用创建用户的 Schema
 import { GetAllDataType, getAllDataSchema } from './common';
 import { RoleItem } from './rbac'; // 引入 RoleItem
 
@@ -18,9 +18,13 @@ import { RoleItem } from './rbac'; // 引入 RoleItem
 export const GetAllAdminUsersSchema = getAllDataSchema;
 
 /**
- * 创建管理员用户的 Schema (复用 auth.ts 中的定义)
+ * 创建管理员用户的 Schema (继承 AdminCreateSchema 但排除 confirmPassword 字段)
  */
-export const CreateAdminUserSchema = AdminCreateSchema;
+export const CreateAdminUserSchema = z.object({
+  name: z.string().min(1, '用户名不能为空'),
+  password: strongPasswordSchema,
+  roleIds: z.array(z.string()),
+});
 
 /**
  * 更新管理员用户的 Schema
@@ -29,7 +33,7 @@ export const UpdateAdminUserSchema = z.object({
   name: z.string().min(1, '用户名不能为空').optional(),
   password: z.string().min(6, '密码至少6位字符').optional(),
   // 密码更新通常在单独的接口处理，这里不包含密码字段
-  roleIds: z.array(z.string()).optional(), // 允许更新用户角色
+  roleIds: z.string().array().min(1, '请至少选择一名角色').optional(), // 允许更新用户角色
 });
 
 // --------------------------

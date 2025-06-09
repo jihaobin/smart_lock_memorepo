@@ -40,11 +40,21 @@
   },
   "typesVersions": {
     "*": {
-      ".": ["./dist/index.d.ts"],
-      "client": ["./dist/client/index.d.ts"],
-      "server": ["./dist/server/index.d.ts"],
-      "api": ["./dist/api/index.d.ts"],
-      "shared": ["./dist/shared/index.d.ts"]
+      ".": [
+        "./dist/index.d.ts"
+      ],
+      "client": [
+        "./dist/client/index.d.ts"
+      ],
+      "server": [
+        "./dist/server/index.d.ts"
+      ],
+      "api": [
+        "./dist/api/index.d.ts"
+      ],
+      "shared": [
+        "./dist/shared/index.d.ts"
+      ]
     }
   },
   "sideEffects": false,
@@ -71,7 +81,7 @@
     "drizzle-orm": "^0.40.0",
     "pg": "^8.14.0",
     "tsx": "^4.19.3",
-    "zod": "^3.24.2"
+    "zod": "^3.25.56"
   },
   "peerDependencies": {
     "dotenv": "^16.4.7",

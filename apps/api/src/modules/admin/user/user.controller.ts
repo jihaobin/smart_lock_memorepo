@@ -1,24 +1,16 @@
 import {
   Controller,
   Get,
-  Post,
-  Body,
-  Patch,
   Param,
-  Delete,
-  UseGuards,
   Query,
+  UseGuards,
   UsePipes,
-  HttpStatus,
-  HttpCode,
 } from '@nestjs/common';
 import {
-  GetAllAdminUsersSchema,
-  GetAllAdminUsersType,
-  CreateAdminUserSchema,
-  CreateAdminUserType,
-  UpdateAdminUserSchema,
-  UpdateAdminUserType,
+  GetAllUsersSchema,
+  GetAllUsersType,
+  GetUserByPhoneSchema,
+  GetUserByPhoneType,
 } from '@smart-lock/shared';
 import { ZodValidationPipe } from 'src/common';
 import { JwtAuthGuard } from 'src/common/auth/jwt-auth.guard';
@@ -30,55 +22,35 @@ import { UserService } from './user.service';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'superadmin')
-  @UsePipes(new ZodValidationPipe(CreateAdminUserSchema))
-  @HttpCode(HttpStatus.CREATED)
-  async create(@Body() createUserDto: CreateAdminUserType) {
-    return await this.userService.create(createUserDto);
-  }
-
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'superadmin')
+  /**
+   * 获取所有用户列表（分页）
+   */
   @Get('all')
-  @UsePipes(new ZodValidationPipe(GetAllAdminUsersSchema))
-  findAll(@Query() query: GetAllAdminUsersType) {
-    const { page, pageSize } = query;
-    return this.userService.findAll({ page, pageSize });
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'superadmin')
+  @UsePipes(new ZodValidationPipe(GetAllUsersSchema))
+  async findAll(@Query() query: GetAllUsersType) {
+    return this.userService.findAll(query);
   }
 
+  /**
+   * 根据ID获取单个用户
+   */
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin', 'superadmin')
   async findOne(@Param('id') id: string) {
-    return await this.userService.findOne(id);
+    return this.userService.findOne(id);
   }
 
-  @Patch(':id')
+  /**
+   * 根据手机号查询用户
+   */
+  @Get('phone/:phone')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin', 'superadmin')
-  @UsePipes(new ZodValidationPipe(UpdateAdminUserSchema))
-  async update(
-    @Param('id') id: string,
-    @Body() updateUserDto: UpdateAdminUserType,
-  ) {
-    return await this.userService.update(id, updateUserDto);
-  }
-
-  @Delete(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'superadmin')
-  @HttpCode(HttpStatus.OK)
-  async remove(@Param('id') id: string) {
-    return await this.userService.remove(id);
-  }
-
-  @Post('create-test-data')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'superadmin')
-  @HttpCode(HttpStatus.CREATED)
-  async createTestUserData(@Query('total') total: number = 50) {
-    return await this.userService.createTestUserData(total);
+  @UsePipes(new ZodValidationPipe(GetUserByPhoneSchema))
+  async findByPhone(@Param() phoneData: GetUserByPhoneType) {
+    return this.userService.findByPhone(phoneData);
   }
 }

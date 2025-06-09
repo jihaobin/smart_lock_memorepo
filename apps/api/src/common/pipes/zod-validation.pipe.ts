@@ -35,6 +35,7 @@ export class ZodValidationPipe implements PipeTransform {
       ) {
         value = {}; // 确保空对象也被正确处理
       }
+      console.log('校验之前的值', value);
 
       // 使用schema验证并转换值
       return this.schema.parse(value);

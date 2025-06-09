@@ -9,7 +9,16 @@ import {
   Req,
   BadRequestException,
 } from '@nestjs/common';
-import { TemporaryPasswordService } from './temporary-password.service';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
+import { TemporaryPasswordInfo } from '@smart-lock/shared';
+import { Request } from 'express';
+import { ZodBody } from 'src/common';
+
 import {
   CreateTemporaryPasswordDto,
   QueryTemporaryPasswordDto,
@@ -17,15 +26,7 @@ import {
   ValidateTemporaryPasswordDto,
   CreateTemporaryPasswordSchema,
 } from './dto';
-import { TemporaryPasswordInfo } from '@smart-lock/shared';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
-import { ZodBody } from 'src/common';
-import { Request } from 'express';
+import { TemporaryPasswordService } from './temporary-password.service';
 
 @ApiTags('临时密码管理')
 @ApiBearerAuth()

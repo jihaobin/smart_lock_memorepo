@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 import { IUser } from '../user';
 
@@ -34,20 +34,20 @@ export const RegisterSchema = z
 
 export const LoginSchema = z.object({
   phone: z
-  .string()
-  .min(11, '手机号码必须是11位数字')
-  .max(11, '手机号码必须是11位数字')
-  .regex(/^1[3-9]\d{9}$/, '请输入有效的手机号码'),
+    .string()
+    .min(11, '手机号码必须是11位数字')
+    .max(11, '手机号码必须是11位数字')
+    .regex(/^1[3-9]\d{9}$/, '请输入有效的手机号码'),
   password: z.string().min(6, '密码至少6位字符'),
   rememberMe: z.boolean().optional(),
 });
 
 export const ForgotPasswordSchema = z.object({
   phone: z
-      .string()
-      .min(11, '手机号码必须是11位数字')
-      .max(11, '手机号码必须是11位数字')
-      .regex(/^1[3-9]\d{9}$/, '请输入有效的手机号码'),
+    .string()
+    .min(11, '手机号码必须是11位数字')
+    .max(11, '手机号码必须是11位数字')
+    .regex(/^1[3-9]\d{9}$/, '请输入有效的手机号码'),
   verificationCode: z
     .string()
     .min(4, '验证码至少需要4位')
@@ -65,10 +65,10 @@ export const ResetPasswordSchema = z
       .regex(/[0-9]/, '密码需要包含至少一个数字'),
     confirmPassword: z.string(),
     phone: z
-    .string()
-    .min(11, '手机号码必须是11位数字')
-    .max(11, '手机号码必须是11位数字')
-    .regex(/^1[3-9]\d{9}$/, '请输入有效的手机号码'),
+      .string()
+      .min(11, '手机号码必须是11位数字')
+      .max(11, '手机号码必须是11位数字')
+      .regex(/^1[3-9]\d{9}$/, '请输入有效的手机号码'),
   })
   .refine(data => data.password === data.confirmPassword, {
     message: '两次输入的密码不匹配',

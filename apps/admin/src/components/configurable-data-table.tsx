@@ -939,13 +939,15 @@ export function ConfigurableDataTable<TData extends BaseDataType>({
 
     return (
       <div className="flex items-center justify-between px-4">
-        <div className="hidden flex-1 text-sm text-muted-foreground lg:flex">
-          {Object.keys(rowSelection).length} 个中的{' '}
-          {serverSidePagination && pagination.rowCount
-            ? pagination.rowCount
-            : table.getFilteredRowModel().rows.length}{' '}
-          行已选择。
-        </div>
+        {enableRowSelection && (
+          <div className="hidden flex-1 text-sm text-muted-foreground lg:flex">
+            {Object.keys(rowSelection).length} 个中的{' '}
+            {serverSidePagination && pagination.rowCount
+              ? pagination.rowCount
+              : table.getFilteredRowModel().rows.length}{' '}
+            行已选择。
+          </div>
+        )}
         <div className="flex w-full items-center gap-8 lg:w-fit">
           <div className="hidden items-center gap-2 lg:flex">
             <Label htmlFor="rows-per-page" className="text-sm font-medium">

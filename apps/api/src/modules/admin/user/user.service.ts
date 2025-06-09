@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import {
-  GetAllAdminUsersType,
-  CreateAdminUserType,
-  UpdateAdminUserType,
-} from '@smart-lock/shared/';
+  GetAllUsersType,
+  GetUserByPhoneType,
+  UserItem,
+  GetAllUsersResponse,
+} from '@smart-lock/shared';
 
 import { UserRepository } from './user.repository';
 
@@ -11,27 +12,24 @@ import { UserRepository } from './user.repository';
 export class UserService {
   constructor(private readonly userRepository: UserRepository) {}
 
-  async create(createUserDto: CreateAdminUserType) {
-    return await this.userRepository.createUser(createUserDto);
-  }
-
-  async findAll(query: GetAllAdminUsersType) {
+  /**
+   * 获取所有用户列表（分页）
+   */
+  async findAll(query: GetAllUsersType): Promise<GetAllUsersResponse> {
     return this.userRepository.getAllUsers(query);
   }
 
-  async findOne(id: string) {
-    return await this.userRepository.findUserById(id);
+  /**
+   * 根据ID获取单个用户
+   */
+  async findOne(id: string): Promise<UserItem> {
+    return this.userRepository.findUserById(id);
   }
 
-  async update(id: string, updateUserDto: UpdateAdminUserType) {
-    return await this.userRepository.updateUser(id, updateUserDto);
-  }
-
-  async remove(id: string) {
-    return await this.userRepository.deleteUser(id);
-  }
-
-  async createTestUserData(total = 50) {
-    return this.userRepository.createTestUserData(total);
+  /**
+   * 根据手机号查询用户
+   */
+  async findByPhone(phoneData: GetUserByPhoneType): Promise<UserItem> {
+    return this.userRepository.findUserByPhone(phoneData);
   }
 }
