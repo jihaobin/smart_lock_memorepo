@@ -64,13 +64,19 @@ export function createQueryHooks(client: ApiClient) {
         PaginatedData<TData>,
         Error,
         PaginatedData<TData>,
-        PaginatedData<TData>,
-        readonly unknown[]
+        readonly unknown[],
+        number
       >,
       'queryKey' | 'queryFn' | 'getNextPageParam'
     >
   ) {
-    return useInfiniteQuery<PaginatedData<TData>, Error, PaginatedData<TData>>({
+    return useInfiniteQuery<
+      PaginatedData<TData>,
+      Error,
+      PaginatedData<TData>,
+      readonly unknown[],
+      number
+    >({
       queryKey: [...queryKey, params],
       queryFn: ({ pageParam = 1 }) =>
         client.getPage<TData>(url, {
@@ -118,8 +124,8 @@ export function createQueryHooks(client: ApiClient) {
             PaginatedData<T>,
             Error,
             PaginatedData<T>,
-            PaginatedData<T>,
-            readonly unknown[]
+            readonly unknown[],
+            number
           >,
           'queryKey' | 'queryFn' | 'getNextPageParam'
         >

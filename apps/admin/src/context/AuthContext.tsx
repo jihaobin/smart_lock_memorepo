@@ -1,7 +1,7 @@
 import { AdminAuthUser, RouteItem } from '@smart-lock/shared/shared';
 import type React from 'react';
 import { createContext, useContext, useState, useEffect, useMemo } from 'react';
-import apiClient from '@/lib/aip-service';
+import apiClient, { queryHooks } from '@/lib/aip-service';
 
 import {
   flattenRoutes,
@@ -10,6 +10,7 @@ import {
   saveUserToStorage,
   clearUserFromStorage,
 } from './authUtils';
+import { useNavigate } from '@tanstack/react-router';
 
 interface AuthContextType {
   user: AdminAuthUser | null;
@@ -32,6 +33,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [accessibleRoutes, setAccessibleRoutes] = useState<RouteItem[]>([]);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { useQueryClient } = queryHooks;
+  const queryClient = useQueryClient();
+
+  const navigate = useNavigate({ from: '/login' });
 
   const flattenedRoutes = useMemo((): RouteItem[] => {
     return flattenRoutes(accessibleRoutes);
@@ -99,7 +104,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(null);
     clearUserFromStorage();
 
-    // ApiClient的clearAuth方法会在logout后被调用
+    await apiClient.clearAuth();
+    queryClient.clear();
+    navigate({ to: '/login', replace: true });
   };
 
   return (

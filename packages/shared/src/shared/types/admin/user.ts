@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 import { AdminCreateSchema, strongPasswordSchema } from './auth'; // 复用创建用户的 Schema
 import { GetAllDataType, getAllDataSchema } from './common';

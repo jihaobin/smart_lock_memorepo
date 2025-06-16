@@ -16,12 +16,11 @@ import { Request } from 'express';
 import { ZodValidationPipe } from 'src/common';
 import { Public } from 'src/common/auth/jwt-auth.guard';
 import { ZodBody } from 'src/common/decorators';
-
+import { NotificationService } from './notification.service';
 import {
   CreateNotificationDto,
   GetNotificationsDto,
 } from './dto/notification.dto';
-import { NotificationService } from './notification.service';
 
 @Controller('notifications')
 export class NotificationController {
@@ -61,10 +60,10 @@ export class NotificationController {
   ) {
     const userId = request.user.userId;
     return this.notificationService.getUserNotifications({
+      ...query,
       userId,
       page: query.page ?? '1',
       limit: query.limit ?? '10',
-      ...query,
     });
   }
 }

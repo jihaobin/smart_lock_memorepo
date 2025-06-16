@@ -1,17 +1,11 @@
-import { createZodDto } from 'nestjs-zod';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 // 查询临时密码的验证schema
 export const QueryTemporaryPasswordSchema = z.object({
   deviceId: z.string().optional(),
   creatorId: z.string().optional(),
-  page: z.number().int().positive('页码必须为正整数').default(1),
-  limit: z
-    .number()
-    .int()
-    .positive('每页数量必须为正整数')
-    .max(100, '每页最多100条')
-    .default(10),
+  page: z.string().default('1'),
+  limit: z.string().default('10'),
   sortBy: z
     .enum(['createdAt', 'expiresAt', 'remainingUses'])
     .default('createdAt'),
@@ -19,9 +13,9 @@ export const QueryTemporaryPasswordSchema = z.object({
 });
 
 // 分页查询DTO类
-export class QueryTemporaryPasswordDto extends createZodDto(
-  QueryTemporaryPasswordSchema,
-) {}
+export type QueryTemporaryPasswordDto = z.infer<
+  typeof QueryTemporaryPasswordSchema
+>;
 
 // 批量删除schema
 export const BatchDeleteTemporaryPasswordSchema = z.object({
@@ -31,9 +25,9 @@ export const BatchDeleteTemporaryPasswordSchema = z.object({
 });
 
 // 批量删除DTO类
-export class BatchDeleteTemporaryPasswordDto extends createZodDto(
-  BatchDeleteTemporaryPasswordSchema,
-) {}
+export type BatchDeleteTemporaryPasswordDto = z.infer<
+  typeof BatchDeleteTemporaryPasswordSchema
+>;
 
 // 验证密码schema
 export const ValidateTemporaryPasswordSchema = z.object({
@@ -42,17 +36,6 @@ export const ValidateTemporaryPasswordSchema = z.object({
 });
 
 // 验证密码DTO类
-export class ValidateTemporaryPasswordDto extends createZodDto(
-  ValidateTemporaryPasswordSchema,
-) {}
-
-// 导出类型
-export type QueryTemporaryPasswordType = z.infer<
-  typeof QueryTemporaryPasswordSchema
->;
-export type BatchDeleteTemporaryPasswordType = z.infer<
-  typeof BatchDeleteTemporaryPasswordSchema
->;
-export type ValidateTemporaryPasswordType = z.infer<
+export type ValidateTemporaryPasswordDto = z.infer<
   typeof ValidateTemporaryPasswordSchema
 >;

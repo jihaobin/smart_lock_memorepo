@@ -8,8 +8,10 @@ import { DeviceRepository } from '../device.repository';
 import { DeviceService } from '../device.service';
 import { DeviceRedisService } from '../services/device-redis.service';
 import { DeviceStatusService } from '../services/device-status.service';
+import { DeviceModelModule } from '../deviceModel/deviceModel.module';
 
 @Module({
+  imports: [DeviceModelModule],
   providers: [
     DeviceGateway,
     MobileGateway,

@@ -1,5 +1,4 @@
-import { createZodDto } from 'nestjs-zod';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 // 创建临时密码的验证schema
 export const CreateTemporaryPasswordSchema = z.object({
@@ -18,11 +17,6 @@ export const CreateTemporaryPasswordSchema = z.object({
 });
 
 // 创建DTO类
-export class CreateTemporaryPasswordDto extends createZodDto(
-  CreateTemporaryPasswordSchema,
-) {}
-
-// 导出类型
-export type CreateTemporaryPasswordType = z.infer<
+export type CreateTemporaryPasswordDto = z.infer<
   typeof CreateTemporaryPasswordSchema
 >;

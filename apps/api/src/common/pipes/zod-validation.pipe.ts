@@ -1,5 +1,5 @@
 import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
-import { ZodSchema, ZodError } from 'zod';
+import { ZodSchema, ZodError } from 'zod/v4';
 
 import { createValidationException } from '../validation';
 

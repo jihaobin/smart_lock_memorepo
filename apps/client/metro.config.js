@@ -1,5 +1,4 @@
 // Learn more https://docs.expo.io/guides/customizing-metro
-const fs = require('fs');
 const path = require('path');
 
 const { getDefaultConfig } = require('expo/metro-config');
@@ -17,6 +16,11 @@ config.watchFolders = [
   path.resolve(workspaceRoot, 'packages/shared'), // 只监视共享包
 ];
 
+// Windows路径修复
+if (process.platform === 'win32') {
+  config.resolver.platforms = ['native', 'web', 'android', 'ios'];
+}
+
 // 2. 让 Metro 知道如何解析工作空间中的包
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, 'node_modules'),
@@ -33,29 +37,29 @@ config.resolver.extraNodeModules = {
 };
 
 // 5. 优化黑名单配置，减少监视的文件
-config.resolver.blockList = [
-  // 排除所有node_modules (除了必要的包)
-  /\/node_modules\/(?!(@smart-lock|react|react-native|expo|@expo|@react-native)\/).*$/,
-  // 排除构建目录
-  /\.git\/.*/,
-  /\.vscode\/.*/,
-  /android\/.*/,
-  /ios\/.*/,
-  /\.expo\/.*/,
-  /\.turbo\/.*/,
-  /dist\/.*/,
-  /build\/.*/,
-  /\.tsbuildinfo$/,
-  // 排除测试文件
-  /.*\/__tests__\/.*/,
-  /.*\.test\.(js|jsx|ts|tsx)$/,
-  // 排除其他应用
-  /\/apps\/api\/.*/,
-  /\/apps\/admin\/.*/,
-  // 排除缓存文件
-  /\.metro-cache\/.*/,
-  /node_modules\/.*\/node_modules\/.*/,
-];
+// config.resolver.blockList = [
+//   // 排除所有node_modules (除了必要的包)
+//   /\/node_modules\/(?!(@smart-lock|react|react-native|expo|@expo|@react-native)\/).*$/,
+//   // 排除构建目录
+//   /\.git\/.*/,
+//   /\.vscode\/.*/,
+//   /android\/.*/,
+//   /ios\/.*/,
+//   /\.expo\/.*/,
+//   /\.turbo\/.*/,
+//   /dist\/.*/,
+//   /build\/.*/,
+//   /\.tsbuildinfo$/,
+//   // 排除测试文件
+//   /.*\/__tests__\/.*/,
+//   /.*\.test\.(js|jsx|ts|tsx)$/,
+//   // 排除其他应用
+//   /\/apps\/api\/.*/,
+//   /\/apps\/admin\/.*/,
+//   // 排除缓存文件
+//   /\.metro-cache\/.*/,
+//   /node_modules\/.*\/node_modules\/.*/,
+// ];
 
 // 6. 优化缓存配置
 config.cacheStores = [

@@ -9,15 +9,9 @@ import {
   Req,
   BadRequestException,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
 import { TemporaryPasswordInfo } from '@smart-lock/shared';
 import { Request } from 'express';
-import { ZodBody } from 'src/common';
+import { ZodBody, ZodValidationPipe } from 'src/common';
 
 import {
   CreateTemporaryPasswordDto,
@@ -25,11 +19,10 @@ import {
   BatchDeleteTemporaryPasswordDto,
   ValidateTemporaryPasswordDto,
   CreateTemporaryPasswordSchema,
+  QueryTemporaryPasswordSchema,
 } from './dto';
 import { TemporaryPasswordService } from './temporary-password.service';
 
-@ApiTags('临时密码管理')
-@ApiBearerAuth()
 @Controller('temporary-password')
 export class TemporaryPasswordController {
   constructor(
@@ -37,10 +30,6 @@ export class TemporaryPasswordController {
   ) {}
   @ZodBody(CreateTemporaryPasswordSchema)
   @Post()
-  @ApiOperation({ summary: '创建临时密码' })
-  @ApiResponse({ status: 201, description: '创建成功' })
-  @ApiResponse({ status: 400, description: '请求参数错误' })
-  @ApiResponse({ status: 404, description: '设备不存在' })
   async create(
     @Req() req: Request,
     @Body() createTemporaryPasswordDto: CreateTemporaryPasswordDto,
@@ -53,22 +42,19 @@ export class TemporaryPasswordController {
   }
 
   @Get()
-  @ApiOperation({ summary: '分页查询临时密码' })
-  @ApiResponse({ status: 200, description: '查询成功' })
-  async findAll(@Query() queryDto: QueryTemporaryPasswordDto) {
+  async findAll(
+    @Query(new ZodValidationPipe(QueryTemporaryPasswordSchema))
+    queryDto: QueryTemporaryPasswordDto,
+  ) {
     return this.temporaryPasswordService.findMany(queryDto);
   }
 
   @Get('statistics')
-  @ApiOperation({ summary: '获取临时密码统计信息' })
-  @ApiResponse({ status: 200, description: '获取成功' })
   async getStatistics(@Query('deviceId') deviceId?: string) {
     return this.temporaryPasswordService.getStatistics(deviceId);
   }
 
   @Get('device/:deviceId')
-  @ApiOperation({ summary: '根据设备ID查询有效临时密码' })
-  @ApiResponse({ status: 200, description: '查询成功' })
   async findValidByDeviceId(
     @Param('deviceId') deviceId: string,
   ): Promise<TemporaryPasswordInfo[]> {
@@ -76,8 +62,6 @@ export class TemporaryPasswordController {
   }
 
   @Get('creator/:creatorId')
-  @ApiOperation({ summary: '根据创建者ID查询临时密码' })
-  @ApiResponse({ status: 200, description: '查询成功' })
   async findByCreatorId(
     @Param('creatorId') creatorId: string,
   ): Promise<TemporaryPasswordInfo[]> {
@@ -85,9 +69,6 @@ export class TemporaryPasswordController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: '根据ID查询临时密码详情' })
-  @ApiResponse({ status: 200, description: '查询成功' })
-  @ApiResponse({ status: 404, description: '临时密码不存在' })
   async findOne(@Param('id') id: string): Promise<TemporaryPasswordInfo> {
     const result = await this.temporaryPasswordService.findById(id);
     if (!result) {
@@ -97,16 +78,12 @@ export class TemporaryPasswordController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: '删除临时密码' })
-  @ApiResponse({ status: 200, description: '删除成功' })
   async remove(@Param('id') id: string): Promise<{ success: boolean }> {
     const success = await this.temporaryPasswordService.remove(id);
     return { success };
   }
 
   @Delete()
-  @ApiOperation({ summary: '批量删除临时密码' })
-  @ApiResponse({ status: 200, description: '批量删除成功' })
   async batchRemove(
     @Body() batchDeleteDto: BatchDeleteTemporaryPasswordDto,
   ): Promise<{ deletedCount: number }> {
@@ -116,8 +93,6 @@ export class TemporaryPasswordController {
   }
 
   @Post('validate')
-  @ApiOperation({ summary: '验证临时密码' })
-  @ApiResponse({ status: 200, description: '验证完成' })
   async validatePassword(
     @Body() validateDto: ValidateTemporaryPasswordDto,
   ): Promise<{

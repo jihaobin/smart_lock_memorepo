@@ -74,7 +74,7 @@ export class SmsService {
       const config = new OpenApi.Config({
         accessKeyId: credentials.accessKeyId,
         accessKeySecret: credentials.accessKeySecret,
-        securityToken: credentials.securityToken // STS Token
+        securityToken: credentials.securityToken, // STS Token
       });
       // 设置访问凭证
 
@@ -83,7 +83,6 @@ export class SmsService {
 
       // 创建客户端
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
       this.client = new Dysmsapi.default(config);
       return this.client;
     } catch (error) {
@@ -238,10 +237,12 @@ export class SmsService {
       if (!response?.body || response.body.code !== 'OK') {
         const errorMsg = response?.body?.message || '未知错误';
         const errorCode = response?.body?.code || 'UNKNOWN';
-        this.logger.error(`短信发送失败，错误码: ${errorCode}, 消息: ${errorMsg}`);
+        this.logger.error(
+          `短信发送失败，错误码: ${errorCode}, 消息: ${errorMsg}`,
+        );
         return {
           success: false,
-          error: errorMsg
+          error: errorMsg,
         };
       }
 
@@ -251,14 +252,14 @@ export class SmsService {
       // 返回消息ID以便后续查询状态
       return {
         success: true,
-        messageId: response.body.bizId || ''
+        messageId: response.body.bizId || '',
       };
     } catch (error) {
       // 处理错误
       this.logger.error('发送短信失败', error);
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -287,7 +288,6 @@ export class SmsService {
       10 ** (codeLength - 1) +
         Math.random() * (10 ** codeLength - 10 ** (codeLength - 1)),
     ).toString();
-
 
     await this.sendSms(phone, code);
 
@@ -342,12 +342,17 @@ export class SmsService {
       });
 
       const runtime = new Util.RuntimeOptions({});
-      const response = await client.querySendDetailsWithOptions(request, runtime);
+      const response = await client.querySendDetailsWithOptions(
+        request,
+        runtime,
+      );
 
       if (!response?.body || response.body.code !== 'OK') {
         const errorMsg = response?.body?.message || '未知错误';
         const errorCode = response?.body?.code || 'UNKNOWN';
-        this.logger.error(`查询短信状态失败，错误码: ${errorCode}, 消息: ${errorMsg}`);
+        this.logger.error(
+          `查询短信状态失败，错误码: ${errorCode}, 消息: ${errorMsg}`,
+        );
         return {
           success: false,
           message: errorMsg,
@@ -358,14 +363,16 @@ export class SmsService {
       const smsList = response.body.smsSendDetailDTOs?.smsSendDetailDTO || [];
       if (smsList.length > 0) {
         // 阿里云的状态码: 1=等待回执，2=发送失败，3=发送成功
-        const statusMap: Record<number, "pending" | "failed" | "delivered"> = {
+        const statusMap: Record<number, 'pending' | 'failed' | 'delivered'> = {
           1: 'pending',
           2: 'failed',
-          3: 'delivered'
+          3: 'delivered',
         };
 
         const latestSms = smsList[0];
-        const sendStatus = latestSms.sendStatus ? parseInt(latestSms.sendStatus.toString()) : 0;
+        const sendStatus = latestSms.sendStatus
+          ? parseInt(latestSms.sendStatus.toString())
+          : 0;
 
         return {
           success: true,
@@ -373,7 +380,7 @@ export class SmsService {
           status: statusMap[sendStatus],
           receiveTime: latestSms.receiveDate,
           content: latestSms.content,
-          errorCode: latestSms.errCode
+          errorCode: latestSms.errCode,
         };
       }
 

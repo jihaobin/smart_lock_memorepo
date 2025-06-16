@@ -111,7 +111,7 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
   const apiClient = React.useMemo(() => {
     return ApiFactory.createClient({
       adapter,
-      baseURL: process.env.EXPO_PUBLIC_API_URL || 'http://192.168.0.112:3000',
+      baseURL: process.env.EXPO_PUBLIC_API_URL || 'https://543444jnnk93.vicp.fun',
       options: {
         tokenKey: 'auth_token', // 认证令牌的存储键
         refreshTokenKey: 'refresh_token', // 刷新令牌的存储键

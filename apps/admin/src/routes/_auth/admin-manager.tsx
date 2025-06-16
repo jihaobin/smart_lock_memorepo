@@ -9,7 +9,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { ColumnDef } from '@tanstack/react-table';
 import { User2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import { UseFormReturn } from 'react-hook-form';
 import Select from 'react-select';
 
@@ -53,7 +53,7 @@ export const Route = createFileRoute('/_auth/admin-manager')({
   },
   loader: async ({ context: { queryClient } }) => {
     const userData = await queryClient.fetchQuery({
-      queryKey: ['users', { page: 1, pageSize: 10 }],
+      queryKey: ['adminUser', { page: 1, pageSize: 10 }],
       queryFn: () => apiClient.getPage('/adminUser/all'),
     });
     return userData;
@@ -67,7 +67,7 @@ function UserComponent() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
   const { data: apiData, isFetching } = queryHooks.usePaginatedQuery<AdminUserItem>(
-    ['users'],
+    ['adminUser'],
     '/adminUser/all',
     { page, pageSize },
     {

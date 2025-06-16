@@ -1,5 +1,5 @@
 import { DeviceUnlockRecordOpenType } from '@smart-lock/shared';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 // 使用正确的导入路径
 

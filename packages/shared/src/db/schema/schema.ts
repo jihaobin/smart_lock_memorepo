@@ -49,7 +49,7 @@ export const devices = pgTable(
       .unique(),
     ownerId: char('owner_id', { length: 5 }), // 关联用户
     name: varchar('name', { length: 255 }).notNull(),
-    modelId: char('model_id', { length: 5 }), // 关联设备型号
+    modelId: char('model_id', { length: 5 }).notNull(), // 关联设备型号
     status: jsonb('status')
       .$type<{
         // 设备电量
@@ -94,21 +94,22 @@ export const deviceModels = pgTable(
       .$default(() => createId())
       .unique(),
     modelName: varchar('model_name', { length: 255 }).notNull(), // 型号名称
-    description: text('description'), // 型号描述
-    hasCamera: boolean('has_camera').default(false),
-    hasFingerprint: boolean('has_fingerprint').default(false),
-    hasFace: boolean('has_face').default(false),
-    hasEye: boolean('has_eye').default(false),
-    hasPalm: boolean('has_palm').default(false), // 掌纹识别
-    hasNFC: boolean('has_nfc').default(false),
-    hasWifi: boolean('has_wifi').default(false),
-    hasBluetooth: boolean('has_bluetooth').default(false),
-    totalStock: integer('total_stock').default(0).notNull(), // 总库存
+    description: varchar('description', { length: 255 }).default('').notNull(), // 型号描述
+    hasCamera: boolean('has_camera').default(false).notNull(),
+    hasFingerprint: boolean('has_fingerprint').default(false).notNull(),
+    hasFace: boolean('has_face').default(false).notNull(),
+    hasEye: boolean('has_eye').default(false).notNull(),
+    hasPalm: boolean('has_palm').default(false).notNull(), // 掌纹识别
+    hasNFC: boolean('has_nfc').default(false).notNull(),
+    hasWifi: boolean('has_wifi').default(false).notNull(),
+    hasBluetooth: boolean('has_bluetooth').default(false).notNull(),
+    totalStock: integer('total_stock').default(0).notNull().notNull(), // 总库存
     remainingStock: integer('remaining_stock').default(0).notNull(), // 剩余库存
-    createdAt: timestamp('created_at').defaultNow(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at')
       .defaultNow()
-      .$onUpdate(() => new Date()),
+      .$onUpdate(() => new Date())
+      .notNull(),
   },
   table => [
     index('device_models_name_idx').on(table.modelName),

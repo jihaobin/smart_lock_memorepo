@@ -1,7 +1,7 @@
 import React from 'react';
 import { useForm, UseFormReturn, DefaultValues } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
+import { z } from 'zod/v4';
 import {
   Dialog,
   DialogContent,
@@ -21,14 +21,14 @@ export interface FormDialogProps<TSchema extends z.ZodType = z.ZodType> {
   title: string;
   description?: string;
   schema: TSchema;
-  defaultValues?: DefaultValues<z.infer<TSchema>>;
-  children: (form: UseFormReturn<z.infer<TSchema>>) => React.ReactNode;
-  onSubmit: (data: z.infer<TSchema>) => Promise<void>;
+  defaultValues?: DefaultValues<TSchema>;
+  children: (form: UseFormReturn<TSchema>) => React.ReactNode;
+  onSubmit: (data: TSchema) => Promise<void>;
   loading?: boolean;
   submitText?: string;
   cancelText?: string;
   maxWidth?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-  validate?: (data: z.infer<TSchema>) => void;
+  validate?: (data: TSchema) => void;
 }
 
 // 通用表单对话框组件
@@ -49,12 +49,12 @@ export const FormDialog = <TSchema extends z.ZodType>({
 }: FormDialogProps<TSchema>) => {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  const form = useForm<z.infer<TSchema>>({
-    resolver: zodResolver(schema),
+  const form = useForm<TSchema>({
+    resolver: standardSchemaResolver(schema),
     defaultValues,
   });
 
-  const handleSubmit = async (data: z.infer<TSchema>) => {
+  const handleSubmit = async (data: TSchema) => {
     if (isSubmitting || loading) return;
 
     try {

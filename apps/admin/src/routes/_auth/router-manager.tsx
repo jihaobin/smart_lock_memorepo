@@ -27,7 +27,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { ColumnDef } from '@tanstack/react-table';
 import { Route as RouteIcon, ExternalLink } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import { UseFormReturn } from 'react-hook-form';
 import Select from 'react-select';
 import { useRbacApi } from '@/hooks/useRbacApi';

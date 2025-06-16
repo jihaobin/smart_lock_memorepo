@@ -1,7 +1,9 @@
 import { ErrorCode } from '@smart-lock/shared';
-import { ZodError, ZodIssue } from 'zod';
+import { ZodError, ZodIssue, z } from 'zod/v4';
 
 import { ValidationException } from '../exceptions';
+
+z.config(z.locales.zhCN());
 
 /**
  * 格式化 Zod 验证错误
@@ -11,15 +13,13 @@ import { ValidationException } from '../exceptions';
  * @returns 格式化后的验证错误列表
  */
 export function formatZodError(error: ZodError) {
-  return error.errors.map((issue: ZodIssue) => {
+  console.log('zodError', JSON.stringify(ZodError));
+  return error.issues.map((issue: z.core.$ZodIssue) => {
     const friendlyPath = issue.path
-      .map((p, i) => (i === 0 ? `字段'${p}'` : `的子字段'${p}'`))
+      .map((p, i) => (i === 0 ? `字段'${String(p)}'` : `子字段'${String(p)}'`))
       .join('');
 
     let friendlyMessage = issue.message;
-    if (issue.code === 'invalid_type') {
-      friendlyMessage = `期望类型为 ${issue.expected}, 但实际为 ${issue.received}`;
-    }
 
     return {
       code: issue.code,

@@ -210,9 +210,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="border-t border-sidebar-border">
-        <NavUser user={userData} />
-      </SidebarFooter>
     </Sidebar>
   );
 }

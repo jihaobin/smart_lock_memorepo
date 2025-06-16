@@ -5,7 +5,7 @@
 
 import { ColumnDef } from '@tanstack/react-table';
 import { UseFormReturn } from 'react-hook-form';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import React, { ReactNode } from 'react';
 
 /**

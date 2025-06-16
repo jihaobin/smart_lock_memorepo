@@ -8,121 +8,188 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-// Import Routes
+import { Route as rootRouteImport } from './routes/__root';
+import { Route as LoginRouteImport } from './routes/login';
+import { Route as AuthRouteImport } from './routes/_auth';
+import { Route as AuthIndexRouteImport } from './routes/_auth/index';
+import { Route as AuthUserManagerRouteImport } from './routes/_auth/user-manager';
+import { Route as AuthRouterManagerRouteImport } from './routes/_auth/router-manager';
+import { Route as AuthDeviceModelManagerRouteImport } from './routes/_auth/device-model-manager';
+import { Route as AuthDeviceManagerRouteImport } from './routes/_auth/device-manager';
+import { Route as AuthAdminManagerRouteImport } from './routes/_auth/admin-manager';
 
-import { Route as rootRoute } from './routes/__root';
-import { Route as LoginImport } from './routes/login';
-import { Route as AuthImport } from './routes/_auth';
-import { Route as AuthIndexImport } from './routes/_auth/index';
-import { Route as AuthUserManagerImport } from './routes/_auth/user-manager';
-import { Route as AuthRouterManagerImport } from './routes/_auth/router-manager';
-import { Route as AuthDeviceManagerImport } from './routes/_auth/device-manager';
-import { Route as AuthAdminManagerImport } from './routes/_auth/admin-manager';
-
-// Create/Update Routes
-
-const LoginRoute = LoginImport.update({
+const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any);
-
-const AuthRoute = AuthImport.update({
+const AuthRoute = AuthRouteImport.update({
   id: '/_auth',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any);
-
-const AuthIndexRoute = AuthIndexImport.update({
+const AuthIndexRoute = AuthIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthRoute,
 } as any);
-
-const AuthUserManagerRoute = AuthUserManagerImport.update({
+const AuthUserManagerRoute = AuthUserManagerRouteImport.update({
   id: '/user-manager',
   path: '/user-manager',
   getParentRoute: () => AuthRoute,
 } as any);
-
-const AuthRouterManagerRoute = AuthRouterManagerImport.update({
+const AuthRouterManagerRoute = AuthRouterManagerRouteImport.update({
   id: '/router-manager',
   path: '/router-manager',
   getParentRoute: () => AuthRoute,
 } as any);
-
-const AuthDeviceManagerRoute = AuthDeviceManagerImport.update({
+const AuthDeviceModelManagerRoute = AuthDeviceModelManagerRouteImport.update({
+  id: '/device-model-manager',
+  path: '/device-model-manager',
+  getParentRoute: () => AuthRoute,
+} as any);
+const AuthDeviceManagerRoute = AuthDeviceManagerRouteImport.update({
   id: '/device-manager',
   path: '/device-manager',
   getParentRoute: () => AuthRoute,
 } as any);
-
-const AuthAdminManagerRoute = AuthAdminManagerImport.update({
+const AuthAdminManagerRoute = AuthAdminManagerRouteImport.update({
   id: '/admin-manager',
   path: '/admin-manager',
   getParentRoute: () => AuthRoute,
 } as any);
 
-// Populate the FileRoutesByPath interface
+export interface FileRoutesByFullPath {
+  '': typeof AuthRouteWithChildren;
+  '/login': typeof LoginRoute;
+  '/admin-manager': typeof AuthAdminManagerRoute;
+  '/device-manager': typeof AuthDeviceManagerRoute;
+  '/device-model-manager': typeof AuthDeviceModelManagerRoute;
+  '/router-manager': typeof AuthRouterManagerRoute;
+  '/user-manager': typeof AuthUserManagerRoute;
+  '/': typeof AuthIndexRoute;
+}
+export interface FileRoutesByTo {
+  '/login': typeof LoginRoute;
+  '/admin-manager': typeof AuthAdminManagerRoute;
+  '/device-manager': typeof AuthDeviceManagerRoute;
+  '/device-model-manager': typeof AuthDeviceModelManagerRoute;
+  '/router-manager': typeof AuthRouterManagerRoute;
+  '/user-manager': typeof AuthUserManagerRoute;
+  '/': typeof AuthIndexRoute;
+}
+export interface FileRoutesById {
+  __root__: typeof rootRouteImport;
+  '/_auth': typeof AuthRouteWithChildren;
+  '/login': typeof LoginRoute;
+  '/_auth/admin-manager': typeof AuthAdminManagerRoute;
+  '/_auth/device-manager': typeof AuthDeviceManagerRoute;
+  '/_auth/device-model-manager': typeof AuthDeviceModelManagerRoute;
+  '/_auth/router-manager': typeof AuthRouterManagerRoute;
+  '/_auth/user-manager': typeof AuthUserManagerRoute;
+  '/_auth/': typeof AuthIndexRoute;
+}
+export interface FileRouteTypes {
+  fileRoutesByFullPath: FileRoutesByFullPath;
+  fullPaths:
+    | ''
+    | '/login'
+    | '/admin-manager'
+    | '/device-manager'
+    | '/device-model-manager'
+    | '/router-manager'
+    | '/user-manager'
+    | '/';
+  fileRoutesByTo: FileRoutesByTo;
+  to:
+    | '/login'
+    | '/admin-manager'
+    | '/device-manager'
+    | '/device-model-manager'
+    | '/router-manager'
+    | '/user-manager'
+    | '/';
+  id:
+    | '__root__'
+    | '/_auth'
+    | '/login'
+    | '/_auth/admin-manager'
+    | '/_auth/device-manager'
+    | '/_auth/device-model-manager'
+    | '/_auth/router-manager'
+    | '/_auth/user-manager'
+    | '/_auth/';
+  fileRoutesById: FileRoutesById;
+}
+export interface RootRouteChildren {
+  AuthRoute: typeof AuthRouteWithChildren;
+  LoginRoute: typeof LoginRoute;
+}
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/_auth': {
-      id: '/_auth';
-      path: '';
-      fullPath: '';
-      preLoaderRoute: typeof AuthImport;
-      parentRoute: typeof rootRoute;
-    };
     '/login': {
       id: '/login';
       path: '/login';
       fullPath: '/login';
-      preLoaderRoute: typeof LoginImport;
-      parentRoute: typeof rootRoute;
+      preLoaderRoute: typeof LoginRouteImport;
+      parentRoute: typeof rootRouteImport;
     };
-    '/_auth/admin-manager': {
-      id: '/_auth/admin-manager';
-      path: '/admin-manager';
-      fullPath: '/admin-manager';
-      preLoaderRoute: typeof AuthAdminManagerImport;
-      parentRoute: typeof AuthImport;
-    };
-    '/_auth/device-manager': {
-      id: '/_auth/device-manager';
-      path: '/device-manager';
-      fullPath: '/device-manager';
-      preLoaderRoute: typeof AuthDeviceManagerImport;
-      parentRoute: typeof AuthImport;
-    };
-    '/_auth/router-manager': {
-      id: '/_auth/router-manager';
-      path: '/router-manager';
-      fullPath: '/router-manager';
-      preLoaderRoute: typeof AuthRouterManagerImport;
-      parentRoute: typeof AuthImport;
-    };
-    '/_auth/user-manager': {
-      id: '/_auth/user-manager';
-      path: '/user-manager';
-      fullPath: '/user-manager';
-      preLoaderRoute: typeof AuthUserManagerImport;
-      parentRoute: typeof AuthImport;
+    '/_auth': {
+      id: '/_auth';
+      path: '';
+      fullPath: '';
+      preLoaderRoute: typeof AuthRouteImport;
+      parentRoute: typeof rootRouteImport;
     };
     '/_auth/': {
       id: '/_auth/';
       path: '/';
       fullPath: '/';
-      preLoaderRoute: typeof AuthIndexImport;
-      parentRoute: typeof AuthImport;
+      preLoaderRoute: typeof AuthIndexRouteImport;
+      parentRoute: typeof AuthRoute;
+    };
+    '/_auth/user-manager': {
+      id: '/_auth/user-manager';
+      path: '/user-manager';
+      fullPath: '/user-manager';
+      preLoaderRoute: typeof AuthUserManagerRouteImport;
+      parentRoute: typeof AuthRoute;
+    };
+    '/_auth/router-manager': {
+      id: '/_auth/router-manager';
+      path: '/router-manager';
+      fullPath: '/router-manager';
+      preLoaderRoute: typeof AuthRouterManagerRouteImport;
+      parentRoute: typeof AuthRoute;
+    };
+    '/_auth/device-model-manager': {
+      id: '/_auth/device-model-manager';
+      path: '/device-model-manager';
+      fullPath: '/device-model-manager';
+      preLoaderRoute: typeof AuthDeviceModelManagerRouteImport;
+      parentRoute: typeof AuthRoute;
+    };
+    '/_auth/device-manager': {
+      id: '/_auth/device-manager';
+      path: '/device-manager';
+      fullPath: '/device-manager';
+      preLoaderRoute: typeof AuthDeviceManagerRouteImport;
+      parentRoute: typeof AuthRoute;
+    };
+    '/_auth/admin-manager': {
+      id: '/_auth/admin-manager';
+      path: '/admin-manager';
+      fullPath: '/admin-manager';
+      preLoaderRoute: typeof AuthAdminManagerRouteImport;
+      parentRoute: typeof AuthRoute;
     };
   }
 }
 
-// Create and export the route tree
-
 interface AuthRouteChildren {
   AuthAdminManagerRoute: typeof AuthAdminManagerRoute;
   AuthDeviceManagerRoute: typeof AuthDeviceManagerRoute;
+  AuthDeviceModelManagerRoute: typeof AuthDeviceModelManagerRoute;
   AuthRouterManagerRoute: typeof AuthRouterManagerRoute;
   AuthUserManagerRoute: typeof AuthUserManagerRoute;
   AuthIndexRoute: typeof AuthIndexRoute;
@@ -131,6 +198,7 @@ interface AuthRouteChildren {
 const AuthRouteChildren: AuthRouteChildren = {
   AuthAdminManagerRoute: AuthAdminManagerRoute,
   AuthDeviceManagerRoute: AuthDeviceManagerRoute,
+  AuthDeviceModelManagerRoute: AuthDeviceModelManagerRoute,
   AuthRouterManagerRoute: AuthRouterManagerRoute,
   AuthUserManagerRoute: AuthUserManagerRoute,
   AuthIndexRoute: AuthIndexRoute,
@@ -138,117 +206,10 @@ const AuthRouteChildren: AuthRouteChildren = {
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren);
 
-export interface FileRoutesByFullPath {
-  '': typeof AuthRouteWithChildren;
-  '/login': typeof LoginRoute;
-  '/admin-manager': typeof AuthAdminManagerRoute;
-  '/device-manager': typeof AuthDeviceManagerRoute;
-  '/router-manager': typeof AuthRouterManagerRoute;
-  '/user-manager': typeof AuthUserManagerRoute;
-  '/': typeof AuthIndexRoute;
-}
-
-export interface FileRoutesByTo {
-  '/login': typeof LoginRoute;
-  '/admin-manager': typeof AuthAdminManagerRoute;
-  '/device-manager': typeof AuthDeviceManagerRoute;
-  '/router-manager': typeof AuthRouterManagerRoute;
-  '/user-manager': typeof AuthUserManagerRoute;
-  '/': typeof AuthIndexRoute;
-}
-
-export interface FileRoutesById {
-  __root__: typeof rootRoute;
-  '/_auth': typeof AuthRouteWithChildren;
-  '/login': typeof LoginRoute;
-  '/_auth/admin-manager': typeof AuthAdminManagerRoute;
-  '/_auth/device-manager': typeof AuthDeviceManagerRoute;
-  '/_auth/router-manager': typeof AuthRouterManagerRoute;
-  '/_auth/user-manager': typeof AuthUserManagerRoute;
-  '/_auth/': typeof AuthIndexRoute;
-}
-
-export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths:
-    | ''
-    | '/login'
-    | '/admin-manager'
-    | '/device-manager'
-    | '/router-manager'
-    | '/user-manager'
-    | '/';
-  fileRoutesByTo: FileRoutesByTo;
-  to: '/login' | '/admin-manager' | '/device-manager' | '/router-manager' | '/user-manager' | '/';
-  id:
-    | '__root__'
-    | '/_auth'
-    | '/login'
-    | '/_auth/admin-manager'
-    | '/_auth/device-manager'
-    | '/_auth/router-manager'
-    | '/_auth/user-manager'
-    | '/_auth/';
-  fileRoutesById: FileRoutesById;
-}
-
-export interface RootRouteChildren {
-  AuthRoute: typeof AuthRouteWithChildren;
-  LoginRoute: typeof LoginRoute;
-}
-
 const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRouteWithChildren,
   LoginRoute: LoginRoute,
 };
-
-export const routeTree = rootRoute
+export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>();
-
-/* ROUTE_MANIFEST_START
-{
-  "routes": {
-    "__root__": {
-      "filePath": "__root.tsx",
-      "children": [
-        "/_auth",
-        "/login"
-      ]
-    },
-    "/_auth": {
-      "filePath": "_auth.tsx",
-      "children": [
-        "/_auth/admin-manager",
-        "/_auth/device-manager",
-        "/_auth/router-manager",
-        "/_auth/user-manager",
-        "/_auth/"
-      ]
-    },
-    "/login": {
-      "filePath": "login.tsx"
-    },
-    "/_auth/admin-manager": {
-      "filePath": "_auth/admin-manager.tsx",
-      "parent": "/_auth"
-    },
-    "/_auth/device-manager": {
-      "filePath": "_auth/device-manager.tsx",
-      "parent": "/_auth"
-    },
-    "/_auth/router-manager": {
-      "filePath": "_auth/router-manager.tsx",
-      "parent": "/_auth"
-    },
-    "/_auth/user-manager": {
-      "filePath": "_auth/user-manager.tsx",
-      "parent": "/_auth"
-    },
-    "/_auth/": {
-      "filePath": "_auth/index.tsx",
-      "parent": "/_auth"
-    }
-  }
-}
-ROUTE_MANIFEST_END */

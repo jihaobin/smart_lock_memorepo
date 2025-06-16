@@ -67,3 +67,4 @@ drizzle/
 .lingma
 
 apps/client/.metro-cache/*
+android/

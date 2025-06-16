@@ -1,15 +1,18 @@
 import { z } from 'zod/v4';
+import { IUser } from '../user';
 
 export interface Device {
   deviceGroupId: string;
-  hasCamera: boolean;
   id: string;
   name: string;
   ownerId: string;
   status: DeviceStatus;
-  type: string;
   nikeName: string;
-  model: DeviceModel;
+  deviceModel: DeviceModel;
+}
+
+export interface AdminDevice extends Device {
+  owner: IUser;
 }
 
 export interface DeviceStatus {
@@ -51,12 +54,32 @@ export interface DeviceModel {
 }
 
 // ==================== Zod Schemas ====================
+export const CreateDeviceSchema = z.object({
+  name: z.string().min(1, '设备名称不能为空').max(255, '设备名称不能超过255个字符'),
+  modelId: z.string().min(1, '设备型号不能为空').length(5, '设备型号ID必须为5位字符'),
+  ownerId: z.string().optional(),
+});
+
+export const GetDeviceSchema = z.object({
+  page: z.string().min(1, '页码必须大于0').default('1'),
+  limit: z.string().min(1, '每页数量必须大于0').default('10'),
+});
+
+export const UpdateDeviceSchema = z.object({
+  name: z.string().min(1, '设备名称不能为空').max(255, '设备名称不能超过255个字符'),
+  modelId: z.string().min(1, '设备型号不能为空').length(5, '设备型号ID必须为5位字符'),
+  ownerId: z.string().optional(),
+});
+
+export const DelectDeviceSchema = z.object({
+  id: z.string().length(5, '设备型号ID必须为5位字符'),
+});
 
 // 设备型号基础 Schema
 export const DeviceModelSchema = z.object({
   id: z.string().length(5, '设备型号ID必须为5位字符'),
   modelName: z.string().min(1, '型号名称不能为空').max(255, '型号名称不能超过255个字符'),
-  description: z.string().optional().nullable(),
+  description: z.string().optional(),
   hasCamera: z.boolean().default(false),
   hasFingerprint: z.boolean().default(false),
   hasFace: z.boolean().default(false),
@@ -75,7 +98,7 @@ export const DeviceModelSchema = z.object({
 export const CreateDeviceModelSchema = z
   .object({
     modelName: z.string().min(1, '型号名称不能为空').max(255, '型号名称不能超过255个字符'),
-    description: z.string().optional().nullable(),
+    description: z.string().optional(),
     hasCamera: z.boolean().default(false),
     hasFingerprint: z.boolean().default(false),
     hasFace: z.boolean().default(false),
@@ -101,7 +124,7 @@ export const UpdateDeviceModelSchema = z
       .min(1, '型号名称不能为空')
       .max(255, '型号名称不能超过255个字符')
       .optional(),
-    description: z.string().optional().nullable(),
+    description: z.string().optional(),
     hasCamera: z.boolean().optional(),
     hasFingerprint: z.boolean().optional(),
     hasFace: z.boolean().optional(),
@@ -138,8 +161,8 @@ export const DeleteDeviceModelSchema = z.object({
 
 // 查询设备型号列表 Schema
 export const GetDeviceModelsSchema = z.object({
-  page: z.number().int().min(1, '页码必须大于0').default(1),
-  limit: z.number().int().min(1, '每页数量必须大于0').max(100, '每页数量不能超过100').default(10),
+  page: z.string().min(1, '页码必须大于0').default('1'),
+  limit: z.string().min(1, '每页数量必须大于0').default('10'),
   search: z.string().optional(), // 搜索关键词（型号名称）
   hasCamera: z.boolean().optional(), // 筛选是否有摄像头
   hasFingerprint: z.boolean().optional(), // 筛选是否有指纹识别
@@ -167,6 +190,11 @@ export const AdjustStockSchema = z
   });
 
 // ==================== TypeScript Types ====================
+
+export type CreateDeviceInput = z.infer<typeof CreateDeviceSchema>;
+export type UpdateDeviceInput = z.infer<typeof UpdateDeviceSchema>;
+export type DelectDeviceInput = z.infer<typeof DelectDeviceSchema>;
+export type GetDeviceInput = z.infer<typeof GetDeviceSchema>;
 
 export type CreateDeviceModelInput = z.input<typeof CreateDeviceModelSchema>;
 export type UpdateDeviceModelInput = z.infer<typeof UpdateDeviceModelSchema>;

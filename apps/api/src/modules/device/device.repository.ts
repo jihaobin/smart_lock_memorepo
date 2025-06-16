@@ -3,6 +3,7 @@ import { DbType } from '@smart-lock/shared';
 import { schema } from '@smart-lock/shared/server';
 import { and, eq } from 'drizzle-orm';
 import { DB } from 'src/database/database.provider';
+import { DeviceModelRepository } from './deviceModel/deviceModel.repository';
 
 /**
  * 设备管理仓库层
@@ -11,6 +12,7 @@ import { DB } from 'src/database/database.provider';
 @Injectable()
 export class DeviceRepository {
   @Inject(DB) db: DbType;
+  @Inject(DeviceModelRepository) deviceModelRepository: DeviceModelRepository;
 
   // 设备分组相关方法
   /**
@@ -139,11 +141,19 @@ export class DeviceRepository {
     if (!device) {
       throw new Error('设备不存在');
     }
-    return this.db
-      .update(schema.devices)
-      .set({ ownerId: userId })
-      .where(eq(schema.devices.id, deviceId))
-      .returning();
+    // 设备绑定时需要将对应设备型号的剩余库存-1
+    return this.db.transaction(async (tx) => {
+      this.deviceModelRepository.adjustStock({
+        id: device.modelId,
+        adjustment: -1,
+      });
+
+      return tx
+        .update(schema.devices)
+        .set({ ownerId: userId })
+        .where(eq(schema.devices.id, deviceId))
+        .returning();
+    });
   }
 
   /**
@@ -168,35 +178,57 @@ export class DeviceRepository {
       throw new Error('设备不属于当前用户');
     }
 
-    return this.db
-      .update(schema.devices)
-      .set({ ownerId: null })
-      .where(eq(schema.devices.id, deviceId))
-      .returning();
+    // 设备解绑时需要将对应设备型号的剩余库存-1
+    return this.db.transaction(async (tx) => {
+      this.deviceModelRepository.adjustStock({
+        id: device.modelId,
+        adjustment: +1,
+      });
+
+      // 删除设备相关的临时密码
+      await tx
+        .delete(schema.temporaryPasswords)
+        .where(eq(schema.temporaryPasswords.deviceId, deviceId));
+
+      // 删除设备相关的解锁记录
+      await tx
+        .delete(schema.unlockRecords)
+        .where(eq(schema.unlockRecords.deviceId, deviceId));
+
+      return tx
+        .update(schema.devices)
+        .set({ ownerId: null, nikeName: null, deviceGroupId: null })
+        .where(eq(schema.devices.id, deviceId))
+        .returning();
+    });
   }
 
   /**
    * 获取指定分组中的设备列表
    * @param groupId 分组ID
-   * @returns 该分组下的设备列表
+   * @returns 该分组下的设备列表，包括设备型号信息
    */
   async getDevicesByGroupId(groupId: string) {
     return await this.db.query.devices.findMany({
       where: eq(schema.devices.deviceGroupId, groupId),
       orderBy: schema.devices.name,
+      with: {
+        deviceModel: true,
+      },
     });
   }
 
   /**
    * 获取单个设备详细信息
-   * @param friendId 好友关系ID
-   * @returns 设备信息，包括所属分组
+   * @param deviceId 设备ID
+   * @returns 设备信息，包括所属分组和设备型号
    */
   async getDeviceInfo(deviceId: string) {
     return await this.db.query.devices.findFirst({
       where: eq(schema.devices.id, deviceId),
       with: {
         deviceGroup: true,
+        deviceModel: true,
       },
     });
   }
@@ -204,28 +236,33 @@ export class DeviceRepository {
   /**
    * 获取用户的所有设备
    * @param userId 用户ID
-   * @param includeGroups 是否包含分组信息
-   * @returns 用户的设备列表
+   * @returns 用户的设备列表，包括设备型号信息
    */
   async getDevicesByUserId(userId: string) {
-    // 如果不需要分组信息，只返回设备列表
     return await this.db.query.devices.findMany({
       where: eq(schema.devices.ownerId, userId),
       orderBy: schema.devices.name,
+      with: {
+        deviceModel: true,
+      },
     });
   }
 
   /**
    * 获取用户的设备列表（按分组组织）
    * @param userId 用户ID
-   * @returns 按分组组织的设备列表
+   * @returns 按分组组织的设备列表，包括设备型号信息
    */
   async getDevicesWithGroups(userId: string) {
     // 按分组返回设备列表
     return await this.db.query.deviceGroups.findMany({
       where: eq(schema.deviceGroups.userId, userId),
       with: {
-        devices: true,
+        devices: {
+          with: {
+            deviceModel: true,
+          },
+        },
       },
     });
   }

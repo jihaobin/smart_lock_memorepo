@@ -182,7 +182,7 @@ export default function RootLayout() {
             </NotificationProvider>
           </AuthProvider>
 
-          <DevToolsBubble onCopy={onCopy} />
+          <DevToolsBubble onCopy={onCopy} queryClient={queryClient} />
         </QueryClientProvider>
       </GluestackUIProvider>
     </GestureHandlerRootView>

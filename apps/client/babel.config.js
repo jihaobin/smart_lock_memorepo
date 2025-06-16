@@ -22,6 +22,7 @@ module.exports = function (api) {
             'tailwind.config': './tailwind.config.js',
             '@smart-lock/shared': '../../packages/shared/dist',
             '@smart-lock/shared/client': '../../packages/shared/dist/client',
+            'expo-router': '../../node_modules/expo-router',
           },
         },
       ],

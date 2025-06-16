@@ -2,8 +2,6 @@ import * as path from 'path';
 
 import { NestFactory } from '@nestjs/core';
 import * as dotenv from 'dotenv';
-import { patchNestJsSwagger } from 'nestjs-zod';
-
 import { AppModule } from './app.module';
 import { AppLoggerService, HttpExceptionFilter } from './common';
 import { setupSwagger } from './common/swagger/swagger.module';
@@ -39,7 +37,6 @@ async function bootstrap() {
   });
 
   // 添加Swagger文档
-  patchNestJsSwagger();
   setupSwagger(app);
 
   const port = process.env.PORT ?? 3000;

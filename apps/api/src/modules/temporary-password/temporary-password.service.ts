@@ -139,7 +139,7 @@ export class TemporaryPasswordService {
    */
   async findMany(queryDto: QueryTemporaryPasswordDto) {
     const { page, limit, deviceId, creatorId, sortBy, sortOrder } = queryDto;
-    const offset = (page - 1) * limit;
+    const offset = (Number(page) - 1) * Number(limit);
 
     // 构建查询条件
     const conditions: SQL[] = [
@@ -189,7 +189,7 @@ export class TemporaryPasswordService {
       this.db.query.temporaryPasswords.findMany({
         where: whereClause,
         orderBy: orderByClause,
-        limit,
+        limit: Number(limit),
         offset,
         with: {
           device: {

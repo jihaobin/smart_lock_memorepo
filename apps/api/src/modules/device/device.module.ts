@@ -12,6 +12,8 @@ import { DeviceStatusProcessor } from './queues/device-status.processor';
 import { DeviceRedisService } from './services/device-redis.service';
 import { DeviceStatusService } from './services/device-status.service';
 import { UnLockRecordService } from '../unLockRecord/unLockRecord.service';
+import { DeviceModelService } from './deviceModel/deviceModel.service';
+import { DeviceModelRepository } from './deviceModel/deviceModel.repository';
 
 @Module({
   imports: [
@@ -42,6 +44,8 @@ import { UnLockRecordService } from '../unLockRecord/unLockRecord.service';
     DeviceStatusProcessor,
     DeviceRedisService,
     UnLockRecordService,
+    DeviceModelService,
+    DeviceModelRepository,
   ],
   exports: [
     DeviceService,

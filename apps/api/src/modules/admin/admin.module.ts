@@ -5,6 +5,8 @@ import { AdminAuthModule } from './auth/admin-auth.module';
 import { RbacModule } from './rbac/rbac.module';
 import { AdminUserModule } from './adminUser/adminUser.module';
 import { UserModule } from './user/user.module';
+import { DeviceModelModule } from '../device/deviceModel/deviceModel.module';
+import { DeviceModule } from './device/device.module';
 
 @Module({
   imports: [
@@ -13,13 +15,29 @@ import { UserModule } from './user/user.module';
     RbacModule,
     AdminUserModule,
     UserModule,
+    DeviceModelModule,
     RouterModule.register([
       {
         path: 'admin',
-        children: [AdminAuthModule, RbacModule, AdminUserModule, UserModule],
+        children: [
+          AdminAuthModule,
+          RbacModule,
+          AdminUserModule,
+          UserModule,
+          DeviceModelModule,
+          DeviceModule,
+        ],
       },
     ]),
+    DeviceModule,
   ],
-  exports: [AdminAuthModule, RbacModule, AdminUserModule, UserModule],
+  exports: [
+    AdminAuthModule,
+    RbacModule,
+    AdminUserModule,
+    UserModule,
+    DeviceModelModule,
+    DeviceModule,
+  ],
 })
 export class AdminModule {}

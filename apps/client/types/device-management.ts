@@ -20,8 +20,6 @@ export interface DeviceViewModel {
   batteryLevel: number;
   isOnline: boolean;
   groupId: string | null;
-  deviceType: string;
-  hasCamera: boolean;
 }
 
 // 包含UI状态的设备类型

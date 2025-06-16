@@ -14,11 +14,12 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { DynamicIcon, IconName } from 'lucide-react/dynamic';
+import { NavUser } from './nav-user';
 
 export function SiteHeader() {
   const router = useRouter();
   const matches = useMatches();
-  const { accessibleRoutes } = useAuth();
+  const { accessibleRoutes, user } = useAuth();
   const [isPending, startTransition] = React.useTransition();
   const [breadcrumbs, setBreadcrumbs] = React.useState<any[]>([]);
   const debounceTimerRef = React.useRef<NodeJS.Timeout | null>(null);
@@ -201,6 +202,13 @@ export function SiteHeader() {
           </BreadcrumbList>
         </Breadcrumb>
       </div>
+
+      {user && (
+        <NavUser
+          user={{ name: user.name || 'admin', role: user.roles.map(role => role.name).join(',') }}
+          className="w-50"
+        />
+      )}
     </header>
   );
 }

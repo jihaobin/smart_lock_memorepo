@@ -1,3 +1,4 @@
+import { path } from './../../client/empty/index';
 import { authManager } from 'api/utils/auth-manager';
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 
@@ -11,6 +12,7 @@ interface ApiError extends Error {
   code: number;
   data: unknown;
   response?: AxiosResponse<ApiResponse<unknown>>;
+  path: string;
 }
 
 /**
@@ -132,6 +134,7 @@ export class ApiClient {
     // 请求拦截器
     this.axiosInstance.interceptors.request.use(
       async config => {
+        console.error('urlConfig', JSON.stringify(config));
         // 如果已有认证头，直接使用
         if (config.headers.Authorization) {
           return config;
@@ -162,6 +165,7 @@ export class ApiClient {
           error.code = response.data.code;
           error.data = response.data.data;
           error.response = response;
+          error.path = response.config.url || '';
           return Promise.reject(error);
         }
 
@@ -226,6 +230,7 @@ export class ApiClient {
                 errorResponse = {
                   ...errorResponse,
                   data: this.formatErrorData(errorResponse.data),
+                  path: error.config?.url || '',
                 } as ApiResponse<null>;
               }
             }
@@ -242,10 +247,11 @@ export class ApiClient {
             message: '网络请求超时或服务不可用',
             data: null,
             timestamp: Date.now(),
+            path: error.config?.url || '',
           } as ApiResponse<null>;
 
           // 处理错误
-          this.handleApiError(errorResponse, error, error.config?.url, error.config?.method);
+          this.handleApiError(errorResponse, error, error.request.path, error.config?.method);
 
           return Promise.reject(errorResponse);
         } else {
@@ -255,10 +261,11 @@ export class ApiClient {
             message: error.message || '未知错误',
             data: null,
             timestamp: Date.now(),
+            path: error.config?.url || '',
           } as ApiResponse<null>;
 
           // 处理错误
-          this.handleApiError(errorResponse, error, error.config?.url, error.config?.method);
+          this.handleApiError(errorResponse, error, error.config?.url || '', error.config?.method);
 
           return Promise.reject(errorResponse);
         }
@@ -402,6 +409,7 @@ export class ApiClient {
   public async request<T>(config: AxiosRequestConfig): Promise<T> {
     // 获取请求URL
     const url = config.url || '';
+    console.error('url', url);
 
     // 检查是否需要认证
     if (authManager.isProtectedPath(url)) {

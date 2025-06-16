@@ -4,7 +4,7 @@ import {
   UsePipes,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { ZodSchema, ZodError } from 'zod';
+import { ZodSchema, ZodError } from 'zod/v4';
 
 import { ZodValidationPipe } from '../pipes/zod-validation.pipe';
 import { ValidationTargetType, createValidationException } from '../validation';

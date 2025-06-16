@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import { getAllDataSchema, GetAllDataType } from '../admin/common';
 
 export interface IUser {

@@ -2,13 +2,11 @@ import {
   CreateNotificationSchema,
   GetNotificationsSchema,
 } from '@smart-lock/shared';
-import { createZodDto } from 'nestjs-zod';
+import z from 'zod/v4';
 
-export class CreateNotificationDto extends createZodDto(
-  CreateNotificationSchema,
-) {}
+export type CreateNotificationDto = z.infer<typeof CreateNotificationSchema>;
 
-export class GetNotificationsDto extends createZodDto(GetNotificationsSchema) {}
+export type GetNotificationsDto = z.infer<typeof GetNotificationsSchema>;
 
 /**
  * 通知发送记录类型接口

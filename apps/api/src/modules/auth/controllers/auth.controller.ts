@@ -10,10 +10,9 @@ import {
   VerifyCodeSchema,
   VerifyCodeSchemaType,
 } from '@smart-lock/shared';
-import { createZodDto } from 'nestjs-zod';
 import { ZodBody } from 'src/common';
 import { Public } from 'src/common/auth/jwt-auth.guard';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 
 import { ZodValidationPipe } from '../../../common/pipes';
 import { AuthService } from '../services/auth.service';
@@ -25,7 +24,7 @@ const RefreshTokenSchema = z.object({
 
 type RefreshTokenSchemaType = z.infer<typeof RefreshTokenSchema>;
 
-export class LoginDto extends createZodDto(LoginSchema) {}
+// export class LoginDto extends createZodDto(LoginSchema) {}
 
 @Controller('auth')
 export class AuthController {
@@ -49,13 +48,6 @@ export class AuthController {
    * @param loginDto 登录信息
    * @returns 登录成功的用户信息和令牌
    */
-  @ApiOperation({
-    summary: '用户登录',
-    description: '用户通过手机号和密码登录系统',
-  }) // 添加 API 操作的摘要
-  @ApiBody({ type: LoginDto }) // 指定请求体的 DTO 类型
-  @ApiResponse({ status: 201 }) // 添加成功响应信息
-  @ApiResponse({ status: 400 }) // 添加错误响应信息，根据实际需要添加更多
   @Public()
   @Post('login')
   @UsePipes(new ZodValidationPipe(LoginSchema))
