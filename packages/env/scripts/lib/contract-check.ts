@@ -4,7 +4,8 @@ const variablePattern = /\$\{([A-Z][A-Z0-9_]*)(?::-[^}]*)?\}/g;
 
 export function checkComposeVariables(source: string, knownKeys: ReadonlySet<string>): string[] {
   const document = parseDocument(source);
-  if (document.errors.length > 0) throw new Error(document.errors.map(error => error.message).join('\n'));
+  if (document.errors.length > 0)
+    throw new Error(document.errors.map(error => error.message).join('\n'));
   const unknown = new Set<string>();
 
   const visit = (value: unknown): void => {

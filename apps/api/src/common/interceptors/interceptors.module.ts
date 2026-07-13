@@ -4,10 +4,10 @@ import { APP_INTERCEPTOR, Reflector } from '@nestjs/core';
 import { PaginationInterceptor } from './pagination.interceptor';
 import { TimeoutInterceptor } from './timeout.interceptor';
 import { TransformInterceptor } from './transform.interceptor';
-import { AppLoggerService } from '../logger';
-import { LoggerModule } from '../logger/logger.module';
 import ConfigModule from '../../config/config.module';
 import { APP_CONFIG, type AppConfig } from '../../config/config.provider';
+import { AppLoggerService } from '../logger';
+import { LoggerModule } from '../logger/logger.module';
 
 /**
  * 拦截器模块配置接口

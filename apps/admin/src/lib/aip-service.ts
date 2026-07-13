@@ -93,7 +93,6 @@ const errorHandler = new BrowserErrorHandler(toastAdapter);
 const apiClient = ApiFactory.createClient({
   adapter,
   baseURL: 'http://localhost:3000/admin',
-  // baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/admin',
   options: {
     tokenKey: 'auth_token', // 认证令牌的存储键
     refreshTokenKey: 'refresh_token', // 刷新令牌的存储键

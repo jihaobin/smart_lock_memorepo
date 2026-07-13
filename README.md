@@ -469,42 +469,45 @@ pnpm turbo run build --force
 ### 配置文件说明
 
 ```bash
-# 📋 复制环境变量模板
-cp .env.example .env
+pnpm env:init
+pnpm env:check
+pnpm env:generate --check
 ```
 
 ### 关键环境变量
 
 <!-- ENV_TABLE_START -->
-| 变量名 | 作用域 | 必填 | 默认值 | 说明 |
-| --- | --- | --- | --- | --- |
-| `NODE_ENV` | 服务端 | 是 | development | 运行环境 |
-| `PORT` | 服务端 | 是 | 3000 | API 端口 |
-| `NEXT_PUBLIC_APP_URL` | 服务端 | 否 | - | 允许跨域访问的客户端 URL |
-| `DEBUG_KEY` | 服务端 | 是 | - | 调试接口密钥 |
-| `JWT_SECRET` | 服务端 | 是 | - | JWT 签名密钥 |
-| `JWT_EXPIRES_IN` | 服务端 | 是 | 1d | JWT 有效期 |
-| `SUPER_ADMIN_USERNAME` | 服务端 | 是 | - | 超级管理员用户名 |
-| `SUPER_ADMIN_PASSWORD` | 服务端 | 是 | - | 超级管理员密码 |
-| `DATABASE_USER` | 数据库 | 是 | postgres | 数据库用户名 |
-| `DATABASE_PASSWORD` | 数据库 | 是 | - | 数据库密码 |
-| `DATABASE_NAME` | 数据库 | 是 | smart_lock | 数据库名称 |
-| `DATABASE_URL` | 数据库 | 是 | - | PostgreSQL 连接 URL |
-| `EXPO_PUBLIC_API_URL` | 客户端公开 | 是 | http://localhost:3000/api | Expo API URL |
-| `EXPO_PUBLIC_SOCKET_URL` | 客户端公开 | 是 | http://localhost:3000 | Expo Socket URL |
-| `MAIL_HOST` | 第三方服务 | 是 | - | 邮件服务器主机 |
-| `MAIL_PORT` | 第三方服务 | 是 | - | 邮件服务器端口 |
-| `MAIL_USER` | 第三方服务 | 是 | - | 邮件服务用户名 |
-| `MAIL_PASS` | 第三方服务 | 是 | - | 邮件服务密码 |
-| `MAIL_FROM_NAME` | 第三方服务 | 是 | - | 邮件发件人名称 |
-| `ALIYUN_ACCESS_KEY_ID` | 第三方服务 | 是 | - | 阿里云 AccessKey ID |
-| `ALIYUN_ACCESS_KEY_SECRET` | 第三方服务 | 是 | - | 阿里云 AccessKey Secret |
-| `ALIYUN_SMS_SIGN_NAME` | 第三方服务 | 是 | - | 阿里云短信签名 |
-| `ALIYUN_SMS_TEMPLATE_CODE` | 第三方服务 | 是 | - | 阿里云短信模板代码 |
-| `ALIYUN_STS_ROLE_ARN` | 第三方服务 | 是 | - | 阿里云 STS 角色 ARN |
-| `ALIYUN_STS_ROLE_SESSION_NAME` | 第三方服务 | 是 | SmartLockApp | 阿里云 STS 会话名称 |
-| `ALIYUN_STS_POLICY` | 第三方服务 | 否 |  | 阿里云 STS 策略 |
-| `ALIYUN_STS_DURATION_SECONDS` | 第三方服务 | 是 | 3600 | 阿里云 STS 有效秒数 |
+
+| 变量名                         | 作用域     | 必填 | 默认值                    | 说明                     |
+| ------------------------------ | ---------- | ---- | ------------------------- | ------------------------ |
+| `NODE_ENV`                     | 服务端     | 是   | development               | 运行环境                 |
+| `PORT`                         | 服务端     | 是   | 3000                      | API 端口                 |
+| `NEXT_PUBLIC_APP_URL`          | 服务端     | 否   | -                         | 允许跨域访问的客户端 URL |
+| `DEBUG_KEY`                    | 服务端     | 是   | -                         | 调试接口密钥             |
+| `JWT_SECRET`                   | 服务端     | 是   | -                         | JWT 签名密钥             |
+| `JWT_EXPIRES_IN`               | 服务端     | 是   | 1d                        | JWT 有效期               |
+| `SUPER_ADMIN_USERNAME`         | 服务端     | 是   | -                         | 超级管理员用户名         |
+| `SUPER_ADMIN_PASSWORD`         | 服务端     | 是   | -                         | 超级管理员密码           |
+| `DATABASE_USER`                | 数据库     | 是   | postgres                  | 数据库用户名             |
+| `DATABASE_PASSWORD`            | 数据库     | 是   | -                         | 数据库密码               |
+| `DATABASE_NAME`                | 数据库     | 是   | smart_lock                | 数据库名称               |
+| `DATABASE_URL`                 | 数据库     | 是   | -                         | PostgreSQL 连接 URL      |
+| `EXPO_PUBLIC_API_URL`          | 客户端公开 | 是   | http://localhost:3000/api | Expo API URL             |
+| `EXPO_PUBLIC_SOCKET_URL`       | 客户端公开 | 是   | http://localhost:3000     | Expo Socket URL          |
+| `MAIL_HOST`                    | 第三方服务 | 是   | -                         | 邮件服务器主机           |
+| `MAIL_PORT`                    | 第三方服务 | 是   | -                         | 邮件服务器端口           |
+| `MAIL_USER`                    | 第三方服务 | 是   | -                         | 邮件服务用户名           |
+| `MAIL_PASS`                    | 第三方服务 | 是   | -                         | 邮件服务密码             |
+| `MAIL_FROM_NAME`               | 第三方服务 | 是   | -                         | 邮件发件人名称           |
+| `ALIYUN_ACCESS_KEY_ID`         | 第三方服务 | 是   | -                         | 阿里云 AccessKey ID      |
+| `ALIYUN_ACCESS_KEY_SECRET`     | 第三方服务 | 是   | -                         | 阿里云 AccessKey Secret  |
+| `ALIYUN_SMS_SIGN_NAME`         | 第三方服务 | 是   | -                         | 阿里云短信签名           |
+| `ALIYUN_SMS_TEMPLATE_CODE`     | 第三方服务 | 是   | -                         | 阿里云短信模板代码       |
+| `ALIYUN_STS_ROLE_ARN`          | 第三方服务 | 是   | -                         | 阿里云 STS 角色 ARN      |
+| `ALIYUN_STS_ROLE_SESSION_NAME` | 第三方服务 | 是   | SmartLockApp              | 阿里云 STS 会话名称      |
+| `ALIYUN_STS_POLICY`            | 第三方服务 | 否   |                           | 阿里云 STS 策略          |
+| `ALIYUN_STS_DURATION_SECONDS`  | 第三方服务 | 是   | 3600                      | 阿里云 STS 有效秒数      |
+
 <!-- ENV_TABLE_END -->
 
 ## 常见问题解答

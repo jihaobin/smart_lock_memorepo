@@ -2,9 +2,9 @@ import { join } from 'node:path';
 
 import dotenv from 'dotenv';
 
-import { serverEnvSchema, type ServerEnv } from '../definitions/server';
 import { resolveDeprecatedAliases } from './aliases';
 import { findWorkspaceRoot } from './workspace-root';
+import { serverEnvSchema, type ServerEnv } from '../definitions/server';
 
 export interface LoadServerEnvOptions {
   startDirectory?: string;

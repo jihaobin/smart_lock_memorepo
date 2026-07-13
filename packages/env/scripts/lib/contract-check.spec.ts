@@ -1,6 +1,6 @@
+import { checkComposeVariables } from './contract-check';
 import { clientDefinitions } from '../../src/definitions/client';
 import { serverDefinitions } from '../../src/definitions/server';
-import { checkComposeVariables } from './contract-check';
 
 describe('Compose contract', () => {
   it('报告未注册的 Compose 变量', () => {

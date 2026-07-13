@@ -1,6 +1,6 @@
-import { serverEnvSchema } from '../definitions/server';
 import { resolveDeprecatedAliases } from './aliases';
 import { parseClientEnv } from './client';
+import { serverEnvSchema } from '../definitions/server';
 
 describe('environment contract', () => {
   it('转换端口并应用默认值', () => {

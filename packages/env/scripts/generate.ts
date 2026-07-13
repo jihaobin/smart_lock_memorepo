@@ -1,10 +1,10 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { renderEnvExample, renderReadmeEnvTable, updateReadmeEnvTable } from './lib/generate';
 import { clientDefinitions } from '../src/definitions/client';
 import { serverDefinitions } from '../src/definitions/server';
 import { findWorkspaceRoot } from '../src/runtime/workspace-root';
-import { renderEnvExample, renderReadmeEnvTable, updateReadmeEnvTable } from './lib/generate';
 
 const root = findWorkspaceRoot(process.cwd());
 const definitions = { ...serverDefinitions, ...clientDefinitions };

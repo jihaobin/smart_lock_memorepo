@@ -1,5 +1,5 @@
-import { StorageAdapter } from '../storage/storage-interface';
 import { PlatformAdapter } from './platform-adapter';
+import { StorageAdapter } from '../storage/storage-interface';
 
 class BrowserStorageAdapter implements StorageAdapter {
   async getItem(key: string): Promise<string | null> {

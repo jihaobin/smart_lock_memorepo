@@ -5,8 +5,8 @@ import { io, Socket } from 'socket.io-client';
 import { useToast } from './use-toast';
 import { useDevices } from './useDevices';
 
-import { useAuth } from '@/contexts/auth-context';
 import { clientEnv } from '@/config/env';
+import { useAuth } from '@/contexts/auth-context';
 
 // 开锁结果类型
 interface UnlockResult {

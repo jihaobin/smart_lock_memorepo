@@ -10,8 +10,8 @@ import { io, Socket } from 'socket.io-client';
 
 import { useAuth } from './auth-context';
 
-import { useToast } from '@/hooks/use-toast';
 import { clientEnv } from '@/config/env';
+import { useToast } from '@/hooks/use-toast';
 
 const SocketContext = createContext<Socket | null>(null);
 
@@ -19,7 +19,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const socketRef = useRef<Socket | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
-  const [isConnected, setIsConnected] = useState(false);
+  const [, setIsConnected] = useState(false);
   const responseListener = useRef<Notifications.EventSubscription>();
   const appState = useRef(AppState.currentState);
   const isConnecting = useRef(false);

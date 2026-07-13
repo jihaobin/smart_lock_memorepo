@@ -4,12 +4,26 @@ import { join } from 'node:path';
 
 import { z } from 'zod';
 
-import { defineEnv } from '../../src/definitions/metadata';
 import { updateEnvFile } from './env-file';
+import { defineEnv } from '../../src/definitions/metadata';
 
 const testDefinitions = {
-  PORT: defineEnv({ description: 'API 端口', group: 'server', schema: z.coerce.number(), required: true, secret: false, defaultValue: 3000 }),
-  EXPO_PUBLIC_API_URL: defineEnv({ description: '客户端 API URL', group: 'client-public', schema: z.string().url(), required: true, secret: false, defaultValue: 'http://localhost:3000/api' }),
+  PORT: defineEnv({
+    description: 'API 端口',
+    group: 'server',
+    schema: z.coerce.number(),
+    required: true,
+    secret: false,
+    defaultValue: 3000,
+  }),
+  EXPO_PUBLIC_API_URL: defineEnv({
+    description: '客户端 API URL',
+    group: 'client-public',
+    schema: z.string().url(),
+    required: true,
+    secret: false,
+    defaultValue: 'http://localhost:3000/api',
+  }),
 };
 
 describe('updateEnvFile', () => {
@@ -42,8 +56,22 @@ describe('updateEnvFile', () => {
 
   it('派生值使用同次解析的依赖值并进行 URL 编码', () => {
     const definitions = {
-      USER: defineEnv({ description: '用户', group: 'database', schema: z.string(), required: true, secret: false, defaultValue: 'user name' }),
-      URL: defineEnv({ description: 'URL', group: 'database', schema: z.string(), required: true, secret: true, generateLocalValue: values => `scheme://${encodeURIComponent(values.USER)}` }),
+      USER: defineEnv({
+        description: '用户',
+        group: 'database',
+        schema: z.string(),
+        required: true,
+        secret: false,
+        defaultValue: 'user name',
+      }),
+      URL: defineEnv({
+        description: 'URL',
+        group: 'database',
+        schema: z.string(),
+        required: true,
+        secret: true,
+        generateLocalValue: values => `scheme://${encodeURIComponent(values.USER)}`,
+      }),
     };
     updateEnvFile(envPath, definitions);
     expect(readFileSync(envPath, 'utf8')).toContain('URL=scheme://user%20name');

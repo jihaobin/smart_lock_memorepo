@@ -3,8 +3,8 @@ import { DefaultLogger, LogWriter } from 'drizzle-orm/logger';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 
-import * as schemas from './schema';
 import { createPoolConfig } from './db-config';
+import * as schemas from './schema';
 
 // 扩展日志接口
 interface EnhancedLogWriter extends LogWriter {

@@ -3,11 +3,11 @@ import { join } from 'node:path';
 
 import { parse } from 'dotenv';
 
+import { updateEnvFile } from './lib/env-file';
 import { clientDefinitions } from '../src/definitions/client';
 import { serverDefinitions } from '../src/definitions/server';
 import { loadServerEnv } from '../src/runtime/server';
 import { findWorkspaceRoot } from '../src/runtime/workspace-root';
-import { updateEnvFile } from './lib/env-file';
 
 const definitions = { ...serverDefinitions, ...clientDefinitions };
 const root = findWorkspaceRoot(process.cwd());

@@ -1,6 +1,6 @@
+import { renderEnvExample, updateReadmeEnvTable } from './generate';
 import { clientDefinitions } from '../../src/definitions/client';
 import { serverDefinitions } from '../../src/definitions/server';
-import { renderEnvExample, updateReadmeEnvTable } from './generate';
 
 describe('environment artifact generation', () => {
   it('生成示例时不输出 secret 默认值', () => {
@@ -12,7 +12,7 @@ describe('environment artifact generation', () => {
   it('只替换 README 标记区域', () => {
     const source = 'before\n<!-- ENV_TABLE_START -->\nold\n<!-- ENV_TABLE_END -->\nafter\n';
     expect(updateReadmeEnvTable(source, '| variable |')).toBe(
-      'before\n<!-- ENV_TABLE_START -->\n| variable |\n<!-- ENV_TABLE_END -->\nafter\n'
+      'before\n<!-- ENV_TABLE_START -->\n\n| variable |\n\n<!-- ENV_TABLE_END -->\nafter\n'
     );
   });
 });

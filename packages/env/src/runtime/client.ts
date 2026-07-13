@@ -1,8 +1,13 @@
-import { clientEnvSchema } from '../definitions/client';
 import { resolveDeprecatedAliases } from './aliases';
+import { clientEnvSchema } from '../definitions/client';
 
-export function parseClientEnv(input: Record<string, string | undefined>, options: { production?: boolean } = {}) {
-  const resolved = resolveDeprecatedAliases(input, { EXPO_PUBLIC_SOCKET_URL: ['EXPO_PUBLIC_NOTICATION'] });
+export function parseClientEnv(
+  input: Record<string, string | undefined>,
+  options: { production?: boolean } = {}
+) {
+  const resolved = resolveDeprecatedAliases(input, {
+    EXPO_PUBLIC_SOCKET_URL: ['EXPO_PUBLIC_NOTICATION'],
+  });
   const parsed = clientEnvSchema.parse(resolved);
   if (options.production && Object.values(parsed).some(value => value.includes('localhost'))) {
     throw new Error('[invalid] 生产环境客户端 URL 不能指向 localhost');

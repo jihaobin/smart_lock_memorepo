@@ -1,12 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { checkComposeVariables } from './lib/contract-check';
+import { renderEnvExample, renderReadmeEnvTable, updateReadmeEnvTable } from './lib/generate';
 import { clientDefinitions } from '../src/definitions/client';
 import { serverDefinitions } from '../src/definitions/server';
 import { loadServerEnv } from '../src/runtime/server';
 import { findWorkspaceRoot } from '../src/runtime/workspace-root';
-import { checkComposeVariables } from './lib/contract-check';
-import { renderEnvExample, renderReadmeEnvTable, updateReadmeEnvTable } from './lib/generate';
 
 const root = findWorkspaceRoot(process.cwd());
 const definitions = { ...serverDefinitions, ...clientDefinitions };

@@ -107,6 +107,9 @@
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
+    "setupFiles": [
+      "<rootDir>/config/test-env.setup.cjs"
+    ],
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],

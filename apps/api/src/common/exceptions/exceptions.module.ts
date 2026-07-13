@@ -2,10 +2,10 @@ import { Module, Global, Provider } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
 
 import { HttpExceptionFilter } from './http-exception.filter';
-import { AppLoggerService } from '../logger';
-import { LoggerModule } from '../logger/logger.module';
 import ConfigModule from '../../config/config.module';
 import { APP_CONFIG, type AppConfig } from '../../config/config.provider';
+import { AppLoggerService } from '../logger';
+import { LoggerModule } from '../logger/logger.module';
 
 /**
  * 异常模块配置接口
