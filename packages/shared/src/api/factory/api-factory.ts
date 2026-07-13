@@ -21,16 +21,13 @@ export class ApiFactory {
     errorHandler,
   }: {
     adapter: PlatformAdapter;
-    baseURL?: string;
+    baseURL: string;
     options: Record<string, unknown>;
     errorHandler: IErrorHandler;
   }): ApiClient {
-    // 确定基础URL
-    const apiUrl = baseURL || adapter.getEnv('API_URL', 'https://api.example.com');
-
     // 创建客户端实例
     const client = new ApiClient({
-      baseURL: apiUrl,
+      baseURL,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       errorHandler: errorHandler as IErrorHandler,
       platformAdapter: adapter,

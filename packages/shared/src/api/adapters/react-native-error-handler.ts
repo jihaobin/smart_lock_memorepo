@@ -40,6 +40,8 @@ export interface IToaster {
  * React Native默认提示器配置
  */
 export interface ReactNativeErrorHandlerConfig {
+  /** 是否为开发环境 */
+  isDevelopment: boolean;
   /**
    * 提示器实现
    */
@@ -104,15 +106,12 @@ export class ReactNativeErrorHandler extends BaseErrorHandler {
    */
   private uiErrorExpirationTime: number = 3000;
 
-  constructor(config: ReactNativeErrorHandlerConfig = {}) {
+  constructor(config: ReactNativeErrorHandlerConfig) {
     super();
-
-    // 检查是否为开发环境
-    const isDev = process.env.NODE_ENV === 'development';
 
     this.config = {
       logErrors: true,
-      showErrorCodes: isDev, // 开发环境下显示错误代码
+      showErrorCodes: config.isDevelopment,
       uiErrorExpirationTime: 3000, // 默认3秒UI错误提示过期时间
       ...config,
     };

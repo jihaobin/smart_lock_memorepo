@@ -12,6 +12,7 @@ import React, { createContext, useContext, useMemo } from 'react';
 
 import { useToast } from '@/hooks/use-toast';
 import queryClient from '@/lib/queryClient';
+import { clientEnv } from '@/config/env';
 
 // 定义API上下文类型
 interface ApiContextType {
@@ -101,6 +102,7 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
   const errorHandler = useMemo(
     () =>
       new ReactNativeErrorHandler({
+        isDevelopment: __DEV__,
         toaster: toastAdapter,
         logErrors: true,
       }),
@@ -111,7 +113,7 @@ export function ApiProvider({ children }: { children: React.ReactNode }) {
   const apiClient = React.useMemo(() => {
     return ApiFactory.createClient({
       adapter,
-      baseURL: process.env.EXPO_PUBLIC_API_URL || 'https://543444jnnk93.vicp.fun',
+      baseURL: clientEnv.apiUrl,
       options: {
         tokenKey: 'auth_token', // 认证令牌的存储键
         refreshTokenKey: 'refresh_token', // 刷新令牌的存储键

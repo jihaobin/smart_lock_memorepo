@@ -6,6 +6,7 @@ import { useToast } from './use-toast';
 import { useDevices } from './useDevices';
 
 import { useAuth } from '@/contexts/auth-context';
+import { clientEnv } from '@/config/env';
 
 // 开锁结果类型
 interface UnlockResult {
@@ -50,7 +51,7 @@ export function useDeviceSocket() {
     if (deviceSocketRef.current) return;
 
     // WebSocket服务器地址，实际部署时应从环境变量获取
-    const socketUrl = process.env.EXPO_PUBLIC_NOTICATION || 'http://543444jnnk93.vicp.fun';
+    const socketUrl = clientEnv.socketUrl;
 
     try {
       const deviceSocket = io(`${socketUrl}/devices`, {
@@ -164,7 +165,7 @@ export function useDeviceSocket() {
     // 如果没有用户ID或者已经有连接，则退出
     if (!currentUserId || mobileSocketRef.current) return;
 
-    const socketUrl = process.env.EXPO_PUBLIC_NOTICATION || 'http://543444jnnk93.vicp.fun';
+    const socketUrl = clientEnv.socketUrl;
 
     try {
       // 连接到mobile命名空间，并传递用户ID

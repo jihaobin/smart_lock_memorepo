@@ -55,9 +55,9 @@ export class ReactNativeAdapter implements PlatformAdapter {
       // React Native特定配置
       timeout: 15000,
       headers: {
-        'Accept': 'application/json',
+        Accept: 'application/json',
         'Content-Type': 'application/json',
-      }
+      },
     };
   }
 
@@ -66,31 +66,5 @@ export class ReactNativeAdapter implements PlatformAdapter {
     if (this.navigation) {
       this.navigation.navigate(loginPath);
     }
-  }
-
-  getEnv(name: string, defaultValue?: string): string | undefined {
-    try {
-      // 1. 尝试从Expo Constants获取
-      if (typeof global !== 'undefined' &&
-          global.expo) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-        const expoValue = global.expo?.Constants?.expoConfig?.extra?.[name];
-        if (expoValue) return String(expoValue);
-      }
-
-      // 2. 尝试从环境变量获取
-      if (typeof process !== 'undefined' && process.env) {
-        // Expo特定前缀
-        const expoEnvName = `EXPO_PUBLIC_${name}`;
-        if (process.env[expoEnvName]) return process.env[expoEnvName];
-
-        // 尝试直接访问
-        if (process.env[name]) return process.env[name];
-      }
-    } catch (error) {
-      console.warn(`Error reading environment variable ${name}:`, error);
-    }
-
-    return defaultValue;
   }
 }

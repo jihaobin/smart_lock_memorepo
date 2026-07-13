@@ -4,6 +4,8 @@ declare namespace NodeJS {
   interface ProcessEnv {
     // Expo环境变量
     EXPO_PUBLIC_API_URL?: string;
+    EXPO_PUBLIC_SOCKET_URL?: string;
+    EXPO_PUBLIC_NOTICATION?: string;
     [key: string]: string | undefined;
   }
 }

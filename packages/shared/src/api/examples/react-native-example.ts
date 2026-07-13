@@ -35,7 +35,7 @@ export class ExpoToaster implements IToaster {
       type: 'error',
       text: message,
       duration: 3000,
-      ...(options as object || {})
+      ...((options as object) || {}),
     });
   }
 
@@ -44,7 +44,7 @@ export class ExpoToaster implements IToaster {
       type: 'warning',
       text: message,
       duration: 3000,
-      ...(options as object || {})
+      ...((options as object) || {}),
     });
   }
 
@@ -53,7 +53,7 @@ export class ExpoToaster implements IToaster {
       type: 'info',
       text: message,
       duration: 2000,
-      ...(options as object || {})
+      ...((options as object) || {}),
     });
   }
 
@@ -62,7 +62,7 @@ export class ExpoToaster implements IToaster {
       type: 'success',
       text: message,
       duration: 2000,
-      ...(options as object || {})
+      ...((options as object) || {}),
     });
   }
 }
@@ -77,7 +77,8 @@ export class ExpoToaster implements IToaster {
 export function createApiClient(
   asyncStorage: IAsyncStorage,
   navigation: INavigation,
-  toast: IToastService
+  toast: IToastService,
+  isDevelopment: boolean
 ) {
   // 创建平台适配器
   const adapter = new ReactNativeAdapter(asyncStorage, navigation);
@@ -85,20 +86,18 @@ export function createApiClient(
   // 创建 Toast 提示器
   const toaster = new ExpoToaster(toast);
 
-  // 检查是否为开发环境
-  const isDev = process.env.NODE_ENV === 'development';
-
   // 创建错误处理器
   const errorHandler = new ReactNativeErrorHandler({
+    isDevelopment,
     toaster,
     logErrors: true,
-    showErrorCodes: isDev, // 在开发环境中显示错误代码
+    showErrorCodes: isDevelopment,
     errorMessages: {
       // 自定义错误消息
       [ErrorCode.UNAUTHORIZED]: '您的登录已过期，请重新登录',
       [ErrorCode.NETWORK_ERROR]: '网络连接失败，请检查您的网络连接',
       // 添加更多自定义错误消息...
-    }
+    },
   });
 
   // 为特定错误设置处理策略
@@ -111,7 +110,7 @@ export function createApiClient(
     baseURL: 'https://api.example.com',
     platformAdapter: adapter,
     errorHandler,
-    timeout: 15000
+    timeout: 15000,
   });
 }
 
@@ -126,7 +125,7 @@ export async function exampleUsage() {
     const toast = null; // 应该是 Toast 实例
 
     // 创建 API 客户端
-    const apiClient = createApiClient(asyncStorage, navigation, toast);
+    const apiClient = createApiClient(asyncStorage, navigation, toast, false);
 
     // 调用 API
     const response = await apiClient.get('/users/me');

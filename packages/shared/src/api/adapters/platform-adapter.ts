@@ -23,13 +23,6 @@ export interface PlatformAdapter {
    * @param loginPath 登录页面路径
    */
   redirectToLogin(loginPath: string): void;
-
-  /**
-   * 获取环境变量
-   * @param name 环境变量名
-   * @param defaultValue 默认值
-   */
-  getEnv(name: string, defaultValue?: string): string | undefined;
 }
 
 import { StorageAdapter } from '../storage/storage-interface';
