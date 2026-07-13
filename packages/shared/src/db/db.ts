@@ -1,17 +1,10 @@
-import process from 'node:process';
-
-import * as dotenv from 'dotenv';
+import { loadServerEnv } from '@smart-lock/env/server';
 import { DefaultLogger, LogWriter } from 'drizzle-orm/logger';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 
 import * as schemas from './schema';
-
-dotenv.config({ path: '../../.env' });
-
-if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL 环境变量未配置');
-}
+import { createPoolConfig } from './db-config';
 
 // 扩展日志接口
 interface EnhancedLogWriter extends LogWriter {
@@ -29,12 +22,7 @@ export function setLogWriter(writer: EnhancedLogWriter): void {
   logWriter = writer;
 }
 
-const connection = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  max: 20, // 最大连接数
-  idleTimeoutMillis: 30000, // 连接最大空闲时间
-  connectionTimeoutMillis: 2000, // 连接超时时间
-});
+const connection = new Pool(createPoolConfig(loadServerEnv()));
 
 const db = drizzle(connection, {
   logger: new DefaultLogger({ writer: logWriter }),

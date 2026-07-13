@@ -76,6 +76,7 @@
     "ios": "expo run:ios"
   },
   "dependencies": {
+    "@smart-lock/env": "workspace:*",
     "@paralleldrive/cuid2": "^2.2.2",
     "@tanstack/react-query": "^5.69.0",
     "@types/pg": "^8.11.11",
@@ -89,13 +90,9 @@
     "react-native": "0.76.9"
   },
   "peerDependencies": {
-    "dotenv": "^16.4.7",
     "drizzle-kit": "^0.30.5"
   },
   "peerDependenciesMeta": {
-    "dotenv": {
-      "optional": true
-    },
     "drizzle-kit": {
       "optional": true
     }

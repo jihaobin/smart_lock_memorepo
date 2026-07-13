@@ -15,16 +15,7 @@ const baseConfig: Options = {
 };
 
 // 通用外部依赖
-const commonExternals = [
-  'dotenv',
-  'drizzle-kit',
-  'pg',
-  'node:process',
-  'fs',
-  'path',
-  'os',
-  'crypto'
-];
+const commonExternals = ['drizzle-kit', 'pg', 'node:process', 'fs', 'path', 'os', 'crypto'];
 
 export default defineConfig([
   // 核心包（所有平台）
@@ -70,9 +61,8 @@ export default defineConfig([
         os: 'empty:os',
         crypto: 'empty:crypto',
         'node:process': 'empty:process',
-        'process': 'empty:process',
-        'pg': 'empty:pg',
-        'dotenv': 'empty:dotenv',
+        process: 'empty:process',
+        pg: 'empty:pg',
         'drizzle-orm/node-postgres': 'empty:drizzle',
       };
       return options;
@@ -98,5 +88,5 @@ export default defineConfig([
     entry: ['src/api/index.ts'],
     outDir: 'dist/api',
     external: commonExternals,
-  }
+  },
 ]);
