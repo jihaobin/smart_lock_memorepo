@@ -24,6 +24,21 @@ import { APP_CONFIG, AppConfig } from 'src/config/config.provider';
 import { RbacRepository } from './rbac.repository';
 import { AdminAuthRepository } from '../auth/admin-auth.repository';
 
+const SYSTEM_ADMIN_ROUTES: ReadonlyArray<Omit<CreateRouteDto, 'role'>> = [
+  { path: 'user-manager', name: '用户管理', icon: 'user', order: 1 },
+  { path: 'admin-manager', name: '管理员管理', icon: 'shield', order: 2 },
+  { path: 'device-manager', name: '设备管理', icon: 'lock', order: 3 },
+  {
+    path: 'device-model-manager',
+    name: '设备型号',
+    icon: 'cpu',
+    order: 4,
+  },
+  { path: 'router-manager', name: '路由管理', icon: 'router', order: 5 },
+];
+
+const OBSOLETE_SYSTEM_ROUTE_PATHS = new Set(['dashboard', 'role-manager']);
+
 @Injectable()
 export class RbacService implements OnModuleInit {
   // 默认缓存过期时间: 5分钟 (转换为秒)
@@ -580,82 +595,62 @@ export class RbacService implements OnModuleInit {
     });
   }
 
+  private flattenRouteTree(routes: RouteItem[]): RouteItem[] {
+    return routes.flatMap((route) => [
+      route,
+      ...this.flattenRouteTree(route.children ?? []),
+    ]);
+  }
+
   /**
-   * 确保默认路由存在
-   * 初始化基础路由数据：根路由(/)、数据图表路由(dashboard)、用户管理路由(user-manager)、
-   * 路由管理路由(router-manager)和角色管理路由(role-manager)
+   * 校准系统管理路由，保留自定义路由并确保超级管理员拥有全部路由
    */
   private async ensureDefaultRoutesExist() {
     try {
-      // 获取所有路由
-      const routes = await this.getAllRoutes();
-
-      // 如果已经有路由数据，则不需要初始化
-      if (routes && routes.length > 0) {
-        return;
-      }
-
       const superAdminRole =
         await this.rbacRepository.getRoleByName('superadmin');
       if (!superAdminRole) {
         throw new Error('无法找到superadmin角色，请确保先初始化默认角色');
       }
 
-      console.log('初始化默认路由数据...');
+      console.log('校准系统管理路由...');
 
-      // 创建数据图表路由
-      await this.rbacRepository.createRoute({
-        path: 'dashboard',
-        name: '数据图表',
-        icon: 'dashboard',
-        order: 1,
-        role: [superAdminRole.id],
-      });
+      const existingRoutes = this.flattenRouteTree(
+        await this.rbacRepository.getAllRoutes(),
+      );
 
-      // 创建用户管理路由
-      await this.rbacRepository.createRoute({
-        path: 'user-manager',
-        name: '用户管理',
-        icon: 'user',
-        order: 2,
-        role: [superAdminRole.id],
-      });
+      for (const route of existingRoutes) {
+        if (OBSOLETE_SYSTEM_ROUTE_PATHS.has(route.path)) {
+          await this.rbacRepository.deleteRoute(route.id);
+        }
+      }
 
-      // 创建路由管理路由
-      await this.rbacRepository.createRoute({
-        path: 'router-manager',
-        name: '路由管理',
-        icon: 'router',
-        order: 3,
-        role: [superAdminRole.id],
-      });
+      const existingPaths = new Set(existingRoutes.map((route) => route.path));
+      for (const route of SYSTEM_ADMIN_ROUTES) {
+        if (!existingPaths.has(route.path)) {
+          await this.rbacRepository.createRoute({
+            ...route,
+            role: [superAdminRole.id],
+          });
+        }
+      }
 
-      // 创建角色管理路由
-      await this.rbacRepository.createRoute({
-        path: 'role-manager',
-        name: '角色管理',
-        icon: 'role',
-        order: 4,
-        role: [superAdminRole.id],
-      });
-      // 清除路由缓存
       await this.clearRoutesCache();
 
-      // 为超级管理员角色分配所有路由
-      // 重新获取所有路由ID
-      const allRoutes = await this.getAllRoutes();
-      const routeIds = allRoutes.map((route) => route.id);
+      const finalRoutes = this.flattenRouteTree(
+        await this.rbacRepository.getAllRoutes(),
+      );
+      await this.rbacRepository.assignRoutesToRole(
+        superAdminRole.id,
+        finalRoutes.map((route) => route.id),
+      );
 
-      // 分配所有路由给超级管理员
-      await this.assignRoutesToRole(superAdminRole.id, routeIds);
-
-      // 清除路由缓存
       await this.clearRoutesCache();
-      console.log('默认路由初始化完成');
+      console.log('系统管理路由校准完成');
     } catch (error) {
-      console.error('初始化默认路由失败:', error.message);
+      console.error('校准系统管理路由失败:', error.message);
       throw new InternalServerErrorException(
-        `初始化默认路由失败: ${error.message}`,
+        `校准系统管理路由失败: ${error.message}`,
       );
     }
   }
