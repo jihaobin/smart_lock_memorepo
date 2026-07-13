@@ -1,12 +1,9 @@
-import * as path from 'path';
-
 import { NestFactory } from '@nestjs/core';
-import * as dotenv from 'dotenv';
+
 import { AppModule } from './app.module';
 import { AppLoggerService, HttpExceptionFilter } from './common';
 import { setupSwagger } from './common/swagger/swagger.module';
-
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+import { APP_CONFIG, type AppConfig } from './config/config.provider';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -14,6 +11,7 @@ async function bootstrap() {
   });
 
   const logger = await app.resolve(AppLoggerService);
+  const appConfig = app.get<AppConfig>(APP_CONFIG);
   logger.setContext('Bootstrap');
   app.useLogger(logger);
 
@@ -23,10 +21,12 @@ async function bootstrap() {
   });
 
   // 注册全局异常过滤器
-  app.useGlobalFilters(new HttpExceptionFilter(logger));
+  app.useGlobalFilters(
+    new HttpExceptionFilter(logger, appConfig.NODE_ENV !== 'production'),
+  );
 
   // 允许localhost和127.0.0.1的任意端口访问
-  const clientUrl = process.env.NEXT_PUBLIC_APP_URL || [
+  const clientUrl = appConfig.NEXT_PUBLIC_APP_URL || [
     /^http:\/\/localhost:\d+$/,
     /^http:\/\/127\.0\.0\.1:\d+$/,
   ];
@@ -39,7 +39,7 @@ async function bootstrap() {
   // 添加Swagger文档
   setupSwagger(app);
 
-  const port = process.env.PORT ?? 3000;
+  const port = appConfig.PORT;
   await app.listen(port);
 
   logger.log(`应用已启动，监听端口: ${port}`);

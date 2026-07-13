@@ -50,9 +50,10 @@ export interface TransformInterceptorOptions {
  * 用于统一API响应格式
  */
 @Injectable()
-export class TransformInterceptor<T>
-  implements NestInterceptor<T, ApiResponse<T> | T>
-{
+export class TransformInterceptor<T> implements NestInterceptor<
+  T,
+  ApiResponse<T> | T
+> {
   private readonly defaultOptions: TransformInterceptorOptions = {
     logResponse: true,
     includeTimestamp: true,
@@ -61,6 +62,7 @@ export class TransformInterceptor<T>
 
   constructor(
     private readonly logger: AppLoggerService,
+    private readonly isDevelopment: boolean,
     private readonly options: TransformInterceptorOptions = {},
     private readonly reflector?: Reflector,
   ) {
@@ -89,17 +91,16 @@ export class TransformInterceptor<T>
     const now = Date.now();
 
     // 检查是否需要跳过转换
-    const skipTransform = this.reflector?.get<boolean>(
-      SKIP_TRANSFORM_KEY,
-      context.getHandler(),
-    ) || false;
+    const skipTransform =
+      this.reflector?.get<boolean>(SKIP_TRANSFORM_KEY, context.getHandler()) ||
+      false;
 
     // 记录请求日志
     if (this.options.logResponse) {
       this.logger.log(`请求开始 - ${method} ${path}`, 'TransformInterceptor');
 
       // 在开发环境下记录请求详情
-      if (process.env.NODE_ENV !== 'production') {
+      if (this.isDevelopment) {
         const requestData = {
           params,
           query,
@@ -130,7 +131,7 @@ export class TransformInterceptor<T>
           );
 
           // 在开发环境下记录响应详情
-          if (process.env.NODE_ENV !== 'production') {
+          if (this.isDevelopment) {
             this.logger.debug(
               `响应详情: ${this.sanitizeResponseData(
                 skipTransform ? data : { data, transformed: true },
@@ -149,7 +150,7 @@ export class TransformInterceptor<T>
         const result: ApiResponse<T> = {
           code: ApiStatusCode.SUCCESS,
           message: this.getSuccessMessage(data),
-          data: (data as T),
+          data: data as T,
           timestamp: timestamp || Date.now(),
           path, // 添加请求路径，与异常过滤器保持一致
         };
@@ -171,7 +172,7 @@ export class TransformInterceptor<T>
     }
 
     // 否则使用默认成功消息
-    return this.options.defaultSuccessMessage || "";
+    return this.options.defaultSuccessMessage || '';
   }
 
   /**

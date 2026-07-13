@@ -24,7 +24,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
    * 构造函数
    * @param logger 日志服务
    */
-  constructor(private readonly logger: AppLoggerService) {
+  constructor(
+    private readonly logger: AppLoggerService,
+    private readonly isDevelopment: boolean,
+  ) {
     this.logger.setContext(HttpExceptionFilter.name);
   }
 
@@ -72,7 +75,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const statusCode = this.getStatusCode(exception);
 
     // 在非生产环境下添加错误堆栈
-    if (process.env.NODE_ENV !== 'production' && exception instanceof Error) {
+    if (this.isDevelopment && exception instanceof Error) {
       errorResponse.stack = exception.stack as string;
     }
 
@@ -119,8 +122,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
   ): void {
     const status = exception.getStatus();
     const response = exception.getResponse() as
-      | string
-      | Record<string, unknown>;
+      string | Record<string, unknown>;
 
     // 设置错误代码
     errorResponse.code = this.mapHttpStatusToErrorCode(status);

@@ -31,6 +31,7 @@ export class LoggerModule {
    * @returns 动态模块
    */
   static forRootAsync(options: {
+    imports?: DynamicModule['imports'];
     useFactory: (...args: unknown[]) => LoggerOptions | Promise<LoggerOptions>;
     inject?: Array<Type<unknown> | string | symbol>;
   }): DynamicModule {
@@ -42,6 +43,7 @@ export class LoggerModule {
 
     return {
       module: LoggerModule,
+      imports: options.imports || [],
       providers: [loggerOptionsProvider, AppLoggerService],
       exports: [AppLoggerService],
     };

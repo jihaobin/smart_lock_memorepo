@@ -14,6 +14,7 @@ import { InterceptorsModule } from './common/interceptors';
 import { LoggerModule, LogFormatterType, LogLevel } from './common/logger';
 import { LoggerMiddleware } from './common/logger/middleware/logger.middleware';
 import ConfigModule from './config/config.module';
+import { APP_CONFIG, type AppConfig } from './config/config.provider';
 import DatabaseModule from './database/database.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -27,23 +28,28 @@ import { UnLockRecordModule } from './modules/unLockRecord/unLockRecord.module';
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
     // 日志模块
-    LoggerModule.forRoot({
-      appName: 'smart-lock-api',
-      isDevelopment: process.env.NODE_ENV !== 'production',
-      defaultLevel:
-        process.env.NODE_ENV !== 'production' ? LogLevel.DEBUG : LogLevel.INFO,
-      formatter: {
-        type:
-          process.env.NODE_ENV !== 'production'
-            ? LogFormatterType.DETAILED
-            : LogFormatterType.JSON,
-        timestamp: true,
-        colors: process.env.NODE_ENV !== 'production',
+    ConfigModule,
+    LoggerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [APP_CONFIG],
+      useFactory: (config: AppConfig) => {
+        const isDevelopment = config.NODE_ENV !== 'production';
+        return {
+          appName: 'smart-lock-api',
+          isDevelopment,
+          defaultLevel: isDevelopment ? LogLevel.DEBUG : LogLevel.INFO,
+          formatter: {
+            type: isDevelopment
+              ? LogFormatterType.DETAILED
+              : LogFormatterType.JSON,
+            timestamp: true,
+            colors: isDevelopment,
+          },
+        };
       },
     }),
 
     // 配置和数据库模块先导入
-    ConfigModule,
     DatabaseModule,
 
     // 定时任务模块

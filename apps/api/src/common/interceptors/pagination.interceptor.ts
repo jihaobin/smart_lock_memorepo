@@ -42,12 +42,13 @@ export interface PaginationInterceptorOptions {
  * 用于统一处理分页数据格式
  */
 @Injectable()
-export class PaginationInterceptor<T>
-  implements NestInterceptor<IPaginatedResult<T>, PaginatedData<T>>
-{
-
+export class PaginationInterceptor<T> implements NestInterceptor<
+  IPaginatedResult<T>,
+  PaginatedData<T>
+> {
   constructor(
     private readonly logger: AppLoggerService,
+    private readonly isDevelopment: boolean,
     private readonly options: PaginationInterceptorOptions = {
       defaultPage: 1,
       defaultLimit: 10,
@@ -106,7 +107,7 @@ export class PaginationInterceptor<T>
           'PaginationInterceptor',
         );
 
-        if (process.env.NODE_ENV !== 'production') {
+        if (this.isDevelopment) {
           this.logger.debug(
             `分页详情: ${JSON.stringify(meta)}`,
             'PaginationInterceptor',

@@ -2,7 +2,10 @@ import { Module, Global, Provider } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
 
 import { HttpExceptionFilter } from './http-exception.filter';
+import { AppLoggerService } from '../logger';
 import { LoggerModule } from '../logger/logger.module';
+import ConfigModule from '../../config/config.module';
+import { APP_CONFIG, type AppConfig } from '../../config/config.provider';
 
 /**
  * 异常模块配置接口
@@ -20,9 +23,9 @@ export interface ExceptionsModuleOptions {
  */
 @Global()
 @Module({
-  imports: [LoggerModule],
-  providers: [HttpExceptionFilter],
-  exports: [HttpExceptionFilter],
+  imports: [],
+  providers: [],
+  exports: [],
 })
 export class ExceptionsModule {
   /**
@@ -33,19 +36,26 @@ export class ExceptionsModule {
   static forRoot(options: ExceptionsModuleOptions = {}) {
     const { enableGlobalFilter = true } = options;
 
-    const providers: Provider[] = [HttpExceptionFilter];
+    const providers: Provider[] = [
+      {
+        provide: HttpExceptionFilter,
+        useFactory: (logger: AppLoggerService, config: AppConfig) =>
+          new HttpExceptionFilter(logger, config.NODE_ENV !== 'production'),
+        inject: [AppLoggerService, APP_CONFIG],
+      },
+    ];
 
     // 注册全局异常过滤器
     if (enableGlobalFilter) {
       providers.push({
         provide: APP_FILTER,
-        useClass: HttpExceptionFilter,
+        useExisting: HttpExceptionFilter,
       });
     }
 
     return {
       module: ExceptionsModule,
-      imports: [LoggerModule],
+      imports: [ConfigModule, LoggerModule],
       providers,
       exports: [HttpExceptionFilter],
     };

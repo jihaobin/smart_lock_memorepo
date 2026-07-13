@@ -63,7 +63,7 @@ export class AppLoggerService extends ConsoleLogger implements IAppLogger {
    */
   private createWinstonLogger(options: LoggerOptions): Logger {
     const {
-      isDevelopment = process.env.NODE_ENV !== 'production',
+      isDevelopment = false,
       defaultLevel = isDevelopment ? LogLevel.DEBUG : LogLevel.INFO,
       formatter = {
         type: isDevelopment ? LogFormatterType.DETAILED : LogFormatterType.JSON,

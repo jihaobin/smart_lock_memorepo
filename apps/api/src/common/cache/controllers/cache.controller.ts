@@ -1,5 +1,6 @@
 import { Controller, Get, Inject, Query } from '@nestjs/common';
 
+import { APP_CONFIG, type AppConfig } from '../../../config/config.provider';
 import { ICacheService } from '../interfaces/cache-service.interface';
 import { CACHE_SERVICE } from '../providers/cache.provider';
 import { MemoryCacheService } from '../services/memory-cache.service';
@@ -9,6 +10,8 @@ export class CacheDebugController {
   constructor(
     @Inject(CACHE_SERVICE)
     private readonly cacheService: ICacheService,
+    @Inject(APP_CONFIG)
+    private readonly appConfig: AppConfig,
   ) {}
 
   @Get()
@@ -16,7 +19,7 @@ export class CacheDebugController {
     @Query('debug_key') debugKey?: string,
   ): Promise<{ keys: string[]; entries: Record<string, unknown> }> {
     // 简单的访问控制 - 生产环境应使用更安全的方式
-    const secretKey = process.env.DEBUG_KEY || 'debug_secret_key';
+    const secretKey = this.appConfig.DEBUG_KEY;
     if (debugKey !== secretKey) {
       return {
         keys: [],

@@ -1,11 +1,13 @@
 import { Module, Global, Provider, DynamicModule } from '@nestjs/common';
-import { APP_INTERCEPTOR , Reflector } from '@nestjs/core';
+import { APP_INTERCEPTOR, Reflector } from '@nestjs/core';
 
 import { PaginationInterceptor } from './pagination.interceptor';
 import { TimeoutInterceptor } from './timeout.interceptor';
 import { TransformInterceptor } from './transform.interceptor';
 import { AppLoggerService } from '../logger';
 import { LoggerModule } from '../logger/logger.module';
+import ConfigModule from '../../config/config.module';
+import { APP_CONFIG, type AppConfig } from '../../config/config.provider';
 
 /**
  * 拦截器模块配置接口
@@ -60,7 +62,7 @@ interface InterceptorFactory {
  */
 @Global()
 @Module({
-  imports: [LoggerModule],
+  imports: [ConfigModule, LoggerModule],
   providers: [], // 静态模块不直接注册拦截器，避免重复
   exports: [],
 })
@@ -84,15 +86,33 @@ export class InterceptorsModule {
       transform: {
         createProvider: () => ({
           provide: TransformInterceptor,
-          useFactory: (logger: AppLoggerService, reflector: Reflector) =>
-            new TransformInterceptor(logger, { defaultSuccessMessage }, reflector),
-          inject: [AppLoggerService, Reflector],
+          useFactory: (
+            logger: AppLoggerService,
+            reflector: Reflector,
+            config: AppConfig,
+          ) =>
+            new TransformInterceptor(
+              logger,
+              config.NODE_ENV !== 'production',
+              { defaultSuccessMessage },
+              reflector,
+            ),
+          inject: [AppLoggerService, Reflector, APP_CONFIG],
         }),
         createGlobalProvider: () => ({
           provide: APP_INTERCEPTOR,
-          useFactory: (logger: AppLoggerService, reflector: Reflector) =>
-            new TransformInterceptor(logger, { defaultSuccessMessage }, reflector),
-          inject: [AppLoggerService, Reflector],
+          useFactory: (
+            logger: AppLoggerService,
+            reflector: Reflector,
+            config: AppConfig,
+          ) =>
+            new TransformInterceptor(
+              logger,
+              config.NODE_ENV !== 'production',
+              { defaultSuccessMessage },
+              reflector,
+            ),
+          inject: [AppLoggerService, Reflector, APP_CONFIG],
         }),
       },
       timeout: {
@@ -112,21 +132,29 @@ export class InterceptorsModule {
       pagination: {
         createProvider: () => ({
           provide: PaginationInterceptor,
-          useFactory: (logger: AppLoggerService) =>
-            new PaginationInterceptor(logger, {
-              defaultPage: 1,
-              defaultLimit: 10,
-            }),
-          inject: [AppLoggerService],
+          useFactory: (logger: AppLoggerService, config: AppConfig) =>
+            new PaginationInterceptor(
+              logger,
+              config.NODE_ENV !== 'production',
+              {
+                defaultPage: 1,
+                defaultLimit: 10,
+              },
+            ),
+          inject: [AppLoggerService, APP_CONFIG],
         }),
         createGlobalProvider: () => ({
           provide: APP_INTERCEPTOR,
-          useFactory: (logger: AppLoggerService) =>
-            new PaginationInterceptor(logger, {
-              defaultPage: 1,
-              defaultLimit: 10,
-            }),
-          inject: [AppLoggerService],
+          useFactory: (logger: AppLoggerService, config: AppConfig) =>
+            new PaginationInterceptor(
+              logger,
+              config.NODE_ENV !== 'production',
+              {
+                defaultPage: 1,
+                defaultLimit: 10,
+              },
+            ),
+          inject: [AppLoggerService, APP_CONFIG],
         }),
       },
     };
@@ -159,7 +187,7 @@ export class InterceptorsModule {
 
     return {
       module: InterceptorsModule,
-      imports: [LoggerModule],
+      imports: [ConfigModule, LoggerModule],
       providers,
       exports,
     };
