@@ -24,6 +24,7 @@
   },
   "scripts": {
     "build": "tsup",
+    "env:init": "tsx scripts/init.ts",
     "test": "jest --runInBand"
   },
   "dependencies": {
