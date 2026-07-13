@@ -1,98 +1,53 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# @smart-lock/api
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+智能锁系统的 NestJS 后端。完整架构、启动顺序和当前问题见 [开发与交接指南](../../docs/development-guide.md)。
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 职责
 
-## Description
+- 普通用户与管理员认证、全局 JWT 守卫
+- 用户、RBAC、设备、设备型号和好友关系
+- 临时密码与开锁记录
+- 通知、WebSocket、BullMQ 队列和 Redis 缓存
+- PostgreSQL/Drizzle 数据访问
+- 邮件、阿里云短信和 STS 集成
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+应用入口为 `src/main.ts`，根模块为 `src/app.module.ts`。Swagger 默认位于 `http://localhost:3000/api-docs`。
 
-## Project setup
+## 启动
 
-```bash
-$ pnpm install
+从仓库根目录启动依赖并校验环境：
+
+```powershell
+pnpm env:check
+pnpm --filter @smart-lock/env build
+pnpm --filter @smart-lock/shared build
+docker compose up -d --wait
+pnpm db:generate # 仅全新克隆 + 空本地数据库
+pnpm db:migrate
+pnpm dev:api
 ```
 
-## Compile and run the project
+API 默认监听 `PORT=3000`。本地 `.env` 必须位于仓库根；部署和 CI 也可以直接注入进程环境变量，两者都受 `packages/env/src/definitions/server.ts` 的同一契约校验。
 
-```bash
-# development
-$ pnpm run start
+当前迁移目录未被 Git 跟踪，`db:generate` 只适合干净克隆配合空的本地数据库。已有数据库先确认迁移历史，不要直接生成基线。
 
-# watch mode
-$ pnpm run start:dev
+## 命令
 
-# production mode
-$ pnpm run start:prod
+```powershell
+pnpm --filter @smart-lock/api dev
+pnpm --filter @smart-lock/api build
+pnpm --filter @smart-lock/api test
+pnpm --filter @smart-lock/api test:cov
 ```
 
-## Run tests
+一次性串行运行 Jest：
 
-```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+```powershell
+pnpm --filter @smart-lock/api exec jest --runInBand
 ```
 
-## Deployment
+当前注意事项：
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ pnpm install -g mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- Redis 连接仍在 `src/app.module.ts` 中固定为 `localhost:6379`。非本机部署前需要先把该配置纳入统一环境契约。
+- `main.ts` 的全局前缀排除规则会排除全部路由，普通用户接口当前实际没有 `/api` 前缀。
+- `test:e2e` 脚本引用的 `test/jest-e2e.json` 当前不存在，补齐配置和用例前不要把它作为验证门禁。

@@ -1,50 +1,60 @@
-# Welcome to your Expo app 👋
+# @smart-lock/client
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+智能锁系统的 Expo/React Native 移动端。完整架构、启动顺序和当前问题见 [开发与交接指南](../../docs/development-guide.md)。
 
-## Get started
+## 技术与结构
 
-1. Install dependencies
+- Expo 52、React Native 0.76、Expo Router
+- `app/`：文件路由页面
+- `components/`：业务组件与 Gluestack UI 封装
+- `contexts/`：认证、API、通知和设备管理上下文
+- `hooks/`：查询、Socket 和业务状态 Hook
+- `lib/bluetooth.ts`：蓝牙能力
 
-   ```bash
-   pnpm install
-   ```
+蓝牙和 Wi-Fi 配网依赖原生模块。Expo Go 不能覆盖完整功能，优先使用开发构建、Android 真机或模拟器。
 
-2. Start the app
+## 启动
 
-   ```bash
-    pnpx expo start
-   ```
+```powershell
+# 推荐：同时启动 API 和移动端
+pnpm dev:client-api
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+# 仅启动移动端
+pnpm dev:client
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+组合命令会通过 Turbo 自动构建共享依赖。干净克隆单独运行 `pnpm dev:client` 前，先执行 `pnpm --filter @smart-lock/env build` 和 `pnpm --filter @smart-lock/shared build`。
 
-## Learn more
+当前移动端脚本使用 Windows `set` 语法。macOS/Linux 接手者需要先将脚本迁移到 `cross-env` 或等价的跨平台启动方式。
 
-To learn more about developing your project with Expo, look at the following resources:
+## 环境变量
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+移动端只读取：
 
-## Join the community
+```dotenv
+EXPO_PUBLIC_API_URL=http://localhost:3000
+EXPO_PUBLIC_SOCKET_URL=http://localhost:3001
+```
 
-Join our community of developers creating universal apps.
+这是当前运行时的临时绕行值：Nest 全局前缀配置实际排除了所有路由，所以 API 暂时没有 `/api` 前缀；三个 WebSocket Gateway 都监听 3001。`@smart-lock/env` 当前生成的 `/api` 和 3000 默认值与运行时不一致。
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+真机调试必须把 `localhost` 替换为开发机局域网 IP，并允许防火墙上的 3000、3001 端口。变量由 `config/env.ts` 经 `@smart-lock/env/client` 校验；生产构建不允许指向 localhost。
+
+## 命令
+
+```powershell
+pnpm --filter @smart-lock/client dev
+pnpm --filter @smart-lock/client android
+pnpm --filter @smart-lock/client ios
+pnpm --filter @smart-lock/client web
+pnpm --filter @smart-lock/client prebuild
+pnpm --filter @smart-lock/client clean
+```
+
+一次性运行测试：
+
+```powershell
+pnpm --filter @smart-lock/client exec jest --runInBand --watch=false
+```
+
+`clean` 会删除 `apps/client/android` 和 `apps/client/ios`，运行前确认没有未提交的原生修改。

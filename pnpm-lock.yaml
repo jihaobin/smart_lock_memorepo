@@ -6,6 +6,7 @@ settings:
 
 overrides:
   brace-expansion: 1.1.12
+  '@alicloud/credentials': ^2.4.4
 
 importers:
 
@@ -798,10 +799,10 @@ importers:
         version: 2.2.2
       '@smart-lock/env':
         specifier: workspace:*
-        version: link:../../packages/env
+        version: link:../env
       '@tanstack/react-query':
         specifier: ^5.69.0
-        version: 5.80.7(react@19.1.0)
+        version: 5.80.7(react@18.3.1)
       '@types/pg':
         specifier: ^8.11.11
         version: 8.15.4
@@ -814,9 +815,18 @@ importers:
       drizzle-orm:
         specifier: ^0.40.0
         version: 0.40.1(@types/pg@8.15.4)(gel@2.1.0)(pg@8.16.0)
+      expo:
+        specifier: ~52.0.46
+        version: 52.0.46(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@expo/metro-runtime@4.0.1(react-native@0.76.9(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@types/react@18.3.23)(react@18.3.1)))(react-native-webview@13.12.5(react-native@0.76.9(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@types/react@18.3.23)(react@18.3.1))(react@18.3.1))(react-native@0.76.9(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@types/react@18.3.23)(react@18.3.1))(react@18.3.1)
       pg:
         specifier: ^8.14.0
         version: 8.16.0
+      react:
+        specifier: 18.3.1
+        version: 18.3.1
+      react-native:
+        specifier: 0.76.9
+        version: 0.76.9(@babel/core@7.27.4)(@babel/preset-env@7.27.2(@babel/core@7.27.4))(@types/react@18.3.23)(react@18.3.1)
       tsx:
         specifier: ^4.19.3
         version: 4.20.2
@@ -832,10 +842,10 @@ importers:
         version: 8.57.1
       jest:
         specifier: ^29.7.0
-        version: 29.7.0(@types/node@20.19.0)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.12.0(@swc/helpers@0.5.17))(@types/node@20.19.0)(typescript@5.8.3))
+        version: 29.7.0(@types/node@20.19.0)(babel-plugin-macros@3.1.0)
       ts-jest:
         specifier: ^29.1.1
-        version: 29.4.0(@babel/core@7.27.4)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.27.4))(esbuild@0.25.5)(jest-util@29.7.0)(jest@29.7.0(@types/node@20.19.0)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.12.0(@swc/helpers@0.5.17))(@types/node@20.19.0)(typescript@5.8.3)))(typescript@5.8.3)
+        version: 29.4.0(@babel/core@7.27.4)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.27.4))(esbuild@0.19.12)(jest-util@29.7.0)(jest@29.7.0(@types/node@20.19.0)(babel-plugin-macros@3.1.0))(typescript@5.8.3)
       tsup:
         specifier: ^8.0.2
         version: 8.5.0(@swc/core@1.12.0(@swc/helpers@0.5.17))(jiti@2.4.2)(postcss@8.5.5)(tsx@4.20.2)(typescript@5.8.3)(yaml@2.8.0)
@@ -853,8 +863,8 @@ packages:
       graphql:
         optional: true
 
-  '@alicloud/credentials@2.4.3':
-    resolution: {integrity: sha512-r2thNtthchTz/c8/HryGSey1vY0UZx2FkAvb+vd+j7xhD/v/KUwnp8RJNQKNG3E4kfs4wSx2bgDSkcPAiXHQLQ==}
+  '@alicloud/credentials@2.4.4':
+    resolution: {integrity: sha512-/eRAGSKcniLIFQ1UCpDhB/IrHUZisQ1sc65ws/c2avxUMpXwH1rWAohb76SVAUJhiF4mwvLzLJM1Mn1XL4Xe/Q==}
 
   '@alicloud/darabonba-array@0.1.1':
     resolution: {integrity: sha512-UPP7p9//jywqM8EN6BjSbw1ovl/BzqreXdi5FmxT6m3PmFxsxabe+yamjeopyf2Gi0p3WqwJTBCeNji5eYUsJw==}
@@ -11959,7 +11969,7 @@ snapshots:
 
   '@0no-co/graphql.web@1.1.2': {}
 
-  '@alicloud/credentials@2.4.3':
+  '@alicloud/credentials@2.4.4':
     dependencies:
       '@alicloud/tea-typescript': 1.8.0
       httpx: 2.3.3
@@ -12019,7 +12029,7 @@ snapshots:
 
   '@alicloud/gateway-pop@0.0.6':
     dependencies:
-      '@alicloud/credentials': 2.4.3
+      '@alicloud/credentials': 2.4.4
       '@alicloud/darabonba-array': 0.1.1
       '@alicloud/darabonba-encode-util': 0.0.2
       '@alicloud/darabonba-map': 0.0.1
@@ -12035,14 +12045,14 @@ snapshots:
 
   '@alicloud/gateway-spi@0.0.8':
     dependencies:
-      '@alicloud/credentials': 2.4.3
+      '@alicloud/credentials': 2.4.4
       '@alicloud/tea-typescript': 1.8.0
     transitivePeerDependencies:
       - supports-color
 
   '@alicloud/openapi-client@0.4.14':
     dependencies:
-      '@alicloud/credentials': 2.4.3
+      '@alicloud/credentials': 2.4.4
       '@alicloud/gateway-spi': 0.0.8
       '@alicloud/openapi-util': 0.3.2
       '@alicloud/tea-typescript': 1.8.0
@@ -12053,7 +12063,7 @@ snapshots:
 
   '@alicloud/openapi-core@1.0.4':
     dependencies:
-      '@alicloud/credentials': 2.4.3
+      '@alicloud/credentials': 2.4.4
       '@alicloud/gateway-pop': 0.0.6
       '@alicloud/gateway-spi': 0.0.8
       '@darabonba/typescript': 1.0.3

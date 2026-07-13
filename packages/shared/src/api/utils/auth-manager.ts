@@ -22,7 +22,7 @@ export class AuthManager {
 
   // 需要认证的API路径正则表达式
   private protectedPaths: RegExp[] = [
-    /^\/(?!auth\/login|auth\/register|auth\/forgot-password|public\/)/,
+    /^\/(?!auth\/(?:login|register|forgot-password|send_verification_code)$|public\/)/,
   ];
 
   // 令牌检查回调函数

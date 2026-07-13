@@ -110,6 +110,9 @@
     "setupFiles": [
       "<rootDir>/config/test-env.setup.cjs"
     ],
+    "moduleNameMapper": {
+      "^src/(.*)$": "<rootDir>/$1"
+    },
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],

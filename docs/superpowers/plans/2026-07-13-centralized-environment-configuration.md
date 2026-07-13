@@ -185,7 +185,8 @@ describe('environment contract', () => {
       warning => warnings.push(warning)
     );
     expect(result.PORT).toBe('3001');
-    expect(warnings).toContain('[deprecated] API_PORT: 请迁移为 PORT');
+    expect(warnings).toContain('[deprecated] API_PORT:
+    ');
   });
 });
 ```

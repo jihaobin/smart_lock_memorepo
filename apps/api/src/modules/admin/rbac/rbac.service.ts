@@ -595,6 +595,12 @@ export class RbacService implements OnModuleInit {
         return;
       }
 
+      const superAdminRole =
+        await this.rbacRepository.getRoleByName('superadmin');
+      if (!superAdminRole) {
+        throw new Error('无法找到superadmin角色，请确保先初始化默认角色');
+      }
+
       console.log('初始化默认路由数据...');
 
       // 创建数据图表路由
@@ -603,7 +609,7 @@ export class RbacService implements OnModuleInit {
         name: '数据图表',
         icon: 'dashboard',
         order: 1,
-        role: ['v2mm5'],
+        role: [superAdminRole.id],
       });
 
       // 创建用户管理路由
@@ -612,7 +618,7 @@ export class RbacService implements OnModuleInit {
         name: '用户管理',
         icon: 'user',
         order: 2,
-        role: ['v2mm5'],
+        role: [superAdminRole.id],
       });
 
       // 创建路由管理路由
@@ -621,7 +627,7 @@ export class RbacService implements OnModuleInit {
         name: '路由管理',
         icon: 'router',
         order: 3,
-        role: ['v2mm5'],
+        role: [superAdminRole.id],
       });
 
       // 创建角色管理路由
@@ -630,22 +636,18 @@ export class RbacService implements OnModuleInit {
         name: '角色管理',
         icon: 'role',
         order: 4,
-        role: ['v2mm5'],
+        role: [superAdminRole.id],
       });
       // 清除路由缓存
       await this.clearRoutesCache();
 
       // 为超级管理员角色分配所有路由
-      const superAdminRole =
-        await this.rbacRepository.getRoleByName('superadmin');
-      if (superAdminRole) {
-        // 重新获取所有路由ID
-        const allRoutes = await this.getAllRoutes();
-        const routeIds = allRoutes.map((route) => route.id);
+      // 重新获取所有路由ID
+      const allRoutes = await this.getAllRoutes();
+      const routeIds = allRoutes.map((route) => route.id);
 
-        // 分配所有路由给超级管理员
-        await this.assignRoutesToRole(superAdminRole.id, routeIds);
-      }
+      // 分配所有路由给超级管理员
+      await this.assignRoutesToRole(superAdminRole.id, routeIds);
 
       // 清除路由缓存
       await this.clearRoutesCache();

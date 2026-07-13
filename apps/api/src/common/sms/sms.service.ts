@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-
-// /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as Dysmsapi from '@alicloud/dysmsapi20170525';
 import * as OpenApi from '@alicloud/openapi-client';
 import * as Util from '@alicloud/tea-util';
@@ -82,7 +79,6 @@ export class SmsService {
       config.endpoint = 'dysmsapi.aliyuncs.com';
 
       // 创建客户端
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       this.client = new Dysmsapi.default(config);
       return this.client;
     } catch (error) {
