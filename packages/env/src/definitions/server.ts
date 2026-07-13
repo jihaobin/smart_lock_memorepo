@@ -28,7 +28,7 @@ export const serverDefinitions = {
   NEXT_PUBLIC_APP_URL: defineEnv({
     description: '允许跨域访问的客户端 URL',
     group: 'server',
-    schema: z.string().url().optional(),
+    schema: z.preprocess(value => (value === '' ? undefined : value), z.string().url().optional()),
     required: false,
     secret: false,
   }),
