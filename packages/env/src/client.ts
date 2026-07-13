@@ -1,1 +1,1 @@
-export {};
+export { parseClientEnv } from './runtime/client';
