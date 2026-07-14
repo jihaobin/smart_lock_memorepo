@@ -13,7 +13,8 @@ const config = getDefaultConfig(projectRoot);
 
 // 1. 优化监视文件夹配置
 config.watchFolders = [
-  path.resolve(workspaceRoot, 'packages/shared'), // 只监视共享包
+  path.resolve(workspaceRoot, 'packages/env'),
+  path.resolve(workspaceRoot, 'packages/shared'),
 ];
 
 // Windows路径修复
@@ -32,6 +33,8 @@ config.resolver.disableHierarchicalLookup = true;
 
 // 4. 添加对子路径导出的支持
 config.resolver.extraNodeModules = {
+  '@smart-lock/env': path.resolve(workspaceRoot, 'packages/env'),
+  '@smart-lock/env/client': path.resolve(workspaceRoot, 'packages/env/dist/client'),
   '@smart-lock/shared': path.resolve(workspaceRoot, 'packages/shared'),
   '@smart-lock/shared/client': path.resolve(workspaceRoot, 'packages/shared/dist/client'),
 };

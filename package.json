@@ -38,7 +38,7 @@
     "lint:client:fix": "eslint --config eslint.config.mjs --fix \"apps/client/**/*.{ts,tsx,js,jsx}\"",
     "test": "turbo run test",
     "prepare": "husky install",
-    "android": "expo run:android",
+    "android": "pnpm --filter @smart-lock/client exec expo run:android",
     "ios": "expo run:ios"
   },
   "devDependencies": {

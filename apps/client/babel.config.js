@@ -13,6 +13,7 @@ module.exports = function (api) {
     ],
 
     plugins: [
+      '@babel/plugin-transform-class-static-block',
       [
         'module-resolver',
         {
@@ -20,6 +21,8 @@ module.exports = function (api) {
           alias: {
             '@': './',
             'tailwind.config': './tailwind.config.js',
+            '@smart-lock/env': '../../packages/env/dist',
+            '@smart-lock/env/client': '../../packages/env/dist/client',
             '@smart-lock/shared': '../../packages/shared/dist',
             '@smart-lock/shared/client': '../../packages/shared/dist/client',
             'expo-router': '../../node_modules/expo-router',
